@@ -1,0 +1,64 @@
+image: node:22.16.0
+
+pipelines:
+  branches:
+    dev:
+      - step:
+          name: Auto Deploy
+          deployment: Staging
+          script:
+            - echo "🚀 Деплой $BITBUCKET_REPO_SLUG"
+            - apt-get update && apt-get install -y openssh-client
+            - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+            - echo "$SHARED_SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+            - chmod 600 ~/.ssh/id_rsa
+            - ssh-keyscan -H $FRONT_TEST_HOST >> ~/.ssh/known_hosts
+            - |
+              ssh $SHARED_USER_F@$FRONT_TEST_HOST "set -e
+              if [ -s ~/.nvm/nvm.sh ]; then . ~/.nvm/nvm.sh && nvm install 22.16.0 && nvm use 22.16.0; else echo 'nvm is required on deploy host to use Node 22.16.0' && exit 1; fi
+              node -v && npm -v
+              mkdir -p ~/.ssh && chmod 700 ~/.ssh
+              if ! grep -q altssh.bitbucket.org ~/.ssh/config 2>/dev/null; then
+                printf '\nHost bitbucket.org\n  Hostname altssh.bitbucket.org\n  Port 443\n  HostkeyAlias bitbucket.org\n' >> ~/.ssh/config
+                chmod 600 ~/.ssh/config
+              fi
+              ssh-keyscan -p 443 altssh.bitbucket.org >> ~/.ssh/known_hosts 2>/dev/null || true
+              cd $FRONT_TEST_BASE_PATH/$BITBUCKET_REPO_SLUG
+              git fetch origin dev
+              git checkout FETCH_HEAD -f
+              npm install
+              npm install @oxc-transform/binding-linux-x64-gnu @oxc-minify/binding-linux-x64-gnu --no-save 2>/dev/null || true
+              npm run build
+              pm2 restart ecosystem.config.js
+              "
+            - echo "✅ Деплой завершен"
+    remove-services-cases:
+      - step:
+          name: Auto Deploy
+          deployment: Staging
+          script:
+            - echo "🚀 Деплой $BITBUCKET_REPO_SLUG"
+            - apt-get update && apt-get install -y openssh-client
+            - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+            - echo "$SHARED_SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+            - chmod 600 ~/.ssh/id_rsa
+            - ssh-keyscan -H $FRONT_TEST_HOST >> ~/.ssh/known_hosts
+            - |
+              ssh $SHARED_USER_F@$FRONT_TEST_HOST "set -e
+              if [ -s ~/.nvm/nvm.sh ]; then . ~/.nvm/nvm.sh && nvm install 22.16.0 && nvm use 22.16.0; else echo 'nvm is required on deploy host to use Node 22.16.0' && exit 1; fi
+              node -v && npm -v
+              mkdir -p ~/.ssh && chmod 700 ~/.ssh
+              if ! grep -q altssh.bitbucket.org ~/.ssh/config 2>/dev/null; then
+                printf '\nHost bitbucket.org\n  Hostname altssh.bitbucket.org\n  Port 443\n  HostkeyAlias bitbucket.org\n' >> ~/.ssh/config
+                chmod 600 ~/.ssh/config
+              fi
+              ssh-keyscan -p 443 altssh.bitbucket.org >> ~/.ssh/known_hosts 2>/dev/null || true
+              cd $FRONT_TEST_BASE_PATH/dib_indapt_front_rsc
+              git fetch origin remove-services-cases
+              git checkout FETCH_HEAD -f
+              npm install
+              npm install @oxc-transform/binding-linux-x64-gnu @oxc-minify/binding-linux-x64-gnu --no-save 2>/dev/null || true
+              npm run build
+              pm2 restart ecosystem.config.js
+              "
+            - echo "✅ Деплой завершен"

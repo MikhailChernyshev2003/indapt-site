@@ -1,0 +1,104 @@
+{
+  "name": "dib_indapt_front",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.16.0 <23",
+    "npm": "10.9.2"
+  },
+  "overrides": {
+    "vue": "3.5.31",
+    "swiper": "12.1.3",
+    "nuxt-svgo": {
+      "svgo": "3.3.3"
+    }
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npm run utils:pre-commit-audit"
+  },
+  "scripts": {
+    "lockfile:sync": "npx -y npm@10.9.2 install --package-lock-only",
+    "ci:verify-lock": "npx -y npm@10.9.2 ci --ignore-scripts",
+    "dev": "nuxt dev --host",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare && simple-git-hooks && node .utils/audit.cjs",
+    "prebuild": "simple-git-hooks && node .utils/audit.cjs",
+    "utils:audit": "node .utils/audit.cjs",
+    "utils:pre-commit-audit": "node .utils/pre-commit-audit.cjs",
+    "lint": "eslint ./src && eslint ./layers",
+    "lint:fix": "eslint ./src --fix && eslint --fix ./layers",
+    "lint:stylelint": "stylelint --fix \"src/**/*.{vue,css,less,scss,html}\" --ignore-path .stylelintignore && stylelint --fix \"layers/**/*.{vue,css,less,scss,html}\" --ignore-path .stylelintignore"
+  },
+  "lint-staged": {
+    "**/*.{jsx,js,ts,tsx,vue}": "eslint --fix",
+    "**/*.{vue,css,less,scss,html}": "stylelint --fix"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@element-plus/icons-vue": "^2.3.1",
+    "@element-plus/nuxt": "^1.1.2",
+    "@nuxt/eslint": "^1.4.1",
+    "@nuxt/eslint-config": "^1.4.1",
+    "@nuxtjs/i18n": "^10.2.4",
+    "@types/three": "^0.177.0",
+    "@vue/language-server": "^3.0.3",
+    "@vueuse/core": "^13.3.0",
+    "@vueuse/nuxt": "^13.3.0",
+    "eslint": "^9.27.0",
+    "lil-gui": "^0.20.0",
+    "lint-staged": "^16.1.0",
+    "nuxt": "^3.19.1",
+    "nuxt-viewport": "^2.3.1",
+    "postcss": "^8.5.3",
+    "postcss-pxtorem": "^6.1.0",
+    "sass": "^1.89.0",
+    "simple-git-hooks": "^2.13.1",
+    "stylelint": "^16.20.0",
+    "stylelint-config-html": "^1.1.0",
+    "stylelint-config-rational-order-fix": "^0.1.9",
+    "stylelint-config-recess-order": "^6.1.0",
+    "stylelint-config-recommended-vue": "^1.6.0",
+    "stylelint-config-standard": "^38.0.0",
+    "stylelint-config-standard-scss": "^15.0.1",
+    "stylelint-config-standard-vue": "^1.0.0",
+    "stylelint-order": "^7.0.0",
+    "typescript": "^5.8.3",
+    "vue": "3.5.31"
+  },
+  "dependencies": {
+    "@morev/vue-transitions": "^3.0.5",
+    "@nuxtjs/seo": "^5.1.0",
+    "@pinia/nuxt": "^0.11.0",
+    "@takumi-rs/core": "^1.0.0-rc.12",
+    "@vee-validate/nuxt": "^4.15.0",
+    "@vee-validate/yup": "^4.15.0",
+    "@vueuse/motion": "^3.0.3",
+    "@vueuse/router": "^13.5.0",
+    "@yandex/ymaps3-types": "^1.0.15542062",
+    "animated-scroll-to": "^2.3.2",
+    "click-outside-vue3": "^4.0.1",
+    "date-fns": "^4.1.0",
+    "gsap": "^3.13.0",
+    "lodash": "^4.17.21",
+    "maska": "^3.1.1",
+    "normalize.css": "^8.0.1",
+    "nuxt-seo-utils": "^8.1.3",
+    "nuxt-svgo": "^4.2.6",
+    "nuxt-swiper": "^2.0.1",
+    "pinia": "^3.0.2",
+    "simplex-noise": "^4.0.3",
+    "three": "^0.177.0",
+    "type-fest": "^4.41.0",
+    "vee-validate": "^4.15.0",
+    "vue-yandex-maps": "^2.1.6",
+    "vue3-mq": "^4.0.2",
+    "yup": "^1.6.1"
+  },
+  "volta": {
+    "node": "22.16.0",
+    "npm": "10.9.2"
+  }
+}

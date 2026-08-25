@@ -1,0 +1,19 @@
+@use "sass:math" as math;
+@use "sass:meta" as meta;
+@use "../variables" as v;
+
+@function divide($x, $y) {
+  @return math.div($x, $y);
+}
+
+@function strip-unit($number) {
+  @if meta.type-of($number) == "number" and not math.is-unitless($number) {
+    @return divide($number, ($number * 0 + 1));
+  }
+
+  @return $number;
+}
+
+@function rem($value, $base: v.$font-size-root) {
+  @return divide(strip-unit($value), strip-unit($base)) * 1rem;
+}

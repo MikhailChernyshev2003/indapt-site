@@ -1,0 +1,103 @@
+@forward "base/tokens";
+@forward "base/fonts";
+@forward "base/transitions";
+@use 'adaptive' as a;
+@use 'sass:math';
+
+
+@mixin px-to-vw($fontSize, $screenWidth) {
+  $vw: (
+    math.div($fontSize, $screenWidth) * 100
+  );
+
+font-size: #{$vw}vw;
+}
+
+$font-family: "manrope";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+
+  font-family: $font-family;
+
+  background: unset;
+
+  -webkit-tap-highlight-color: transparent;
+
+  cursor: url("assets/icons/cursor/dark.svg") 3 3, default;
+}
+
+html {
+  @include px-to-vw(16, 1440);
+
+  @include a.tablet {
+    @include px-to-vw(16, 768);
+  }
+
+  @include a.mobile {
+    @include px-to-vw(16, 375);
+  }
+}
+
+body {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+
+  color: var(--dark-blue);
+}
+
+.after-init {
+  position: static;
+}
+
+a,
+button {
+  text-decoration: none;
+
+}
+
+button {
+  border: unset;
+}
+
+ul {
+  list-style: none;
+}
+
+svg.nuxt-icon {
+  margin: 0;
+}
+
+.lock {
+  overflow: hidden !important;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.container {
+  padding: 0 60px;
+
+  @include a.tablet {
+    padding: 0 40px;
+  }
+
+  @include a.mobile {
+    padding: 0 20px;
+  }
+}
+
+.light-cursor,
+.light-cursor * {
+  cursor: url("assets/icons/cursor/light.svg") 3 3, pointer !important;
+}
+
+.margin-text {
+  margin-top: 6px;
+}

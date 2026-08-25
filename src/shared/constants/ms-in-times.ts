@@ -1,0 +1,17 @@
+const MS_IN_SECONDS = 1000;
+const MS_IN_MINUTES = MS_IN_SECONDS * 60;
+const MS_IN_HOUR = MS_IN_MINUTES * 60;
+const MS_IN_DAY = MS_IN_HOUR * 24;
+const MS_IN_WEEK = MS_IN_DAY * 7;
+const MS_IN_MONTH = MS_IN_DAY * 30;
+const MS_IN_YEAR = MS_IN_MONTH * 12;
+
+export {
+  MS_IN_SECONDS,
+  MS_IN_MINUTES,
+  MS_IN_HOUR,
+  MS_IN_DAY,
+  MS_IN_WEEK,
+  MS_IN_MONTH,
+  MS_IN_YEAR,
+};

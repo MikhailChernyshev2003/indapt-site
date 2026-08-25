@@ -1,0 +1,101 @@
+@use "sass:math";
+@use "base/functions" as f;
+@use "variables" as v;
+@use "adaptive" as a;
+
+@mixin container($width: $container-width, $max-width: $container-max-width) {
+  display: block;
+  width: $width;
+  max-width: $max-width;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@mixin aspect-ratio($width: 1, $height: $width, $pseudo: true) {
+  @if $pseudo {
+    &::after {
+      display: block;
+      padding-top: math.percentage(f.divide($height, $width));
+
+      content: "";
+    }
+  } @else {
+    display: block;
+    padding-top: math.percentage(f.divide($height, $width));
+  }
+}
+
+@mixin sr-only() {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+}
+
+@mixin mouse-only {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}
+
+@mixin hover {
+  @include mouse-only {
+    &:hover {
+      @content;
+    }
+  }
+}
+
+
+@mixin default-transition($args...) {
+  transition-timing-function: v.$easing;
+  transition-duration: v.$timing;
+  transition-property: $args;
+}
+
+@mixin no-scrollbar {
+  // Для Firefox
+
+  scrollbar-width: none;
+
+  // Для IE и Edge
+
+  -ms-overflow-style: none;
+
+  // Для Chrome, Safari и Opera
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+
+    background: transparent;
+  }
+}
+
+@mixin base-container {
+  padding-inline: 60px;
+
+  @include a.tablet {
+    padding-inline: 40px;
+  }
+
+  @include a.mobile {
+    padding-inline: 20px;
+  }
+}
+
+@mixin max-lines($var) {
+  display: -webkit-box;
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  -webkit-line-clamp: $var;
+  -webkit-box-orient: vertical;
+}

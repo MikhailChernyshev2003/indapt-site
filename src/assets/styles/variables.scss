@@ -1,0 +1,17 @@
+// viewport breakpoint
+$viewport-width-xs: 0;
+$viewport-width-sm: 576px;
+$viewport-width-md: 767px;
+$viewport-width-lg: 1023px;
+
+// font size
+$font-size-root: 16px;
+
+// fonts
+$font-tektur: 'Tektur', sans-serif;
+$font-involve: 'involve', sans-serif;
+$font-manrope: 'manrope', sans-serif;
+
+// Transitions
+$timing: 0.3s;
+$easing: cubic-bezier(0.12, 0.46, 0.47, 0.99);

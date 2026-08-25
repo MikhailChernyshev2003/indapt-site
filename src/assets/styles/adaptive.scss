@@ -1,0 +1,19 @@
+@use "variables" as v;
+
+@mixin mobile {
+  @media screen and (max-width: #{v.$viewport-width-sm}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media screen and (max-width: #{v.$viewport-width-lg}) {
+    @content;
+  }
+}
+
+@mixin desktop-only {
+  @media screen and (min-width: #{v.$viewport-width-lg + 1}) {
+    @content;
+  }
+}

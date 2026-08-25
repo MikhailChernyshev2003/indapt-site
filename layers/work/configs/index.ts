@@ -1,0 +1,1 @@
+import { vacancies } from './vacancies';

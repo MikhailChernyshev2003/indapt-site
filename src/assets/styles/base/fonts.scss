@@ -1,0 +1,27 @@
+@mixin font($font-name, $font-style, $font-weight, $font-url) {
+  @font-face {
+    font-weight: $font-weight;
+    font-family: $font-name;
+    font-style: $font-style;
+    src: url($font-url) format("woff2");
+    font-display: swap;
+  }
+}
+
+@include font("Tektur", normal, 400, "@/assets/fonts/Tektur-Regular.woff2");
+@include font("Tektur", normal, 500, "@/assets/fonts/Tektur-Medium.woff2");
+@include font("Tektur", normal, 600, "@/assets/fonts/Tektur-SemiBold.woff2");
+@include font("Tektur", normal, 700, "@/assets/fonts/Tektur-Bold.woff2");
+@include font("Tektur", normal, 800, "@/assets/fonts/Tektur-ExtraBold.woff2");
+@include font("Tektur", normal, 900, "@/assets/fonts/Tektur-Black.woff2");
+@include font("manrope", normal, 200, "@/assets/fonts/manrope/manrope-extralight.woff2");
+@include font("manrope", normal, 300, "@/assets/fonts/manrope/manrope-light.woff2");
+@include font("manrope", normal, 400, "@/assets/fonts/manrope/manrope-regular.woff2");
+@include font("manrope", normal, 500, "@/assets/fonts/manrope/manrope-medium.woff2");
+@include font("manrope", normal, 600, "@/assets/fonts/manrope/manrope-semibold.woff2");
+@include font("manrope", normal, 700, "@/assets/fonts/manrope/manrope-bold.woff2");
+@include font("manrope", normal, 800, "@/assets/fonts/manrope/manrope-extrabold.woff2");
+@include font("involve", normal, 400, "@/assets/fonts/involve/involve-regular.woff2");
+@include font("involve", normal, 500, "@/assets/fonts/involve/involve-medium.woff2");
+@include font("involve", normal, 600, "@/assets/fonts/involve/involve-semibold.woff2");
+@include font("involve", normal, 700, "@/assets/fonts/involve/involve-bold.woff2");
