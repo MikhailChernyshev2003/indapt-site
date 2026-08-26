@@ -57,15 +57,6 @@ const label = computed(() => t(`services.services.${service.labelKey}`));
 
   @include s.default-transition(background-color, color);
 
-  @include a.tablet {
-    height: 180px;
-  }
-
-  @include a.mobile {
-    height: 160px;
-    padding: 20px 16px 16px;
-  }
-
   @include s.hover {
     color: var(--card-color);
 
@@ -89,11 +80,7 @@ const label = computed(() => t(`services.services.${service.labelKey}`));
 
   color: inherit;
 
-  @include t.lead-s-medium;
-
-  @include a.mobile {
-    @include t.body-m-medium;
-  }
+  @include t.lead-m-medium;
 }
 
 .service-tile__arrow {
@@ -113,19 +100,9 @@ const label = computed(() => t(`services.services.${service.labelKey}`));
 
   @include s.default-transition(border-color);
 
-  @include a.mobile {
-    width: 32px;
-    height: 32px;
-  }
-
   &-icon {
     width: 20px;
     height: 20px;
-
-    @include a.mobile {
-      width: 16px;
-      height: 16px;
-    }
 
     :deep(path) {
       fill: currentcolor;

@@ -102,8 +102,14 @@ const { t } = useI18n();
 .service-hero__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 40px;
+
+  // По макету: между рядами 6px, между пилюлями в ряду 2px
+
+  gap: 6px 2px;
+
+  // Зазор от заголовка: по макету 24px на десктопе и планшете
+
+  margin-top: 24px;
 
   @include a.mobile {
     // На мобильном теги не переносятся, а прокручиваются вбок:
@@ -116,6 +122,18 @@ const { t } = useI18n();
     overflow-x: auto;
 
     @include s.no-scrollbar;
+  }
+
+  // Общий компонент тега рассчитан на другие страницы.
+  // Здесь пилюля ниже: по макету 38px против 44px по умолчанию.
+  // Высоту задаём явно — у инлайнового элемента она иначе зависит
+  // от метрик шрифта, а не от line-height
+
+  :deep(.app-tag) {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    padding: 0 18px;
   }
 
   &-item {
@@ -143,7 +161,7 @@ const { t } = useI18n();
 
     display: block;
     width: 539px;
-    margin: 36px auto -9px 64px;
+    margin: 22px auto -9px 64px;
   }
 
   @include a.mobile {
@@ -156,7 +174,7 @@ const { t } = useI18n();
     // Нижний отступ обнуляем явно, иначе унаследуется подрезка
     // из планшетного правила
 
-    margin: 60px 0 0 -78px;
+    margin: 45px 0 0 -78px;
   }
 }
 </style>

@@ -883,7 +883,7 @@ export default {
       design: 'Дизайн',
       development: 'Разработка',
       support: 'Поддержка',
-      marketing: 'Digital-маркетинг',
+      marketing: 'Маркетинг',
       web3: 'WEB3',
     },
   },

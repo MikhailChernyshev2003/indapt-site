@@ -69,23 +69,31 @@ const groupNumber = (idx: number) => `(0${idx + 1})`;
 .desc-services__group {
   display: grid;
   grid-template-columns: 4fr 8fr;
+
+  // По макету: до заголовка 40px у первой группы и 56px у остальных
+  // (там сверху разделитель), снизу 28px
+
   padding-top: 40px;
-  padding-bottom: 40px;
+  padding-bottom: 28px;
 
   @include a.tablet {
     grid-template-columns: 116px 1fr;
-    padding-top: 32px;
-    padding-bottom: 32px;
   }
 
   @include a.mobile {
     grid-template-columns: 52px 1fr;
-    padding-top: 24px;
+    padding-top: 32px;
     padding-bottom: 24px;
   }
 
   &:not(:first-child) {
+    padding-top: 56px;
+
     border-top: 1px solid var(--dark-blue-20);
+
+    @include a.mobile {
+      padding-top: 40px;
+    }
   }
 }
 
@@ -124,10 +132,20 @@ const groupNumber = (idx: number) => `(0${idx + 1})`;
 }
 
 .desc-services__list {
-  margin-top: 32px;
+  // По макету от заголовка до первого раскрывающегося блока 28px
+
+  margin-top: 28px;
 
   @include a.mobile {
     margin-top: 20px;
+  }
+
+  // Общий компонент оставляет под телом блока 20px (12 + 8),
+  // в макете 16 — снимаем разницу здесь, не трогая сам компонент
+  @include a.desktop-only {
+    :deep(.collapse-text) {
+      padding-bottom: 4px;
+    }
   }
 }
 </style>

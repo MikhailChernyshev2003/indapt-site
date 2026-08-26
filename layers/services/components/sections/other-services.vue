@@ -75,7 +75,6 @@ const items = computed(() =>
   }
 
   @include a.mobile {
-    gap: 12px;
     margin-top: 24px;
     margin-right: -20px;
     padding-right: 20px;
@@ -87,8 +86,5 @@ const items = computed(() =>
     flex: 0 0 318px;
   }
 
-  @include a.mobile {
-    flex-basis: 300px;
-  }
 }
 </style>

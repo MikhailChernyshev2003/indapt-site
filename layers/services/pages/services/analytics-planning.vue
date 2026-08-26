@@ -58,7 +58,9 @@ useSeoMeta({
   --service-decor-bg: #feefdf;
   --service-row-hover: #feebd7;
 
-  padding-bottom: 120px;
+  // По макету от нижнего края карточек до футера 112px
+
+  padding-bottom: 112px;
 
   background-color: #fffaf5;
 
@@ -102,7 +104,10 @@ useSeoMeta({
 }
 
 .service-page__expertise {
-  margin-top: 120px;
+  // По макету от последнего раскрывающегося блока до заголовка
+  // секции 219px, из них 32px даёт нижний отступ группы
+
+  margin-top: 152px;
 
   @include a.tablet {
     margin-top: 96px;
