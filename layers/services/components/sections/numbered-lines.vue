@@ -72,11 +72,28 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
   }
 
   &_reveal {
+    // Сценарий из макета: по умолчанию видны только номер, дивайдер
+    // и заголовок с прозрачностью 80%. При наведении появляется текст,
+    // дивайдер подсвечивается градиентом, заголовок доводится до 100%.
     // Текст прячет прозрачность, а не display: none: место под него
     // остаётся занятым, иначе ряды сетки прыгали бы при наведении
     @include a.desktop-only {
       .numbered-lines__line {
-        @include s.default-transition(background-color);
+        background-image: linear-gradient(
+          90deg,
+          var(--service-accent) 0%,
+          transparent 100%
+        );
+        background-repeat: no-repeat;
+        background-size: 0% 100%;
+
+        @include s.default-transition(background-size);
+      }
+
+      .numbered-lines__label {
+        opacity: 0.8;
+
+        @include s.default-transition(opacity);
       }
 
       .numbered-lines__text {
@@ -88,7 +105,11 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
       .numbered-lines__item {
         @include s.hover {
           .numbered-lines__line {
-            background-color: var(--dark-blue);
+            background-size: 100% 100%;
+          }
+
+          .numbered-lines__label {
+            opacity: 1;
           }
 
           .numbered-lines__text {
