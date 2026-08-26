@@ -77,6 +77,7 @@ export default defineNuxtConfig({
     '@l-locales': fileURLToPath(new URL('./layers/locales', import.meta.url)),
     '@l-work': fileURLToPath(new URL('./layers/work', import.meta.url)),
     '@l-about': fileURLToPath(new URL('./layers/about', import.meta.url)),
+    '@l-services': fileURLToPath(new URL('./layers/services', import.meta.url)),
   },
 
   experimental: {

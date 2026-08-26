@@ -29,6 +29,11 @@ const clientsLinks = computed(() => [
     href: '/about',
   },
   {
+    id: 1,
+    text: t('footer.services'),
+    href: '/services',
+  },
+  {
     id: 2,
     text: t('footer.contacts'),
     href: '/contacts',

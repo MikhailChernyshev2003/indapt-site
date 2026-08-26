@@ -384,6 +384,8 @@ Moscow International Business Center “Moscow City”, Federation Tower East`,
   },
 
   services: {
+    seoTitle: 'Services',
+    pageTitle: 'Services',
     analyticsPlanning: {
       title: 'Analytics & Planning',
       tags: {

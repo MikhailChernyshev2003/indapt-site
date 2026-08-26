@@ -1,0 +1,127 @@
+<script setup lang="ts">
+import {
+  ANALYTICS_PLANNING_GROUPS,
+  ANALYTICS_PLANNING_INFO,
+  ANALYTICS_PLANNING_TAGS,
+  SERVICES,
+} from '@l-services/configs';
+
+const I18N_KEY = 'services.analyticsPlanning';
+const SLUG = 'analytics-planning';
+
+const { t } = useI18n();
+
+const service = SERVICES.find(item => item.slug === SLUG)!;
+
+useSeoMeta({
+  title: t(`${I18N_KEY}.title`),
+});
+</script>
+
+<template>
+  <div class="service-page">
+    <services-sections-hero
+      :i18n-key="I18N_KEY"
+      :tags="ANALYTICS_PLANNING_TAGS"
+      :image="service.image"
+    />
+    <services-sections-info
+      class="service-page__info"
+      :i18n-key="I18N_KEY"
+      :paragraphs="ANALYTICS_PLANNING_INFO"
+    />
+    <div class="service-page__decor">
+      <services-molecules-decor-band />
+    </div>
+    <services-sections-desc-services
+      class="service-page__desc"
+      :i18n-key="I18N_KEY"
+      :groups="ANALYTICS_PLANNING_GROUPS"
+    />
+    <services-sections-expertise class="service-page__expertise" />
+    <services-sections-other-services
+      class="service-page__other"
+      :current-slug="SLUG"
+    />
+  </div>
+</template>
+
+<style scoped lang="scss">
+@use "@styles/adaptive" as a;
+@use "@styles/shared" as s;
+
+.service-page {
+  // Палитра услуги. Для другой услуги меняются только эти значения.
+  --service-accent: var(--services-orange);
+  --service-hero-from: #fddebe;
+  --service-hero-to: #fef2e6;
+  --service-decor-bg: #feefdf;
+  --service-row-hover: #feebd7;
+
+  padding-bottom: 120px;
+
+  background-color: #fffaf5;
+
+  @include a.tablet {
+    padding-bottom: 108px;
+  }
+
+  @include a.mobile {
+    padding-bottom: 80px;
+  }
+}
+
+.service-page__info {
+  margin-top: 108px;
+
+  @include a.tablet {
+    margin-top: 64px;
+  }
+
+  @include a.mobile {
+    margin-top: 40px;
+  }
+}
+
+.service-page__decor {
+  margin-top: 60px;
+
+  @include s.base-container;
+
+  @include a.tablet {
+    margin-top: 48px;
+  }
+
+  @include a.mobile {
+    margin-top: 32px;
+  }
+}
+
+.service-page__desc {
+  margin-top: 16px;
+}
+
+.service-page__expertise {
+  margin-top: 120px;
+
+  @include a.tablet {
+    margin-top: 96px;
+  }
+
+  @include a.mobile {
+    margin-top: 64px;
+  }
+}
+
+.service-page__other {
+  margin-top: 200px;
+
+  @include a.tablet {
+    margin-top: 120px;
+  }
+
+  @include a.mobile {
+    margin-top: 80px;
+  }
+}
+</style>

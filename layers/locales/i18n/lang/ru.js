@@ -398,8 +398,10 @@ export default {
   },
 
   services: {
+    seoTitle: 'Услуги',
+    pageTitle: 'Услуги',
     analyticsPlanning: {
-      title: 'Аналитика и планирование',
+      title: 'Аналитика и планирование',
       tags: {
         prototypeDevelopment: 'Разработка прототипа',
         qualitativeResearch: 'Качетсвенные исследования',
