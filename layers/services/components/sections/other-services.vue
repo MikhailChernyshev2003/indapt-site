@@ -61,14 +61,17 @@ const items = computed(() =>
     display: contents;
   }
 
-  // На планшете и мобильном карточки прокручиваются вбок,
-  // ряд выходит за контейнер и обрезается краем экрана
+  // На планшете и мобильном карточки прокручиваются вбок.
+  // Полоса прокрутки идёт от края до края экрана — уехавшая карточка
+  // обрезается краем экрана, а не паддингом контейнера
   @include a.tablet {
     display: flex;
     gap: 16px;
     margin-top: 40px;
     margin-right: -40px;
+    margin-left: -40px;
     padding-right: 40px;
+    padding-left: 40px;
     overflow-x: auto;
 
     @include s.no-scrollbar;
@@ -77,7 +80,9 @@ const items = computed(() =>
   @include a.mobile {
     margin-top: 24px;
     margin-right: -20px;
+    margin-left: -20px;
     padding-right: 20px;
+    padding-left: 20px;
   }
 }
 

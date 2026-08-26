@@ -20,15 +20,9 @@ const { t } = useI18n();
           <li
             v-for="tag in tags"
             :key="tag"
-            class="service-hero__tags-item"
+            class="service-hero__tag"
           >
-            <atoms-tag
-              is="span"
-              size="s"
-              active
-            >
-              {{ t(`${i18nKey}.tags.${tag}`) }}
-            </atoms-tag>
+            {{ t(`${i18nKey}.tags.${tag}`) }}
           </li>
         </ul>
       </div>
@@ -102,18 +96,20 @@ const { t } = useI18n();
 .service-hero__tags {
   display: flex;
   flex-wrap: wrap;
+  row-gap: 6px;
 
-  // По макету: между рядами 6px, между пилюлями в ряду 2px
-
-  gap: 6px 2px;
-
-  // Зазор от заголовка: по макету 24px на десктопе и планшете
+  // Зазор от заголовка по макету
 
   margin-top: 24px;
 
+  // Пилюли перекрывают друг друга на 36px. В CSS gap не может быть
+  // отрицательным, поэтому перекрытие задаёт отступ у самой пилюли,
+  // а этот padding возвращает первую пилюлю каждого ряда к краю
+
+  padding-left: 36px;
+
   @include a.mobile {
-    // На мобильном теги не переносятся, а прокручиваются вбок:
-    // ряд выходит за контейнер и обрезается краем экрана
+    // На мобильном теги не переносятся, а прокручиваются вбок
 
     flex-wrap: nowrap;
     margin-top: 16px;
@@ -123,24 +119,26 @@ const { t } = useI18n();
 
     @include s.no-scrollbar;
   }
+}
 
-  // Общий компонент тега рассчитан на другие страницы.
-  // Здесь пилюля ниже: по макету 38px против 44px по умолчанию.
-  // Высоту задаём явно — у инлайнового элемента она иначе зависит
-  // от метрик шрифта, а не от line-height
+.service-hero__tag {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 40px;
 
-  :deep(.app-tag) {
-    display: inline-flex;
-    align-items: center;
-    height: 38px;
-    padding: 0 18px;
-  }
+  // Справа поля больше: 36px из них перекрывает следующая пилюля
 
-  &-item {
-    @include a.mobile {
-      flex-shrink: 0;
-    }
-  }
+  margin-left: -36px;
+  padding: 0 48px 0 24px;
+
+  color: var(--dark-blue);
+
+  background: linear-gradient(90deg, var(--white) 0%, var(--white-40) 100%);
+  border: 1px solid var(--dark-blue-10);
+  border-radius: 50px;
+
+  @include t.caption-s-semi-128;
 }
 
 .service-hero__image {
