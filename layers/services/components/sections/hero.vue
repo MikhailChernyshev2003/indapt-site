@@ -96,7 +96,7 @@ const { t } = useI18n();
 .service-hero__tags {
   display: flex;
   flex-wrap: wrap;
-  row-gap: 6px;
+  row-gap: 4px;
 
   // Зазор от заголовка по макету
 
@@ -139,15 +139,22 @@ const { t } = useI18n();
   border-radius: 50px;
 
   @include t.caption-s-semi-128;
+
+  // Запас справа существует, чтобы его перекрыла следующая пилюля.
+  // Последней перекрывать нечем — поле обычное
+
+  &:last-child {
+    padding-right: 24px;
+  }
 }
 
 .service-hero__image {
   position: absolute;
-  right: 60px;
-  bottom: 0;
+  right: var(--hero-image-right, 60px);
+  bottom: var(--hero-image-bottom, 0);
   z-index: 0;
 
-  width: 540px;
+  width: var(--hero-image-width, 540px);
   height: auto;
 
   @include a.tablet {
@@ -158,8 +165,8 @@ const { t } = useI18n();
     // отступ задаёт ровно ту величину подрезки, что и в макете
 
     display: block;
-    width: 539px;
-    margin: 22px auto -9px 64px;
+    width: var(--hero-image-width-tablet, 539px);
+    margin: var(--hero-image-margin-tablet, 22px auto -9px 64px);
   }
 
   @include a.mobile {
@@ -167,12 +174,12 @@ const { t } = useI18n();
     // Отрицательный отступ слева гасит паддинг контейнера и прозрачное
     // поле внутри самого файла
 
-    width: 487px;
+    width: var(--hero-image-width-mobile, 487px);
 
     // Нижний отступ обнуляем явно, иначе унаследуется подрезка
     // из планшетного правила
 
-    margin: 45px 0 0 -78px;
+    margin: var(--hero-image-margin-mobile, 45px 0 0 -78px);
   }
 }
 </style>

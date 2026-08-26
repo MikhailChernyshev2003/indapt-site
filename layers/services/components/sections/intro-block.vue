@@ -1,0 +1,136 @@
+<script setup lang="ts">
+const { title, text, label = '(info)' } = defineProps<{
+  /** Заголовок блока, по макету разбит на две строки */
+  title: string;
+  /** Текст блока, начинается в одной строке с меткой */
+  text: string;
+  /** Метка перед первой строкой текста */
+  label?: string;
+}>();
+</script>
+
+<template>
+  <section class="intro-block">
+    <div v-if="$slots.decor" class="intro-block__decor">
+      <slot name="decor" />
+    </div>
+    <div class="intro-block__content">
+      <h2 class="intro-block__title" v-html="title" />
+      <p class="intro-block__text">
+        <span class="intro-block__label">{{ label }}</span>
+        <span v-html="text" />
+      </p>
+    </div>
+  </section>
+</template>
+
+<style scoped lang="scss">
+@use "@styles/adaptive" as a;
+@use "@styles/shared" as s;
+@use "@styles/typography" as t;
+
+// Значения по умолчанию внутри var() записаны в rem: postcss-pxtorem
+// не заходит внутрь var(), поэтому px там остался бы жёстким, тогда как
+// остальная вёрстка тянется от html font-size. В скобках размер по макету
+
+.intro-block {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: var(--intro-decor-size, 29.5rem) 1fr; // 472px
+  align-items: center;
+
+  column-gap: 84px;
+
+  @include s.base-container;
+
+  @include a.tablet {
+    // Текст занимает всю ширину, декор уходит из потока за правый край экрана
+
+    display: block;
+    overflow: hidden;
+  }
+
+  @include a.mobile {
+    // Снизу декор свисает ниже текста на 48px: поле даёт ему место внутри
+    // секции, иначе overflow срезал бы дугу, а отрицательный внешний отступ
+    // возвращает секции высоту по макету
+
+    margin-bottom: -48px;
+    padding-bottom: 48px;
+  }
+}
+
+.intro-block__decor {
+  width: var(--intro-decor-size, 29.5rem); // 472px
+
+  @include a.tablet {
+    position: absolute;
+    top: var(--intro-decor-top, -13.625rem); // -218px
+    right: var(--intro-decor-right, -8.5rem); // -136px
+  }
+
+  @include a.mobile {
+    // Круг меньше и по макету не подрезан сверху
+
+    top: var(--intro-decor-top-mobile, 0);
+    right: var(--intro-decor-right-mobile, -7.125rem); // -114px
+
+    width: var(--intro-decor-size-mobile, 17.375rem); // 278px
+  }
+}
+
+.intro-block__content {
+  // Декор вынут из потока и лёг бы поверх текста
+
+  position: relative;
+  z-index: 1;
+
+  max-width: var(--intro-text-width, 45.5rem); // 728px
+
+  @include a.tablet {
+    max-width: none;
+  }
+}
+
+.intro-block__title {
+  color: var(--dark-blue);
+
+  @include t.h1;
+
+  @include a.mobile {
+    @include t.h4;
+  }
+}
+
+.intro-block__text {
+  margin-top: 24px;
+
+  color: var(--dark-blue);
+
+  @include t.lead-m-medium;
+
+  @include a.mobile {
+    margin-top: 16px;
+
+    @include t.body-s-medium-135;
+  }
+}
+
+// Метка стоит внутри первой строки абзаца, а не отдельной колонкой,
+// поэтому от текста её отбивает собственное поле
+
+.intro-block__label {
+  margin-right: 32px;
+
+  color: var(--dark-blue-50);
+
+  @include t.caption-m-medium;
+
+  @include a.mobile {
+    margin-right: 8px;
+
+    @include t.caption-xs-medium;
+  }
+}
+</style>

@@ -50,7 +50,7 @@ const links = computed(() =>
   margin-top: 64px;
 
   @include a.mobile {
-    margin-top: 24px;
+    margin-top: 32px;
   }
 }
 </style>

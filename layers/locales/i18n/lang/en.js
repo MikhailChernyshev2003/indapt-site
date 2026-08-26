@@ -650,6 +650,7 @@ Moscow International Business Center “Moscow City”, Federation Tower East`,
       },
       development: {
         title: 'Product Development & Enhancement',
+        info: 'We do not stop at launching the product.<br /> Our goal is to build an MVP quickly and keep evolving it, exploring opportunities for improvement and testing hypotheses in practice.',
       },
       cards: {
         title: 'Comprehensive Support & Infrastructure Protection',

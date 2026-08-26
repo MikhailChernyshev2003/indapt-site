@@ -52,7 +52,7 @@ const label = computed(() => t(`services.services.${service.labelKey}`));
 
   color: var(--dark-blue);
 
-  background-color: #f3f2f5;
+  background-color: var(--service-tile-bg, #f3f2f5);
   border-radius: 20px;
 
   @include s.default-transition(background-color, color);

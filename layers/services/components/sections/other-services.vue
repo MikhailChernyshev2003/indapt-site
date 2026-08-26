@@ -67,7 +67,7 @@ const items = computed(() =>
   @include a.tablet {
     display: flex;
     gap: 16px;
-    margin-top: 40px;
+    margin-top: 60px;
     margin-right: -40px;
     margin-left: -40px;
     padding-right: 40px;

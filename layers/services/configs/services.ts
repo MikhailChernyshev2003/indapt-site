@@ -23,6 +23,7 @@ export const SERVICES: ServiceItem[] = [
     image: '/images/main/services/engineering.png',
     color: '#3E3E3E',
     bg: '#E1E4EB',
+    ready: true,
   },
   {
     slug: 'machine-learning',
@@ -30,6 +31,7 @@ export const SERVICES: ServiceItem[] = [
     image: '/images/main/services/machine-learning.png',
     color: '#FA3A59',
     bg: '#F5E5EF',
+    ready: true,
   },
   {
     slug: 'design',
@@ -37,6 +39,7 @@ export const SERVICES: ServiceItem[] = [
     image: '/images/main/services/design.png',
     color: '#8D19FC',
     bg: '#ECE6FE',
+    ready: true,
   },
   {
     slug: 'development',
@@ -44,6 +47,7 @@ export const SERVICES: ServiceItem[] = [
     image: '/images/main/services/development.png',
     color: '#1764F6',
     bg: '#E0EAFE',
+    ready: true,
   },
   {
     slug: 'support',
@@ -51,6 +55,7 @@ export const SERVICES: ServiceItem[] = [
     image: '/images/main/services/support.png',
     color: '#0099B6',
     bg: '#D0F7F9',
+    ready: true,
   },
   {
     slug: 'marketing',
@@ -58,6 +63,7 @@ export const SERVICES: ServiceItem[] = [
     image: '/images/main/services/marketing.png',
     color: '#DD9000',
     bg: '#F8F4C7',
+    ready: true,
   },
   {
     slug: 'web3',
@@ -65,6 +71,7 @@ export const SERVICES: ServiceItem[] = [
     image: '/images/main/services/web-3.png',
     color: '#42A400',
     bg: '#DCF5D0',
+    ready: true,
   },
 ];
 

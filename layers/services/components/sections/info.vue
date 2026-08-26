@@ -60,12 +60,12 @@ const { t } = useI18n();
 .service-info__paragraph {
   @include t.lead-m-medium;
 
-  @include a.tablet {
-    @include t.body-m-medium;
+  @include a.mobile {
+    @include t.body-s-medium-135;
   }
 
   &:not(:first-child) {
-    margin-top: 12px;
+    margin-top: var(--info-paragraph-gap, 12px);
 
     @include a.mobile {
       margin-top: 8px;

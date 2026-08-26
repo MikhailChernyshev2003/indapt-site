@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import type { ServiceDescGroup } from '@l-services/types';
+import type { ServiceDescGroup, ServiceDescPaths } from '@l-services/types';
 
-const { i18nKey, groups } = defineProps<{
+const { i18nKey, groups, paths = {} } = defineProps<{
   /** Базовый ключ услуги, например services.analyticsPlanning */
   i18nKey: string;
-  /** Группы блока descServices в порядке вывода */
+  /** Группы блока в порядке вывода */
   groups: ServiceDescGroup[];
+  /** Имена ключей в локали, если они отличаются от принятых по умолчанию */
+  paths?: ServiceDescPaths;
 }>();
 
 const { t } = useI18n();
@@ -19,6 +21,16 @@ const openState = ref(
 );
 
 const groupNumber = (idx: number) => `(0${idx + 1})`;
+
+const keys = computed(() => ({
+  root: paths.root ?? 'descServices',
+  desc: paths.desc ?? 'desc',
+  collapseLabel: paths.collapseLabel ?? 'title',
+  collapseText: paths.collapseText ?? 'desc',
+}));
+
+/** Базовый путь до группы */
+const groupPath = (key: string) => `${i18nKey}.${keys.value.root}.${key}`;
 </script>
 
 <template>
@@ -31,12 +43,12 @@ const groupNumber = (idx: number) => `(0${idx + 1})`;
       <span class="desc-services__number">{{ groupNumber(groupIdx) }}</span>
       <div class="desc-services__content">
         <h2 class="desc-services__title">
-          {{ t(`${i18nKey}.descServices.${group.key}.title`) }}
+          {{ t(`${groupPath(group.key)}.title`) }}
         </h2>
         <p
           v-if="group.hasDesc"
           class="desc-services__desc"
-          v-html="t(`${i18nKey}.descServices.${group.key}.desc`)"
+          v-html="t(`${groupPath(group.key)}.${keys.desc}`)"
         />
         <div class="desc-services__list">
           <molecules-collapse-text
@@ -45,10 +57,10 @@ const groupNumber = (idx: number) => `(0${idx + 1})`;
             v-model:open="openState[groupIdx][collapseIdx]"
           >
             <template #label>
-              {{ t(`${i18nKey}.descServices.${group.key}.${collapse}.title`) }}
+              {{ t(`${groupPath(group.key)}.${collapse}.${keys.collapseLabel}`) }}
             </template>
             <template #text>
-              <p v-html="t(`${i18nKey}.descServices.${group.key}.${collapse}.desc`)" />
+              <p v-html="t(`${groupPath(group.key)}.${collapse}.${keys.collapseText}`)" />
             </template>
           </molecules-collapse-text>
         </div>
