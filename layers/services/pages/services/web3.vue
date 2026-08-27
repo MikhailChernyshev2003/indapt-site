@@ -33,12 +33,15 @@ const createItems = computed(() =>
   })),
 );
 
-/** Иллюстрации слайдов с размерами файлов: они держат место до загрузки */
+// Размеры одинаковые у всех слайдов: они держат место до загрузки картинки
+// и не дают подписям встать на разной высоте
+const SLIDE_SIZE = { imageWidth: 418, imageHeight: 290 };
+
 const SLIDE_IMAGES = [
-  { image: '/images/services/web3/slide-1.png', imageWidth: 419, imageHeight: 290 },
-  { image: '/images/services/web3/slide-2.png', imageWidth: 418, imageHeight: 324 },
-  { image: '/images/services/web3/slide-3.png', imageWidth: 418, imageHeight: 290 },
-  { image: '/images/services/web3/slide-4.png', imageWidth: 421, imageHeight: 290 },
+  { image: '/images/services/web3/slide-1.png', ...SLIDE_SIZE },
+  { image: '/images/services/web3/slide-2.png', ...SLIDE_SIZE },
+  { image: '/images/services/web3/slide-3.png', ...SLIDE_SIZE },
+  { image: '/images/services/web3/slide-4.png', ...SLIDE_SIZE },
 ];
 
 const techSlides = computed(() =>

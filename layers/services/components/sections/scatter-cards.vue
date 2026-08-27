@@ -63,9 +63,19 @@ const rootStyle = computed(() => {
 const stageRef = useTemplateRef<HTMLElement>('stageRef');
 
 // По комментарию в макете блок не статичный: плашки и паттерн выплывают
-// при скролле по очереди. Триггер один на всю сцену, а очередь задаёт stagger —
-// так порядок держится, даже когда блок целиком попадает в первый экран
-// и появляется сразу после загрузки
+// при скролле по очереди. Прогресс привязан к прокрутке (scrub), а не к запуску
+// твина: одноразовый триггер успевал отработать вхолостую на mount, пока
+// картинки не загрузились и позиции считались по короткой странице.
+// Очередь задаёт сдвиг диапазонов: у каждого следующего элемента он начинается
+// на шаг позже, поэтому они проявляются один за другим
+const REVEAL_STEP = 8;
+const REVEAL_LENGTH = 25;
+
+// Переходы держим, чтобы снять их вместе с компонентом: useGsap ничего
+// не убирает, а при возврате на страницу второй набор триггеров сбрасывал бы
+// уже проигранное в исходное состояние
+const tweens: gsap.core.Tween[] = [];
+
 const revealAnimation = () => {
   const stage = stageRef.value;
 
@@ -73,25 +83,31 @@ const revealAnimation = () => {
 
   const targets = stage.querySelectorAll<HTMLElement>('.scatter-cards__decor, .scatter-cards__card');
 
-  if (!targets.length) return;
+  targets.forEach((target, idx) => {
+    const offset = idx * REVEAL_STEP;
 
-  gsap.set(targets, { opacity: 0, y: 48 });
+    gsap.set(target, { opacity: 0, y: 48 });
 
-  gsap.to(targets, {
-    opacity: 1,
-    y: 0,
-    duration: 0.5,
-    ease: 'power2.out',
-    stagger: 0.14,
-    scrollTrigger: {
-      trigger: stage,
-      start: 'top bottom-=10%',
-      once: true,
-    },
+    tweens.push(gsap.to(target, {
+      opacity: 1,
+      y: 0,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: stage,
+        start: `top bottom-=${offset}%`,
+        end: `top bottom-=${offset + REVEAL_LENGTH}%`,
+        scrub: true,
+      },
+    }));
   });
 };
 
 useGsap(revealAnimation);
+
+onBeforeUnmount(() => {
+  tweens.forEach(tween => tween.scrollTrigger?.kill());
+  tweens.length = 0;
+});
 
 /** Карточка без координат остаётся в левом верхнем углу сцены */
 const cardStyle = (idx: number) => {

@@ -19,19 +19,12 @@ useSeoMeta({
   title: t(`${I18N_KEY}.title`),
 });
 
-// У первой вкладки есть отдельные кадры под планшет и мобильный — они сняты
-// со страницы макета. Для остальных в макете нарисован только десктоп,
-// компонент подставит его на всех брейкпоинтах
-const TAB_IMAGES = [
-  {
-    image: '/images/services/marketing/tab-1.png',
-    imageTablet: '/images/services/marketing/tab-1-t.png',
-    imageMobile: '/images/services/marketing/tab-1-m.png',
-  },
-  { image: '/images/services/marketing/tab-2.png' },
-  { image: '/images/services/marketing/tab-3.png' },
-  { image: '/images/services/marketing/tab-4.png' },
-];
+// По одной картинке на вкладку и одинаковой пропорции: отдельные кадры под
+// планшет и мобильный были только у первой вкладки, и из-за другой пропорции
+// панель на ней оказывалась выше остальных, а блок ниже прыгал при переключении
+const TAB_IMAGES = MARKETING_TABS.map((_, idx) => ({
+  image: `/images/services/marketing/tab-${idx + 1}.png`,
+}));
 
 const creativeTabs = computed(() =>
   MARKETING_TABS.map((key, idx) => ({
@@ -152,6 +145,9 @@ const featurePaths = {
 }
 
 .service-page__methods {
+  // Самая длинная подводка вкладок занимает три строки
+  --method-tabs-text-min-height: 92px;
+
   margin-top: 80px;
 
   @include a.mobile {

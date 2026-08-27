@@ -13,6 +13,37 @@ const { isDesktop } = useDevice();
 
 const hoveredIdx = ref(-1);
 
+// Курсор между карточками проходит через зазор, поэтому переезд с одной
+// на другую даёт два события подряд: mouseleave и mouseenter. Без задержки
+// это два разных состояния, два пересчёта высоты и перезапуск уже идущего
+// перехода — складывающаяся карточка дёргалась. Пауза склеивает их в одно
+const LEAVE_DELAY_MS = 60;
+
+let leaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+const cancelLeave = () => {
+  if (!leaveTimer) return;
+
+  clearTimeout(leaveTimer);
+  leaveTimer = null;
+};
+
+const setHovered = (idx: number) => {
+  cancelLeave();
+  hoveredIdx.value = idx;
+};
+
+const resetHovered = () => {
+  cancelLeave();
+
+  leaveTimer = setTimeout(() => {
+    hoveredIdx.value = -1;
+    leaveTimer = null;
+  }, LEAVE_DELAY_MS);
+};
+
+onBeforeUnmount(cancelLeave);
+
 const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 
 /** На планшете и мобильном раскрыты все карточки, на десктопе — только наведённая */
@@ -38,19 +69,27 @@ const animateHeights = async () => {
   await nextTick();
 
   cards.forEach((card, idx) => {
-    // Инлайновую высоту от прерванного перехода снимаем, иначе замер вернёт
-    // её же, а не ту, которую карточка займёт с новым текстом
+    // Инлайновую высоту снимаем, чтобы замерить ту, которую карточка займёт
+    // с новым текстом. Кадр между стиранием и возвратом не отрисовывается —
+    // всё происходит в одной задаче
     card.style.height = '';
 
-    const after = card.offsetHeight;
+    const natural = card.offsetHeight;
 
-    if (before[idx] === after) return;
+    if (before[idx] === natural) return;
 
-    gsap.fromTo(
-      card,
-      { height: before[idx] },
-      { ...HEIGHT_TWEEN, height: after, overwrite: true, clearProps: 'height' },
-    );
+    // Возвращаем ровно то, что видно сейчас, и дотягиваем до новой высоты.
+    // Раньше здесь был fromTo от снятого заранее значения: при переезде
+    // с карточки на карточку он обрывал текущий переход и стартовал заново,
+    // из-за разрыва скорости складывающаяся карточка дёргалась
+    card.style.height = `${before[idx]}px`;
+
+    gsap.to(card, {
+      ...HEIGHT_TWEEN,
+      height: natural,
+      overwrite: 'auto',
+      clearProps: 'height',
+    });
   });
 };
 
@@ -77,8 +116,8 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
       :key="item.title"
       class="architecture-cards__card"
       :class="{ 'architecture-cards__card_expanded': isExpanded(idx) }"
-      @mouseenter="hoveredIdx = idx"
-      @mouseleave="hoveredIdx = -1"
+      @mouseenter="setHovered(idx)"
+      @mouseleave="resetHovered"
     >
       <div class="architecture-cards__head">
         <!-- По макету при наведении слева от заголовка выезжает ромб.

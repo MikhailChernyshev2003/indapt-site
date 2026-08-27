@@ -108,6 +108,16 @@ const renderTabs = computed(() => tabs.map(({ label, text, image, imageTablet, i
     margin-top: 32px;
   }
 
+  // Подводки вкладок разной длины: без резерва панель меняет высоту при
+  // переключении и сдвигает блок под собой. Держим место под самую высокую.
+  // Только на десктопе — на планшете и мобильном вкладки раскрыты все сразу
+
+  :deep(.tabs-content__content_desktop .tabs-content__text) {
+    @include a.desktop-only {
+      min-height: var(--method-tabs-text-min-height, 0);
+    }
+  }
+
   // По макету картинка отбита от текста на 40px, в tabs-content — 38px.
   // Мобильное значение возвращаем явно: ширины мобильного попадают
   // и в tablet, а :deep поднимает специфичность выше исходного правила
