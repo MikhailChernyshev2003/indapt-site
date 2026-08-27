@@ -134,9 +134,10 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
       :class="{ 'architecture-cards__card_expanded': isExpanded(idx) }"
     >
       <div class="architecture-cards__head">
-        <!-- По макету при наведении слева от заголовка выезжает ромб.
-             Обёртка нужна, чтобы анимировать ширину: у самой картинки
-             при width: 0 схлопнулась бы и высота -->
+        <!-- По макету при наведении слева от заголовка появляется ромб.
+             Он вынут из потока: в потоке его размер участвовал бы в высоте
+             карточки, а меняется он CSS-переходом — замер высоты попадал бы
+             на промежуточное значение -->
         <span v-if="mark" class="architecture-cards__mark">
           <img
             class="architecture-cards__mark-image"
@@ -202,10 +203,14 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   }
 
   &_expanded {
+    // Место под ромб освобождает отступ заголовка, а не сам ромб
+
+    .architecture-cards__head {
+      padding-left: var(--architecture-mark-space, 7.875rem); // 110 + 16
+    }
+
     .architecture-cards__mark {
-      width: var(--architecture-mark-size, 6.875rem); // 110px
-      height: var(--architecture-mark-size, 6.875rem);
-      margin-right: 16px;
+      transform: translateY(-50%) scale(1);
 
       opacity: 1;
     }
@@ -213,25 +218,29 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
 }
 
 .architecture-cards__head {
+  position: relative;
+
   display: flex;
   align-items: center;
+
+  @include s.default-transition(padding-left);
 }
 
-// Обёртка едет от нуля по обеим сторонам: свёрнутая она не занимает места
-// ни по ширине, ни по высоте, поэтому карточка не подрастает, а заголовок
-// сдвигается плавно вместе с появлением ромба
+// Ромб лежит поверх, вне потока: так его размер не попадает в высоту карточки,
+// а значит и в замер, по которому едет переход высоты
 
 .architecture-cards__mark {
-  flex-shrink: 0;
+  position: absolute;
+  top: 50%;
+  left: 0;
 
-  width: 0;
-  height: 0;
+  width: var(--architecture-mark-size, 6.875rem); // 110px
 
-  overflow: hidden;
+  transform: translateY(-50%) scale(0.6);
 
   opacity: 0;
 
-  @include s.default-transition(width, height, opacity, margin-right);
+  @include s.default-transition(opacity, transform);
 
   @include a.tablet {
     display: none;
