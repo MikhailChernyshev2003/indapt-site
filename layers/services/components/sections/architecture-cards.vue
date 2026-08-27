@@ -13,43 +13,46 @@ const { isDesktop } = useDevice();
 
 const hoveredIdx = ref(-1);
 
-// Курсор между карточками проходит через зазор, поэтому переезд с одной
-// на другую даёт два события подряд: mouseleave и mouseenter. Без задержки
-// это два разных состояния, два пересчёта высоты и перезапуск уже идущего
-// перехода — складывающаяся карточка дёргалась. Пауза склеивает их в одно
-const LEAVE_DELAY_MS = 60;
+const cardsRef = useTemplateRef<HTMLElement[]>('cardsRef');
 
-let leaveTimer: ReturnType<typeof setTimeout> | null = null;
+// Наведение считаем от позиции курсора, а не от mouseenter/mouseleave на
+// карточках. Раскрытая карточка сдвигает соседние, и под неподвижным курсором
+// меняется то, что под ним лежит: браузер шлёт leave и enter, состояние
+// переключается, карточки едут обратно — и так по кругу. pointermove без
+// реального движения мыши не приходит, поэтому качелей не возникает
+const hitIndex = (event: PointerEvent) => {
+  const cards = cardsRef.value;
 
-const cancelLeave = () => {
-  if (!leaveTimer) return;
+  if (!cards?.length) return -1;
 
-  clearTimeout(leaveTimer);
-  leaveTimer = null;
+  return cards.findIndex((card) => {
+    const { top, right, bottom, left } = card.getBoundingClientRect();
+
+    return event.clientX >= left && event.clientX <= right
+      && event.clientY >= top && event.clientY <= bottom;
+  });
 };
 
-const setHovered = (idx: number) => {
-  cancelLeave();
+const handlePointerMove = (event: PointerEvent) => {
+  if (!isDesktop.value) return;
+
+  const idx = hitIndex(event);
+
+  // В зазоре между карточками состояние не трогаем: иначе при медленном
+  // переезде карточка успевала бы схлопнуться и тут же раскрыться обратно
+  if (idx === -1) return;
+
   hoveredIdx.value = idx;
 };
 
-const resetHovered = () => {
-  cancelLeave();
-
-  leaveTimer = setTimeout(() => {
-    hoveredIdx.value = -1;
-    leaveTimer = null;
-  }, LEAVE_DELAY_MS);
+const handlePointerLeave = () => {
+  hoveredIdx.value = -1;
 };
-
-onBeforeUnmount(cancelLeave);
 
 const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 
 /** На планшете и мобильном раскрыты все карточки, на десктопе — только наведённая */
 const isExpanded = (idx: number) => !isDesktop.value || hoveredIdx.value === idx;
-
-const cardsRef = useTemplateRef<HTMLElement[]>('cardsRef');
 
 const HEIGHT_TWEEN = { duration: 0.35, ease: 'power2.out' };
 
@@ -69,7 +72,12 @@ const animateHeights = async () => {
   await nextTick();
 
   cards.forEach((card, idx) => {
-    // Инлайновую высоту снимаем, чтобы замерить ту, которую карточка займёт
+    // Предыдущий переход снимаем всегда, даже если высота карточки не меняется.
+    // Иначе он остаётся в работе и продолжает тянуть уже свернувшуюся карточку
+    // к раскрытой высоте — именно это и выглядело как дёрганье
+    gsap.killTweensOf(card);
+
+    // Инлайновую высоту стираем, чтобы замерить ту, которую карточка займёт
     // с новым текстом. Кадр между стиранием и возвратом не отрисовывается —
     // всё происходит в одной задаче
     card.style.height = '';
@@ -79,21 +87,25 @@ const animateHeights = async () => {
     if (before[idx] === natural) return;
 
     // Возвращаем ровно то, что видно сейчас, и дотягиваем до новой высоты.
-    // Раньше здесь был fromTo от снятого заранее значения: при переезде
-    // с карточки на карточку он обрывал текущий переход и стартовал заново,
-    // из-за разрыва скорости складывающаяся карточка дёргалась
+    // Через fromTo от снятого заранее значения переход стартовал бы заново,
+    // с разрывом скорости
     card.style.height = `${before[idx]}px`;
 
     gsap.to(card, {
       ...HEIGHT_TWEEN,
       height: natural,
-      overwrite: 'auto',
       clearProps: 'height',
     });
   });
 };
 
 watch(hoveredIdx, animateHeights);
+
+onBeforeUnmount(() => {
+  const cards = cardsRef.value;
+
+  if (cards?.length) gsap.killTweensOf(cards);
+});
 
 // Продолжение склеивается с началом в один абзац: в русской локали text
 // продолжает предложение и начинается со знака препинания («. По результатам…»),
@@ -109,15 +121,17 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
 </script>
 
 <template>
-  <section class="architecture-cards">
+  <section
+    class="architecture-cards"
+    @pointermove="handlePointerMove"
+    @pointerleave="handlePointerLeave"
+  >
     <article
       v-for="(item, idx) in items"
       ref="cardsRef"
       :key="item.title"
       class="architecture-cards__card"
       :class="{ 'architecture-cards__card_expanded': isExpanded(idx) }"
-      @mouseenter="setHovered(idx)"
-      @mouseleave="resetHovered"
     >
       <div class="architecture-cards__head">
         <!-- По макету при наведении слева от заголовка выезжает ромб.
