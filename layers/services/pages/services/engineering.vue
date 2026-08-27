@@ -59,7 +59,7 @@ const alignmentItems = computed(() =>
       />
     </section>
 
-    <section class="service-page__block">
+    <section class="service-page__block service-page__block_lines">
       <services-molecules-section-head
         class="service-page__block-head"
         :title="t(`${I18N_KEY}.technicalSpecificationAlignment.title`)"
@@ -131,6 +131,12 @@ const alignmentItems = computed(() =>
     margin-top: 40px;
   }
 
+  // Второй блок в макете отбит от карточек архитектуры сильнее первого
+
+  &_lines {
+    margin-top: 130px;
+  }
+
   // Контейнер задают сами секции, поэтому здесь он нужен только заголовку
 
   &-head {
@@ -147,7 +153,7 @@ const alignmentItems = computed(() =>
 }
 
 .service-page__expertise {
-  margin-top: 200px;
+  margin-top: 216px;
 
   @include a.tablet {
     margin-top: 164px;

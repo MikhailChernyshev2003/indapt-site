@@ -26,8 +26,15 @@ const cardItems = computed(() =>
 
 /** Координаты сняты с макета: карточки лежат внахлёст */
 const cardPositions = {
-  desktop: [[0, 184], [780, 284], [111, 544]],
-  tablet: [[0, 246], [148, 566], [74, 862]],
+  desktop: [[0, 0], [779, 100], [111, 360]],
+  tablet: [[0, 0], [147, 320], [74, 616]],
+} as const;
+
+/** Треугольник под карточками: [x, y, размер] */
+const cardDecor = {
+  desktop: [393, 4, 575],
+  tablet: [2, 4, 633],
+  mobile: [-140, -30, 620],
 } as const;
 
 const stepItems = computed(() =>
@@ -55,8 +62,9 @@ const stepItems = computed(() =>
         class="service-page__block-body"
         :items="cardItems"
         :positions="cardPositions"
-        :min-height="820"
-        :min-height-tablet="1140"
+        :decor="cardDecor"
+        :min-height="578"
+        :min-height-tablet="811"
       >
         <template #decor>
           <services-molecules-service-decor shape="triangle" />
@@ -129,7 +137,7 @@ const stepItems = computed(() =>
   }
 
   &_steps {
-    margin-top: 110px;
+    margin-top: 81px;
 
     @include a.tablet {
       margin-top: 120px;
@@ -138,6 +146,16 @@ const stepItems = computed(() =>
     @include a.mobile {
       margin-top: 60px;
     }
+
+    // Ленту шагов заголовок отбивает сильнее, чем карточки
+
+    .service-page__block-body {
+      margin-top: 79px;
+
+      @include a.mobile {
+        margin-top: 32px;
+      }
+    }
   }
 
   &-head {
@@ -145,7 +163,11 @@ const stepItems = computed(() =>
   }
 
   &-body {
-    margin-top: 52px;
+    margin-top: 61px;
+
+    @include a.tablet {
+      margin-top: 62px;
+    }
 
     @include a.mobile {
       margin-top: 32px;

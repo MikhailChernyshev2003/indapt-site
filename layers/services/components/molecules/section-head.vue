@@ -34,7 +34,14 @@ const maxWidths = computed(() => ({
 </script>
 
 <template>
-  <div class="section-head" :style="maxWidths">
+  <!-- По комментарию в макете: как только блок появляется на экране,
+       заголовок и подводка становятся насыщеннее. До этого момента
+       они приглушены, поэтому начальная прозрачность не нулевая -->
+  <animations-scroll-fade
+    class="section-head"
+    :style="maxWidths"
+    :initial-opacity="0.3"
+  >
     <h2
       class="section-head__title"
       :class="`section-head__title_${size}`"
@@ -45,7 +52,7 @@ const maxWidths = computed(() => ({
       class="section-head__desc"
       v-html="desc"
     />
-  </div>
+  </animations-scroll-fade>
 </template>
 
 <style scoped lang="scss">

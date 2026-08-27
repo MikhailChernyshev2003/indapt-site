@@ -14,13 +14,15 @@ const { title, text, label = '(info)' } = defineProps<{
     <div v-if="$slots.decor" class="intro-block__decor">
       <slot name="decor" />
     </div>
-    <div class="intro-block__content">
+    <!-- По комментарию в макете заголовок и текст насыщаются,
+         когда блок появляется на экране -->
+    <animations-scroll-fade class="intro-block__content" :initial-opacity="0.3">
       <h2 class="intro-block__title" v-html="title" />
       <p class="intro-block__text">
         <span class="intro-block__label">{{ label }}</span>
         <span v-html="text" />
       </p>
-    </div>
+    </animations-scroll-fade>
   </section>
 </template>
 

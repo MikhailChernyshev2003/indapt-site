@@ -21,8 +21,15 @@ const cardItems = computed(() =>
 
 /** Координаты сняты с макета: карточки лежат внахлёст */
 const cardPositions = {
-  desktop: [[0, 184], [779, 284], [111, 544]],
-  tablet: [[0, 246], [147, 566], [74, 862]],
+  desktop: [[0, 15], [779, 114], [111, 375]],
+  tablet: [[0, 0], [146, 320], [74, 616]],
+} as const;
+
+/** Круги под карточками: [x, y, диаметр] */
+const cardDecor = {
+  desktop: [366, 0, 589],
+  tablet: [44, 101, 600],
+  mobile: [-163, -30, 660],
 } as const;
 </script>
 
@@ -53,8 +60,9 @@ const cardPositions = {
         class="service-page__block-body"
         :items="cardItems"
         :positions="cardPositions"
-        :min-height="820"
-        :min-height-tablet="1140"
+        :decor="cardDecor"
+        :min-height="590"
+        :min-height-tablet="810"
       >
         <template #decor>
           <services-molecules-service-decor shape="circle" />
@@ -102,7 +110,7 @@ const cardPositions = {
 }
 
 .service-page__intro {
-  margin-top: 196px;
+  margin-top: 104px;
 
   @include a.tablet {
     margin-top: 64px;
@@ -114,14 +122,14 @@ const cardPositions = {
 }
 
 .service-page__block {
-  margin-top: 194px;
+  margin-top: 101px;
 
   @include a.tablet {
     margin-top: 157px;
   }
 
   @include a.mobile {
-    margin-top: 78px;
+    margin-top: 53px;
   }
 
   &-head {
@@ -129,16 +137,20 @@ const cardPositions = {
   }
 
   &-body {
-    margin-top: 52px;
+    margin-top: 49px;
+
+    @include a.tablet {
+      margin-top: 65px;
+    }
 
     @include a.mobile {
-      margin-top: 32px;
+      margin-top: 39px;
     }
   }
 }
 
 .service-page__expertise {
-  margin-top: 204px;
+  margin-top: 190px;
 
   @include a.tablet {
     margin-top: 159px;

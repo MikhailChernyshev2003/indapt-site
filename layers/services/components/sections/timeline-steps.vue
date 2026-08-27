@@ -25,10 +25,11 @@ const itemNumber = (idx: number) => String(idx + 1).padStart(2, '0');
         </span>
         <div class="timeline-steps__line" />
       </div>
-      <div class="timeline-steps__content">
+      <!-- По комментарию в макете текст шагов выплывает при скролле -->
+      <animations-scroll-enter-bottom class="timeline-steps__content">
         <h3 class="timeline-steps__title" v-html="item.title" />
         <p class="timeline-steps__text" v-html="item.text" />
-      </div>
+      </animations-scroll-enter-bottom>
     </article>
   </section>
 </template>

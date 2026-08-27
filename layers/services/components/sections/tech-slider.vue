@@ -13,7 +13,11 @@ const { title, desc, slides } = defineProps<{
 
 // Лента выходит за правый край экрана, поэтому у неё нет паддингов
 // контейнера: их заменяют отступы слайдов, они же держат левый край
-// ленты на одной линии с заголовком
+// ленты на одной линии с заголовком.
+// По комментарию в макете карточки листаются без упора в конец. Полный loop
+// здесь не подходит: swiper не совмещает его с slidesOffsetBefore/After —
+// лента теряет выравнивание по контейнеру и стартует не с первого слайда.
+// rewind даёт тот же бесшовный проход по кругу, сохраняя смещения
 const OFFSETS = {
   mobile: 20,
   tablet: 40,
@@ -85,6 +89,7 @@ const breakpoints = {
       <swiper-container
         class="tech-slider__slider"
         :slides-per-view="'auto'"
+        :rewind="true"
         :space-between="8"
         :slides-offset-before="OFFSETS.mobile"
         :slides-offset-after="OFFSETS.mobile"
@@ -96,10 +101,14 @@ const breakpoints = {
           :key="slide.label"
           class="tech-slider__slide"
         >
+          <!-- width/height держат место до загрузки: высота картинок
+               не фиксирована, и без них лента дёргалась бы -->
           <img
             v-if="slide.image"
             class="tech-slider__image"
             :src="slide.image"
+            :width="slide.imageWidth"
+            :height="slide.imageHeight"
             alt=""
             loading="lazy"
           />
@@ -115,6 +124,19 @@ const breakpoints = {
 @use "@styles/adaptive" as a;
 @use "@styles/shared" as s;
 @use "@styles/typography" as t;
+
+// В макете лента лежит на белой полосе во всю ширину экрана: сверху она
+// начинается вровень с заголовком, снизу под подписями слайдов остаётся поле
+
+.tech-slider {
+  padding-bottom: var(--tech-slider-padding-bottom, 6.8125rem); // 109px
+
+  background: var(--tech-slider-bg, var(--white));
+
+  @include a.mobile {
+    padding-bottom: var(--tech-slider-padding-bottom-mobile, 3.5rem); // 56px
+  }
+}
 
 .tech-slider__head {
   display: flex;
@@ -183,23 +205,38 @@ const breakpoints = {
 .tech-slider__slide {
   width: 418px;
 
+  // По комментарию в макете карточка растёт под курсором, а уходящая
+  // из ленты — уменьшается. Точку масштабирования уводим к правому краю,
+  // чтобы уходящий слайд «втягивался» в сторону ленты, а не от неё
+
+  @include s.default-transition(transform);
+
   @include a.mobile {
     width: 335px;
+  }
+
+  @include s.hover {
+    transform: scale(1.03);
+  }
+
+  // Класс на предыдущем слайде ставит swiper
+
+  &.swiper-slide-prev {
+    transform: scale(0.94);
+    transform-origin: right center;
   }
 }
 
 .tech-slider__image {
   display: block;
-  width: 100%;
-  height: 290px;
 
-  object-fit: cover;
+  // Высота не фиксирована: по макету иллюстрации слайдов разной высоты,
+  // и подписи под ними стоят на разном уровне
+
+  width: 100%;
+  height: auto;
 
   border-radius: 12px;
-
-  @include a.mobile {
-    height: 252px;
-  }
 }
 
 .tech-slider__label {

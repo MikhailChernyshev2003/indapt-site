@@ -25,11 +25,21 @@ const featureItems = computed(() =>
   })),
 );
 
+/** В макете нарисована иллюстрация только для первой методологии */
+const METHOD_IMAGES = [
+  {
+    image: '/images/services/design/method-1.png',
+    imageTablet: '/images/services/design/method-1-t.png',
+    imageMobile: '/images/services/design/method-1-m.png',
+  },
+];
+
 const methodTabs = computed(() =>
-  DESIGN_METHODS.map(key => ({
+  DESIGN_METHODS.map((key, idx) => ({
     label: t(`${I18N_KEY}.methodFramework.${key}.label`),
     text: t(`${I18N_KEY}.methodFramework.${key}.text`),
     image: '',
+    ...METHOD_IMAGES[idx],
   })),
 );
 </script>

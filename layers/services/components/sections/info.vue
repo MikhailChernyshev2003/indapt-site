@@ -10,7 +10,12 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <section class="service-info">
+  <!-- По комментарию в макете текст насыщается, когда блок попадает на экран -->
+  <animations-scroll-fade
+    is="section"
+    class="service-info"
+    :initial-opacity="0.3"
+  >
     <span class="service-info__label">(info)</span>
     <div class="service-info__text">
       <p
@@ -20,7 +25,7 @@ const { t } = useI18n();
         v-html="t(`${i18nKey}.${paragraph}`)"
       />
     </div>
-  </section>
+  </animations-scroll-fade>
 </template>
 
 <style scoped lang="scss">

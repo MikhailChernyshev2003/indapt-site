@@ -19,11 +19,21 @@ useSeoMeta({
   title: t(`${I18N_KEY}.title`),
 });
 
+/** В макете нарисована иллюстрация только для первой вкладки */
+const TAB_IMAGES = [
+  {
+    image: '/images/services/marketing/tab-1.png',
+    imageTablet: '/images/services/marketing/tab-1-t.png',
+    imageMobile: '/images/services/marketing/tab-1-m.png',
+  },
+];
+
 const creativeTabs = computed(() =>
-  MARKETING_TABS.map(key => ({
+  MARKETING_TABS.map((key, idx) => ({
     label: t(`${I18N_KEY}.creative.${key}.label`),
     text: t(`${I18N_KEY}.creative.${key}.text`),
     image: '',
+    ...TAB_IMAGES[idx],
   })),
 );
 
@@ -145,7 +155,7 @@ const featurePaths = {
 }
 
 .service-page__features {
-  margin-top: 52px;
+  margin-top: 102px;
 
   @include a.tablet {
     margin-top: 0;
@@ -153,7 +163,7 @@ const featurePaths = {
 }
 
 .service-page__block {
-  margin-top: 80px;
+  margin-top: 37px;
 
   @include a.mobile {
     margin-top: 40px;

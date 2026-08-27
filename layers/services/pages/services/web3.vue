@@ -33,11 +33,22 @@ const createItems = computed(() =>
   })),
 );
 
+/**
+ * Иллюстрации слайдов. Четвёртая в макете обрезана краем экрана,
+ * поэтому её пока нет — компонент переживает пустую строку.
+ */
+const SLIDE_IMAGES = [
+  { image: '/images/services/web3/slide-1.png', imageWidth: 419, imageHeight: 290 },
+  { image: '/images/services/web3/slide-2.png', imageWidth: 418, imageHeight: 324 },
+  { image: '/images/services/web3/slide-3.png', imageWidth: 418, imageHeight: 290 },
+];
+
 const techSlides = computed(() =>
-  WEB3_SLIDES.map(key => ({
+  WEB3_SLIDES.map((key, idx) => ({
     label: t(`${I18N_KEY}.tech.${key}.label`),
     text: t(`${I18N_KEY}.tech.${key}.text`),
     image: '',
+    ...SLIDE_IMAGES[idx],
   })),
 );
 </script>
@@ -166,11 +177,11 @@ const techSlides = computed(() =>
 }
 
 .service-page__slider {
-  margin-top: 80px;
+  margin-top: 105px;
 }
 
 .service-page__expertise {
-  margin-top: 104px;
+  margin-top: 96px;
 
   @include a.tablet {
     margin-top: 160px;

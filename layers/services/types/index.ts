@@ -46,12 +46,26 @@ export interface ServiceFeatureItem {
 export type SectionHeadSize = 'h1' | 'h2';
 
 /** Координаты карточки [x, y] в px от левого верхнего угла секции */
-export type ScatterCardPoint = [number, number];
+// Координаты страницы объявляют через `as const`, чтобы не расползались
+// по длине, поэтому кортежи здесь readonly
+
+export type ScatterCardPoint = readonly [number, number];
 
 export interface ScatterCardPositions {
   /** Координаты карточек, индексы совпадают с items */
-  desktop: ScatterCardPoint[];
-  tablet: ScatterCardPoint[];
+  desktop: readonly ScatterCardPoint[];
+  tablet: readonly ScatterCardPoint[];
+}
+
+/** Размещение фигуры под карточками: [x, y, диаметр] */
+export type ScatterDecorPlacement = readonly [number, number, number];
+
+export interface ScatterDecorPositions {
+  desktop: ScatterDecorPlacement;
+  /** По умолчанию равно десктопному */
+  tablet?: ScatterDecorPlacement;
+  /** По умолчанию равно планшетному */
+  mobile?: ScatterDecorPlacement;
 }
 
 export interface NumberedLineItem {
@@ -97,6 +111,9 @@ export interface TechSlideItem {
   text: string;
   /** Картинка слайда; пустая строка — слайд выводится без картинки */
   image: string;
+  /** Размеры файла картинки: держат место до её загрузки */
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 /**

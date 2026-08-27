@@ -41,7 +41,12 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 
 .feature-list__item {
   display: grid;
-  grid-template-columns: 4fr 8fr;
+
+  // Сетка макета: 12 колонок по 88px с жёлобом 24px. Номер занимает первые
+  // четыре вместе с жёлобом, текст — следующие семь, последняя остаётся
+  // пустой. Из-за неё строки переносятся так же, как в макете
+
+  grid-template-columns: 448px 760px;
   padding-top: var(--feature-row-padding-top, 2.5rem); // 40px
   padding-bottom: var(--feature-row-padding-bottom, 1.75rem); // 28px
 
