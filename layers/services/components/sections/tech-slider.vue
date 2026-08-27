@@ -236,7 +236,7 @@ const breakpoints = {
   width: 100%;
   height: auto;
 
-  border-radius: 12px;
+  border-radius: 16px;
 }
 
 .tech-slider__label {

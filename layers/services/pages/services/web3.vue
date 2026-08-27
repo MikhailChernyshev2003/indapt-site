@@ -33,14 +33,12 @@ const createItems = computed(() =>
   })),
 );
 
-/**
- * Иллюстрации слайдов. Четвёртая в макете обрезана краем экрана,
- * поэтому её пока нет — компонент переживает пустую строку.
- */
+/** Иллюстрации слайдов с размерами файлов: они держат место до загрузки */
 const SLIDE_IMAGES = [
   { image: '/images/services/web3/slide-1.png', imageWidth: 419, imageHeight: 290 },
   { image: '/images/services/web3/slide-2.png', imageWidth: 418, imageHeight: 324 },
   { image: '/images/services/web3/slide-3.png', imageWidth: 418, imageHeight: 290 },
+  { image: '/images/services/web3/slide-4.png', imageWidth: 421, imageHeight: 290 },
 ];
 
 const techSlides = computed(() =>
