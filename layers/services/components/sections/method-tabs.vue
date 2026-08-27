@@ -23,16 +23,26 @@ const renderTabs = computed(() => tabs.map(({ label, text, image, imageTablet, i
 
 <template>
   <section class="method-tabs">
-    <h2 class="method-tabs__title" v-html="title" />
+    <!-- По комментарию в макете заголовок и подводка насыщаются, когда блок
+         появляется на экране. Обёртка общая: разметку заголовка трогать нельзя,
+         инлайновый span внутри h2 сбивает высоту строки -->
+    <animations-scroll-fade
+      class="method-tabs__head"
+      :initial-opacity="0.3"
+      start="top bottom"
+      end="top bottom-=25%"
+    >
+      <h2 class="method-tabs__title" v-html="title" />
 
-    <div v-if="paragraphs.length" class="method-tabs__intro">
-      <p
-        v-for="paragraph in paragraphs"
-        :key="paragraph"
-        class="method-tabs__paragraph"
-        v-html="paragraph"
-      />
-    </div>
+      <div v-if="paragraphs.length" class="method-tabs__intro">
+        <p
+          v-for="paragraph in paragraphs"
+          :key="paragraph"
+          class="method-tabs__paragraph"
+          v-html="paragraph"
+        />
+      </div>
+    </animations-scroll-fade>
 
     <organisms-tabs-content class="method-tabs__tabs" :tabs="renderTabs" />
   </section>

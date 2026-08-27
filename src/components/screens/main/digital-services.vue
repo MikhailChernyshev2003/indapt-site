@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import NavButton from '@/assets/icons/digaital-services/nav-button.svg';
+import { SERVICES, SERVICE_FALLBACK_HREF, getServiceHref } from '@l-services/configs';
 
 const { isDesktop } = useDevice();
 const { t } = useI18n();
@@ -119,6 +120,14 @@ defineExpose({
   handlerChangeShape,
 });
 
+// Ссылку берём из реестра услуг, чтобы неготовые вели на заглушку,
+// а не на несуществующий маршрут
+const serviceHref = (slug: string) => {
+  const service = SERVICES.find(item => item.slug === slug);
+
+  return service ? getServiceHref(service) : SERVICE_FALLBACK_HREF;
+};
+
 const services = computed(() => [
   {
     slug: 'analytics-planning',
@@ -184,7 +193,7 @@ const services = computed(() => [
     layerOffset: 60,
   },
   {
-    slug: 'web-3',
+    slug: 'web3',
     color: '#42A400',
     bg: '#DCF5D0',
     title: t('mainPage.digitalServices.web'),
@@ -222,6 +231,7 @@ const services = computed(() => [
           v-for="item in services"
           :key="item.slug"
           v-bind="item"
+          :href="serviceHref(item.slug)"
           class="digital-services__list-item"
           :style="{ pointerEvents: isDragging ? 'none' : 'all' }"
           @mouseenter="handlerChangeShape(item.shape, item.layerOffset)"

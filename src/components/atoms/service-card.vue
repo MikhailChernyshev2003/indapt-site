@@ -5,6 +5,8 @@ interface IProps {
   title: string;
   slug: string;
   image: string;
+  /** Адрес страницы услуги; без него карточка остаётся некликабельной */
+  href?: string;
 }
 
 defineProps<IProps>();
@@ -57,6 +59,14 @@ const handleMouseLeave = () => {
     @mouseleave="handleMouseLeave"
   >
     <svgo-services-decor ref="decorRef" class="service-card__decor" />
+    <!-- Ссылка растянута на всю карточку отдельным слоем: корень остаётся
+         div, за который держатся ref'ы и обработчики наведения -->
+    <nuxt-link
+      v-if="href"
+      class="service-card__link"
+      :to="href"
+      :aria-label="title"
+    />
     <div class="service-card__inner">
       <h3 class="service-card__title" v-html="title" />
       <img
@@ -142,6 +152,15 @@ const handleMouseLeave = () => {
       width: 310px;
       height: 310px;
     }
+  }
+
+  &__link {
+    position: absolute;
+    inset: 0;
+
+    z-index: 3;
+
+    border-radius: 50%;
   }
 
   &__inner {
