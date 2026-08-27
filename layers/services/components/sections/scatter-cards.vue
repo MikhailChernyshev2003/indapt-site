@@ -63,8 +63,9 @@ const rootStyle = computed(() => {
 const stageRef = useTemplateRef<HTMLElement>('stageRef');
 
 // По комментарию в макете блок не статичный: плашки и паттерн выплывают
-// при скролле по очереди. Очередь задаёт сама вёрстка — у каждой карточки
-// свой триггер, а лежат они на разной высоте, поэтому и проявляются подряд
+// при скролле по очереди. Триггер один на всю сцену, а очередь задаёт stagger —
+// так порядок держится, даже когда блок целиком попадает в первый экран
+// и появляется сразу после загрузки
 const revealAnimation = () => {
   const stage = stageRef.value;
 
@@ -72,20 +73,21 @@ const revealAnimation = () => {
 
   const targets = stage.querySelectorAll<HTMLElement>('.scatter-cards__decor, .scatter-cards__card');
 
-  targets.forEach((target) => {
-    gsap.set(target, { opacity: 0, y: 40 });
+  if (!targets.length) return;
 
-    gsap.to(target, {
-      opacity: 1,
-      y: 0,
-      duration: 0.4,
-      scrollTrigger: {
-        trigger: target,
-        start: 'top bottom',
-        end: 'top bottom-=25%',
-        scrub: 0.3,
-      },
-    });
+  gsap.set(targets, { opacity: 0, y: 48 });
+
+  gsap.to(targets, {
+    opacity: 1,
+    y: 0,
+    duration: 0.5,
+    ease: 'power2.out',
+    stagger: 0.14,
+    scrollTrigger: {
+      trigger: stage,
+      start: 'top bottom-=10%',
+      once: true,
+    },
   });
 };
 

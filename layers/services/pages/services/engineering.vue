@@ -56,6 +56,7 @@ const alignmentItems = computed(() =>
       <services-sections-architecture-cards
         class="service-page__block-body"
         :items="architectureItems"
+        mark="/images/services/engineering/rhombus.png"
       />
     </section>
 

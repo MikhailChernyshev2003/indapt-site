@@ -2,9 +2,11 @@
 import { gsap } from 'gsap';
 import type { ArchitectureCardItem } from '@l-services/types';
 
-const { items } = defineProps<{
+const { items, mark } = defineProps<{
   /** Карточки в порядке вывода */
   items: ArchitectureCardItem[];
+  /** Ромб, выезжающий у наведённой карточки; без пропа карточка остаётся без него */
+  mark?: string;
 }>();
 
 const { isDesktop } = useDevice();
@@ -78,7 +80,21 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
       @mouseenter="hoveredIdx = idx"
       @mouseleave="hoveredIdx = -1"
     >
-      <h3 class="architecture-cards__title" v-html="item.title" />
+      <div class="architecture-cards__head">
+        <!-- По макету при наведении слева от заголовка выезжает ромб.
+             Обёртка нужна, чтобы анимировать ширину: у самой картинки
+             при width: 0 схлопнулась бы и высота -->
+        <span v-if="mark" class="architecture-cards__mark">
+          <img
+            class="architecture-cards__mark-image"
+            :src="mark"
+            alt=""
+            width="236"
+            height="236"
+          />
+        </span>
+        <h3 class="architecture-cards__title" v-html="item.title" />
+      </div>
       <div class="architecture-cards__content">
         <span class="architecture-cards__number">{{ itemNumber(idx) }}</span>
         <p class="architecture-cards__text" v-html="cardText(item, idx)" />
@@ -131,6 +147,48 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
     gap: 16px;
     padding: 16px;
   }
+
+  &_expanded {
+    .architecture-cards__mark {
+      width: var(--architecture-mark-size, 6.875rem); // 110px
+      height: var(--architecture-mark-size, 6.875rem);
+      margin-right: 16px;
+
+      opacity: 1;
+    }
+  }
+}
+
+.architecture-cards__head {
+  display: flex;
+  align-items: center;
+}
+
+// Обёртка едет от нуля по обеим сторонам: свёрнутая она не занимает места
+// ни по ширине, ни по высоте, поэтому карточка не подрастает, а заголовок
+// сдвигается плавно вместе с появлением ромба
+
+.architecture-cards__mark {
+  flex-shrink: 0;
+
+  width: 0;
+  height: 0;
+
+  overflow: hidden;
+
+  opacity: 0;
+
+  @include s.default-transition(width, height, opacity, margin-right);
+
+  @include a.tablet {
+    display: none;
+  }
+}
+
+.architecture-cards__mark-image {
+  display: block;
+  width: var(--architecture-mark-size, 6.875rem); // 110px
+  height: auto;
 }
 
 .architecture-cards__title {

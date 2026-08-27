@@ -25,14 +25,10 @@ const featureItems = computed(() =>
   })),
 );
 
-/** В макете нарисована иллюстрация только для первой методологии */
-const METHOD_IMAGES = [
-  {
-    image: '/images/services/design/method-1.png',
-    imageTablet: '/images/services/design/method-1-t.png',
-    imageMobile: '/images/services/design/method-1-m.png',
-  },
-];
+/** Иллюстрации методологий, порядок совпадает с DESIGN_METHODS */
+const METHOD_IMAGES = DESIGN_METHODS.map((_, idx) => ({
+  image: `/images/services/design/method-${idx + 1}.png`,
+}));
 
 const methodTabs = computed(() =>
   DESIGN_METHODS.map((key, idx) => ({

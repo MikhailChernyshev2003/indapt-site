@@ -19,13 +19,18 @@ useSeoMeta({
   title: t(`${I18N_KEY}.title`),
 });
 
-/** В макете нарисована иллюстрация только для первой вкладки */
+// У первой вкладки есть отдельные кадры под планшет и мобильный — они сняты
+// со страницы макета. Для остальных в макете нарисован только десктоп,
+// компонент подставит его на всех брейкпоинтах
 const TAB_IMAGES = [
   {
     image: '/images/services/marketing/tab-1.png',
     imageTablet: '/images/services/marketing/tab-1-t.png',
     imageMobile: '/images/services/marketing/tab-1-m.png',
   },
+  { image: '/images/services/marketing/tab-2.png' },
+  { image: '/images/services/marketing/tab-3.png' },
+  { image: '/images/services/marketing/tab-4.png' },
 ];
 
 const creativeTabs = computed(() =>
