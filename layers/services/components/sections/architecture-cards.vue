@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 import type { ArchitectureCardItem } from '@l-services/types';
 
 const { items } = defineProps<{
@@ -14,6 +15,44 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 
 /** На планшете и мобильном раскрыты все карточки, на десктопе — только наведённая */
 const isExpanded = (idx: number) => !isDesktop.value || hoveredIdx.value === idx;
+
+const cardsRef = useTemplateRef<HTMLElement[]>('cardsRef');
+
+const HEIGHT_TWEEN = { duration: 0.35, ease: 'power2.out' };
+
+// Текст подменяется целиком, поэтому высота карточки меняется скачком, а
+// соседние карточки прыгают следом. Снимаем высоты до перерисовки, после неё
+// снимаем новые и проигрываем переход: при переезде с карточки на карточку
+// одна сжимается, вторая раскрывается, и колонка едет плавно
+const animateHeights = async () => {
+  const cards = cardsRef.value;
+
+  if (!isDesktop.value || !cards?.length) return;
+
+  // Стартуем от того, что видно сейчас: если предыдущий переход не доиграл,
+  // это его промежуточная высота, и карточка не дёрнется
+  const before = cards.map(card => card.offsetHeight);
+
+  await nextTick();
+
+  cards.forEach((card, idx) => {
+    // Инлайновую высоту от прерванного перехода снимаем, иначе замер вернёт
+    // её же, а не ту, которую карточка займёт с новым текстом
+    card.style.height = '';
+
+    const after = card.offsetHeight;
+
+    if (before[idx] === after) return;
+
+    gsap.fromTo(
+      card,
+      { height: before[idx] },
+      { ...HEIGHT_TWEEN, height: after, overwrite: true, clearProps: 'height' },
+    );
+  });
+};
+
+watch(hoveredIdx, animateHeights);
 
 // Продолжение склеивается с началом в один абзац: в русской локали text
 // продолжает предложение и начинается со знака препинания («. По результатам…»),
@@ -32,8 +71,10 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   <section class="architecture-cards">
     <article
       v-for="(item, idx) in items"
+      ref="cardsRef"
       :key="item.title"
       class="architecture-cards__card"
+      :class="{ 'architecture-cards__card_expanded': isExpanded(idx) }"
       @mouseenter="hoveredIdx = idx"
       @mouseleave="hoveredIdx = -1"
     >
@@ -65,6 +106,7 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   gap: 16px;
   align-items: center;
   padding: 32px;
+  overflow: hidden;
 
   background-color: var(--architecture-card-bg, var(--white));
   border-radius: 16px;
