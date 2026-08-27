@@ -81,8 +81,8 @@ const revealAnimation = () => {
       duration: 0.4,
       scrollTrigger: {
         trigger: target,
-        start: 'top bottom-=12%',
-        end: 'top+=120px bottom-=12%',
+        start: 'top bottom',
+        end: 'top bottom-=25%',
         scrub: 0.3,
       },
     });

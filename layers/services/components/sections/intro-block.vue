@@ -16,7 +16,12 @@ const { title, text, label = '(info)' } = defineProps<{
     </div>
     <!-- По комментарию в макете заголовок и текст насыщаются,
          когда блок появляется на экране -->
-    <animations-scroll-fade class="intro-block__content" :initial-opacity="0.3">
+    <animations-scroll-fade
+      class="intro-block__content"
+      :initial-opacity="0.3"
+      start="top bottom"
+      end="top bottom-=25%"
+    >
       <h2 class="intro-block__title" v-html="title" />
       <p class="intro-block__text">
         <span class="intro-block__label">{{ label }}</span>

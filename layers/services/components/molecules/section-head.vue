@@ -41,6 +41,8 @@ const maxWidths = computed(() => ({
     class="section-head"
     :style="maxWidths"
     :initial-opacity="0.3"
+    start="top bottom"
+    end="top bottom-=25%"
   >
     <h2
       class="section-head__title"

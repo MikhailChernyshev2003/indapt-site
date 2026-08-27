@@ -15,6 +15,8 @@ const { t } = useI18n();
     is="section"
     class="service-info"
     :initial-opacity="0.3"
+    start="top bottom"
+    end="top bottom-=25%"
   >
     <span class="service-info__label">(info)</span>
     <div class="service-info__text">

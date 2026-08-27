@@ -1,24 +1,10 @@
 # syntax=docker/dockerfile:1
 
-# ---------- build stage ----------
-FROM node:22.16.0-bookworm-slim AS build
+# Образ собирается из готового .output: nuxt build прогоняется на машине
+# разработчика, на сервер уезжает только результат. Полная сборка внутри
+# контейнера серверу не по силам — там 2 ГБ памяти на все контейнеры разом
 
-WORKDIR /app
-
-ENV NUXT_TELEMETRY_DISABLED=1 \
-    CI=1
-
-COPY package.json package-lock.json ./
-# --ignore-scripts: skip postinstall (nuxt prepare / git hooks / npm audit) — not needed for a build
-RUN npm ci --ignore-scripts --no-audit --no-fund
-
-COPY . .
-
-# call nuxt directly to skip the `prebuild` hook (git hooks + audit report)
-RUN npx nuxt build
-
-# ---------- runtime stage ----------
-FROM node:22.16.0-bookworm-slim AS runtime
+FROM node:22.16.0-bookworm-slim
 
 WORKDIR /app
 
@@ -28,7 +14,7 @@ ENV NODE_ENV=production \
     NITRO_HOST=0.0.0.0 \
     NITRO_PORT=3000
 
-COPY --from=build /app/.output ./.output
+COPY .output ./.output
 
 EXPOSE 3000
 
