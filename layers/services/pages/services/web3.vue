@@ -67,7 +67,11 @@ const techSlides = computed(() =>
       :paragraphs="WEB3_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-decor-band />
+      <services-molecules-reveal-image
+        src="/images/services/web3/pattern.png"
+        :width="1320"
+        :height="369"
+      />
     </div>
     <services-sections-feature-list
       class="service-page__features"

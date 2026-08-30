@@ -4,15 +4,12 @@ import {
   DESIGN_INFO,
   DESIGN_METHODS,
   DESIGN_TAGS,
-  SERVICES,
 } from '@l-services/configs';
 
 const I18N_KEY = 'services.design';
 const SLUG = 'design';
 
 const { t } = useI18n();
-
-const service = SERVICES.find(item => item.slug === SLUG)!;
 
 useSeoMeta({
   title: t(`${I18N_KEY}.title`),
@@ -45,7 +42,7 @@ const methodTabs = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="DESIGN_TAGS"
-      :image="service.image"
+      :image="'/images/services/design/hero.png'"
     />
     <services-sections-info
       class="service-page__info"
@@ -53,7 +50,11 @@ const methodTabs = computed(() =>
       :paragraphs="DESIGN_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-decor-band />
+      <services-molecules-reveal-image
+        src="/images/services/design/rings.png"
+        :width="1320"
+        :height="369"
+      />
     </div>
     <services-sections-feature-list
       class="service-page__features"
@@ -84,9 +85,9 @@ const methodTabs = computed(() =>
   --service-decor-bg: #f9f3ff;
   --service-decor-shape: #8d19fc;
   --service-tile-bg: #efeefd;
-  --hero-image-width: 587px;
-  --hero-image-right: 18px;
-  --hero-image-bottom: -9px;
+  --hero-image-width: 510px;
+  --hero-image-right: 60px;
+  --hero-image-bottom: -144px;
 
   padding-bottom: 112px;
 

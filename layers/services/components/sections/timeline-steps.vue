@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { TimelineStepItem } from '@l-services/types';
 
 const { items } = defineProps<{
@@ -7,19 +8,55 @@ const { items } = defineProps<{
 }>();
 
 const itemNumber = (idx: number) => String(idx + 1).padStart(2, '0');
+
+const itemsRef = useTemplateRef<HTMLElement[]>('itemsRef');
+
+// По правкам активный номер переходит от первого пункта к последнему
+// по мере скролла. Активен тот шаг, чья строка сейчас пересекает середину
+// экрана; до блока активен первый, после — последний
+const activeIdx = ref(0);
+
+let triggers: ScrollTrigger[] = [];
+
+useGsap(() => {
+  const els = itemsRef.value;
+
+  if (!els?.length) return;
+
+  els.forEach((el, idx) => {
+    triggers.push(ScrollTrigger.create({
+      trigger: el,
+      start: 'top center',
+      end: 'bottom center',
+      onToggle: (self) => {
+        if (self.isActive) activeIdx.value = idx;
+      },
+    }));
+  });
+});
+
+onBeforeUnmount(() => {
+  triggers.forEach(trigger => trigger.kill());
+  triggers = [];
+});
 </script>
 
 <template>
   <section class="timeline-steps">
+    <!-- Декор из макета лежит за шагами и уходит за правый край экрана -->
+    <div v-if="$slots.decor" class="timeline-steps__decor">
+      <slot name="decor" />
+    </div>
     <article
       v-for="(item, idx) in items"
+      ref="itemsRef"
       :key="item.title"
       class="timeline-steps__item"
     >
       <div class="timeline-steps__marker">
         <span
           class="timeline-steps__pin"
-          :class="{ 'timeline-steps__pin_active': idx === 0 }"
+          :class="{ 'timeline-steps__pin_active': idx === activeIdx }"
         >
           {{ itemNumber(idx) }}
         </span>
@@ -40,13 +77,33 @@ const itemNumber = (idx: number) => String(idx + 1).padStart(2, '0');
 @use "@styles/typography" as t;
 
 .timeline-steps {
+  position: relative;
+
   @include s.base-container;
+}
+
+.timeline-steps__decor {
+  position: absolute;
+  top: var(--timeline-decor-top, 0);
+  right: var(--timeline-decor-right, 0);
+  z-index: 0;
+
+  width: var(--timeline-decor-width, 57.625rem); // 922px
+
+  pointer-events: none;
+
+  @include a.tablet {
+    display: none;
+  }
 }
 
 // Контент отбит от края контейнера на 86px на всех брейкпоинтах,
 // в оставшемся месте стоит колонка меток
 
 .timeline-steps__item {
+  position: relative;
+  z-index: 1;
+
   display: grid;
   grid-template-columns: 86px 1fr;
 

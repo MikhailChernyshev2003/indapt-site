@@ -5,15 +5,12 @@ import {
   MARKETING_INFO,
   MARKETING_TABS,
   MARKETING_TAGS,
-  SERVICES,
 } from '@l-services/configs';
 
 const I18N_KEY = 'services.marketing';
 const SLUG = 'marketing';
 
 const { t } = useI18n();
-
-const service = SERVICES.find(item => item.slug === SLUG)!;
 
 useSeoMeta({
   title: t(`${I18N_KEY}.title`),
@@ -61,7 +58,7 @@ const featurePaths = {
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="MARKETING_TAGS"
-      :image="service.image"
+      :image="'/images/services/marketing/hero.png'"
     />
     <services-sections-info
       class="service-page__info"
@@ -115,9 +112,9 @@ const featurePaths = {
   --service-row-hover: #fff8bd;
   --service-decor-shape: #ebce53;
   --info-paragraph-gap: 16px;
-  --hero-image-width: 638px;
-  --hero-image-right: -21px;
-  --hero-image-bottom: -65px;
+  --hero-image-width: 510px;
+  --hero-image-right: 60px;
+  --hero-image-bottom: -87px;
 
   padding-bottom: 112px;
 

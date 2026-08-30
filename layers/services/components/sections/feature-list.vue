@@ -11,23 +11,26 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 
 <template>
   <section class="feature-list">
-    <!-- По комментарию в макете: в блоках, где только заголовок и описание,
-         текст становится насыщеннее, как только блок появляется на экране -->
-    <animations-scroll-fade
+    <services-molecules-text-reveal
       is="article"
       v-for="(item, idx) in items"
       :key="item.title"
       class="feature-list__item"
-      :initial-opacity="0.3"
-      start="top bottom"
-      end="top bottom-=25%"
     >
-      <span class="feature-list__number">{{ itemNumber(idx) }}</span>
+      <span class="feature-list__number" data-reveal="text">{{ itemNumber(idx) }}</span>
       <div class="feature-list__content">
-        <h3 class="feature-list__title" v-html="item.title" />
-        <p class="feature-list__text" v-html="item.text" />
+        <h3
+          class="feature-list__title"
+          data-reveal="title"
+          v-html="item.title"
+        />
+        <p
+          class="feature-list__text"
+          data-reveal="text"
+          v-html="item.text"
+        />
       </div>
-    </animations-scroll-fade>
+    </services-molecules-text-reveal>
   </section>
 </template>
 

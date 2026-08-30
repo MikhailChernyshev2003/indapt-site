@@ -4,15 +4,12 @@ import {
   ENGINEERING_ARCHITECTURE,
   ENGINEERING_INFO,
   ENGINEERING_TAGS,
-  SERVICES,
 } from '@l-services/configs';
 
 const I18N_KEY = 'services.systemDesign';
 const SLUG = 'engineering';
 
 const { t } = useI18n();
-
-const service = SERVICES.find(item => item.slug === SLUG)!;
 
 useSeoMeta({
   title: t(`${I18N_KEY}.title`),
@@ -39,7 +36,7 @@ const alignmentItems = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="ENGINEERING_TAGS"
-      :image="service.image"
+      :image="'/images/services/engineering/hero.png'"
     />
     <services-sections-info
       class="service-page__info"
@@ -96,9 +93,9 @@ const alignmentItems = computed(() =>
   --architecture-card-bg-hover: #ecedee;
 
   // Иллюстрация в макете крупнее эталонной и уходит за правый край
-  --hero-image-width: 604px;
-  --hero-image-right: -38px;
-  --hero-image-bottom: -22px;
+  --hero-image-width: 510px;
+  --hero-image-right: 60px;
+  --hero-image-bottom: 0px;
 
   padding-bottom: 112px;
 

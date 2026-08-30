@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { SERVICES, SUPPORT_CARDS, SUPPORT_TAGS } from '@l-services/configs';
+import { SUPPORT_CARDS, SUPPORT_TAGS } from '@l-services/configs';
 
 const I18N_KEY = 'services.support';
 const SLUG = 'support';
 
 const { t } = useI18n();
-
-const service = SERVICES.find(item => item.slug === SLUG)!;
 
 useSeoMeta({
   title: t(`${I18N_KEY}.title`),
@@ -38,7 +36,7 @@ const cardDecor = {
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="SUPPORT_TAGS"
-      :image="service.image"
+      :image="'/images/services/support/hero.png'"
     />
 
     <services-sections-intro-block
@@ -47,7 +45,13 @@ const cardDecor = {
       :text="t(`${I18N_KEY}.development.info`)"
     >
       <template #decor>
-        <services-molecules-service-decor shape="circle" />
+        <img
+          src="/images/services/support/sphere.png"
+          width="946"
+          height="946"
+          alt=""
+          loading="lazy"
+        />
       </template>
     </services-sections-intro-block>
 
@@ -92,9 +96,9 @@ const cardDecor = {
   --scatter-bg: rgb(210 251 246 / 25%);
   --scatter-border: #d9e7eb;
   --scatter-radius: 14px;
-  --hero-image-width: 647px;
-  --hero-image-right: 18px;
-  --hero-image-bottom: -12px;
+  --hero-image-width: 510px;
+  --hero-image-right: 60px;
+  --hero-image-bottom: -42px;
 
   padding-bottom: 112px;
 

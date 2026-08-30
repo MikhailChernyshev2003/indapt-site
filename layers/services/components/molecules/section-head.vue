@@ -34,27 +34,20 @@ const maxWidths = computed(() => ({
 </script>
 
 <template>
-  <!-- По комментарию в макете: как только блок появляется на экране,
-       заголовок и подводка становятся насыщеннее. До этого момента
-       они приглушены, поэтому начальная прозрачность не нулевая -->
-  <animations-scroll-fade
-    class="section-head"
-    :style="maxWidths"
-    :initial-opacity="0.3"
-    start="top bottom"
-    end="top bottom-=25%"
-  >
+  <services-molecules-text-reveal class="section-head" :style="maxWidths">
     <h2
       class="section-head__title"
       :class="`section-head__title_${size}`"
+      data-reveal="title"
       v-html="title"
     />
     <p
       v-if="desc"
       class="section-head__desc"
+      data-reveal="text"
       v-html="desc"
     />
-  </animations-scroll-fade>
+  </services-molecules-text-reveal>
 </template>
 
 <style scoped lang="scss">

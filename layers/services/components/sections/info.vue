@@ -10,16 +10,9 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <!-- По комментарию в макете текст насыщается, когда блок попадает на экран -->
-  <animations-scroll-fade
-    is="section"
-    class="service-info"
-    :initial-opacity="0.3"
-    start="top bottom"
-    end="top bottom-=25%"
-  >
-    <span class="service-info__label">(info)</span>
-    <div class="service-info__text">
+  <services-molecules-text-reveal is="section" class="service-info">
+    <span class="service-info__label" data-reveal="text">(info)</span>
+    <div class="service-info__text" data-reveal="text">
       <p
         v-for="paragraph in paragraphs"
         :key="paragraph"
@@ -27,7 +20,7 @@ const { t } = useI18n();
         v-html="t(`${i18nKey}.${paragraph}`)"
       />
     </div>
-  </animations-scroll-fade>
+  </services-molecules-text-reveal>
 </template>
 
 <style scoped lang="scss">

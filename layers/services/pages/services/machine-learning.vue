@@ -4,15 +4,12 @@ import {
   MACHINE_LEARNING_INFO,
   MACHINE_LEARNING_SOLUTIONS,
   MACHINE_LEARNING_TAGS,
-  SERVICES,
 } from '@l-services/configs';
 
 const I18N_KEY = 'services.machineLearning';
 const SLUG = 'machine-learning';
 
 const { t } = useI18n();
-
-const service = SERVICES.find(item => item.slug === SLUG)!;
 
 useSeoMeta({
   title: t(`${I18N_KEY}.title`),
@@ -38,7 +35,7 @@ const solutionItems = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="MACHINE_LEARNING_TAGS"
-      :image="service.image"
+      :image="'/images/services/machine-learning/hero.png'"
     />
     <services-sections-info
       class="service-page__info"
@@ -93,8 +90,9 @@ const solutionItems = computed(() =>
   --service-row-hover: #f0e6e6;
   --service-tile-bg: #eeedf5;
   --service-decor-shape: var(--services-pink);
-  --hero-image-width: 560px;
-  --hero-image-bottom: -8px;
+  --hero-image-width: 714px;
+  --hero-image-right: 60px;
+  --hero-image-bottom: -69px;
 
   padding-bottom: 112px;
 

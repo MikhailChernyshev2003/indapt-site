@@ -14,20 +14,17 @@ const { title, text, label = '(info)' } = defineProps<{
     <div v-if="$slots.decor" class="intro-block__decor">
       <slot name="decor" />
     </div>
-    <!-- По комментарию в макете заголовок и текст насыщаются,
-         когда блок появляется на экране -->
-    <animations-scroll-fade
-      class="intro-block__content"
-      :initial-opacity="0.3"
-      start="top bottom"
-      end="top bottom-=25%"
-    >
-      <h2 class="intro-block__title" v-html="title" />
-      <p class="intro-block__text">
+    <services-molecules-text-reveal class="intro-block__content">
+      <h2
+        class="intro-block__title"
+        data-reveal="title"
+        v-html="title"
+      />
+      <p class="intro-block__text" data-reveal="text">
         <span class="intro-block__label">{{ label }}</span>
         <span v-html="text" />
       </p>
-    </animations-scroll-fade>
+    </services-molecules-text-reveal>
   </section>
 </template>
 
@@ -84,6 +81,14 @@ const { title, text, label = '(info)' } = defineProps<{
     right: var(--intro-decor-right-mobile, -7.125rem); // -114px
 
     width: var(--intro-decor-size-mobile, 17.375rem); // 278px
+  }
+
+  // Картинка в слоте растягивается по контейнеру декора
+
+  :deep(img) {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 }
 

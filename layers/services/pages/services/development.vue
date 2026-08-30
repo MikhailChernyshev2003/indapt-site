@@ -80,7 +80,17 @@ const stepItems = computed(() =>
       <services-sections-timeline-steps
         class="service-page__block-body"
         :items="stepItems"
-      />
+      >
+        <template #decor>
+          <img
+            src="/images/services/development/timeline-blob.png"
+            width="1844"
+            height="1835"
+            alt=""
+            loading="lazy"
+          />
+        </template>
+      </services-sections-timeline-steps>
     </section>
 
     <services-sections-expertise class="service-page__expertise" />
@@ -137,6 +147,10 @@ const stepItems = computed(() =>
   }
 
   &_steps {
+    --timeline-decor-top: 9px;
+    --timeline-decor-right: -269px;
+    --timeline-decor-width: 922px;
+
     margin-top: 81px;
 
     @include a.tablet {

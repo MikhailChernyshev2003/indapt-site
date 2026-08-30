@@ -31,13 +31,25 @@ useSeoMeta({
       :paragraphs="ANALYTICS_PLANNING_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-decor-band />
+      <services-molecules-reveal-image
+        src="/images/services/analytics-planning/pattern.png"
+        :width="1320"
+        :height="369"
+      />
     </div>
-    <services-sections-desc-services
+    <!-- Картинка по правкам статична: скроллится только текст аккордеонов -->
+    <services-molecules-sticky-kv
       class="service-page__desc"
-      :i18n-key="I18N_KEY"
-      :groups="ANALYTICS_PLANNING_GROUPS"
-    />
+      src="/images/services/analytics-planning/kv.png"
+      :width="1444"
+      :height="1144"
+      :left="-4"
+    >
+      <services-sections-desc-services
+        :i18n-key="I18N_KEY"
+        :groups="ANALYTICS_PLANNING_GROUPS"
+      />
+    </services-molecules-sticky-kv>
     <services-sections-expertise class="service-page__expertise" />
     <services-sections-other-services
       class="service-page__other"
