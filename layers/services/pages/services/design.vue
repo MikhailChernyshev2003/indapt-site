@@ -24,7 +24,7 @@ const featureItems = computed(() =>
 
 /** Иллюстрации методологий, порядок совпадает с DESIGN_METHODS */
 const METHOD_IMAGES = DESIGN_METHODS.map((_, idx) => ({
-  image: `/images/services/design/method-${idx + 1}.png`,
+  image: `/images/services/design/method-${idx + 1}.webp`,
 }));
 
 const methodTabs = computed(() =>

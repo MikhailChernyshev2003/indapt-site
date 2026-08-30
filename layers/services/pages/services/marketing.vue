@@ -20,7 +20,7 @@ useSeoMeta({
 // планшет и мобильный были только у первой вкладки, и из-за другой пропорции
 // панель на ней оказывалась выше остальных, а блок ниже прыгал при переключении
 const TAB_IMAGES = MARKETING_TABS.map((_, idx) => ({
-  image: `/images/services/marketing/tab-${idx + 1}.png`,
+  image: `/images/services/marketing/tab-${idx + 1}.webp`,
 }));
 
 const creativeTabs = computed(() =>
@@ -71,12 +71,20 @@ const featurePaths = {
       :paragraphs="creativeParagraphs"
       :tabs="creativeTabs"
     />
-    <services-sections-desc-services
+    <!-- Картинка по правкам статична: скроллится только текст аккордеонов -->
+    <services-molecules-sticky-kv
       class="service-page__features"
-      :i18n-key="I18N_KEY"
-      :groups="MARKETING_FEATURES"
-      :paths="featurePaths"
-    />
+      src="/images/services/marketing/kv.webp"
+      :width="556"
+      :height="1265"
+      :left="-1"
+    >
+      <services-sections-desc-services
+        :i18n-key="I18N_KEY"
+        :groups="MARKETING_FEATURES"
+        :paths="featurePaths"
+      />
+    </services-molecules-sticky-kv>
 
     <section class="service-page__block">
       <services-molecules-section-head

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  SERVICES,
   WEB3_CREATE,
   WEB3_FEATURES,
   WEB3_INFO,
@@ -12,8 +11,6 @@ const I18N_KEY = 'services.web3';
 const SLUG = 'web3';
 
 const { t } = useI18n();
-
-const service = SERVICES.find(item => item.slug === SLUG)!;
 
 useSeoMeta({
   title: t(`${I18N_KEY}.title`),
@@ -59,7 +56,7 @@ const techSlides = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="WEB3_TAGS"
-      :image="service.image"
+      :image="'/images/services/web3/hero.png'"
     />
     <services-sections-info
       class="service-page__info"
@@ -79,6 +76,15 @@ const techSlides = computed(() =>
     />
 
     <section class="service-page__block">
+      <services-molecules-figure-reveal class="service-page__create-figure">
+        <img
+          src="/images/services/web3/create-figure.webp"
+          width="1570"
+          height="2017"
+          alt=""
+          loading="lazy"
+        />
+      </services-molecules-figure-reveal>
       <services-molecules-section-head
         class="service-page__block-head"
         :title="t(`${I18N_KEY}.create.title`)"
@@ -120,8 +126,9 @@ const techSlides = computed(() =>
   --service-row-hover: #eafee1;
   --service-decor-bg: #f5fff0;
   --service-decor-shape: var(--services-green);
-  --hero-image-width: 550px;
-  --hero-image-bottom: -46px;
+  --hero-image-width: 510px;
+  --hero-image-right: 60px;
+  --hero-image-bottom: 0;
 
   padding-bottom: 112px;
 
@@ -133,6 +140,30 @@ const techSlides = computed(() =>
 
   @include a.mobile {
     padding-bottom: 80px;
+  }
+}
+
+// Фигура из макета лежит за пунктами «Что мы создаём» и уходит
+// за правый край экрана. Плотная часть выровнена по макету
+
+.service-page__create-figure {
+  position: absolute;
+  top: -395px;
+  left: 468px;
+  z-index: 0;
+
+  width: 785px;
+
+  pointer-events: none;
+
+  @include a.tablet {
+    display: none;
+  }
+
+  :deep(img) {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 }
 
@@ -166,13 +197,21 @@ const techSlides = computed(() =>
 }
 
 .service-page__block {
+  position: relative;
+
   margin-top: 32px;
 
   &-head {
+    position: relative;
+    z-index: 1;
+
     @include s.base-container;
   }
 
   &-body {
+    position: relative;
+    z-index: 1;
+
     margin-top: 52px;
 
     @include a.mobile {

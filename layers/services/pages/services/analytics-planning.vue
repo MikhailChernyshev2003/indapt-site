@@ -3,15 +3,12 @@ import {
   ANALYTICS_PLANNING_GROUPS,
   ANALYTICS_PLANNING_INFO,
   ANALYTICS_PLANNING_TAGS,
-  SERVICES,
 } from '@l-services/configs';
 
 const I18N_KEY = 'services.analyticsPlanning';
 const SLUG = 'analytics-planning';
 
 const { t } = useI18n();
-
-const service = SERVICES.find(item => item.slug === SLUG)!;
 
 useSeoMeta({
   title: t(`${I18N_KEY}.title`),
@@ -23,7 +20,7 @@ useSeoMeta({
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="ANALYTICS_PLANNING_TAGS"
-      :image="service.image"
+      :image="'/images/services/analytics-planning/hero.png'"
     />
     <services-sections-info
       class="service-page__info"

@@ -120,8 +120,8 @@ const solutionItems = computed(() =>
 
 .service-page__bento-blob {
   position: absolute;
-  top: -175px;
-  left: -63px;
+  top: -43px;
+  left: -3px;
   z-index: 0;
 
   width: 1307px;
