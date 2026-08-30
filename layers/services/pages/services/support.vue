@@ -25,7 +25,7 @@ const cardPositions = {
 
 /** Круги под карточками: [x, y, диаметр] */
 const cardDecor = {
-  desktop: [340, -26, 640],
+  desktop: [560, 194, 200],
   tablet: [44, 101, 600],
   mobile: [-163, -30, 660],
 } as const;
@@ -45,15 +45,11 @@ const cardDecor = {
       :text="t(`${I18N_KEY}.development.info`)"
     >
       <template #decor>
-        <services-molecules-figure-reveal>
-          <img
-            src="/images/services/support/sphere.webp"
-            width="946"
-            height="946"
-            alt=""
-            loading="lazy"
-          />
-        </services-molecules-figure-reveal>
+        <!-- Ядро в центре контейнера декора: слои расходятся наружу
+             и заполняют макетные 472px -->
+        <div class="service-page__intro-sphere">
+          <services-molecules-layered-shape type="circle" :offset="26" />
+        </div>
       </template>
     </services-sections-intro-block>
 
@@ -71,15 +67,7 @@ const cardDecor = {
         :min-height-tablet="810"
       >
         <template #decor>
-          <services-molecules-figure-reveal>
-            <img
-              src="/images/services/support/cards-sphere.webp"
-              width="1280"
-              height="1280"
-              alt=""
-              loading="lazy"
-            />
-          </services-molecules-figure-reveal>
+          <services-molecules-layered-shape type="circle" :offset="32" />
         </template>
       </services-sections-scatter-cards>
     </section>
@@ -121,6 +109,11 @@ const cardDecor = {
   @include a.mobile {
     padding-bottom: 80px;
   }
+}
+
+.service-page__intro-sphere {
+  width: 160px;
+  margin: 156px auto;
 }
 
 .service-page__intro {

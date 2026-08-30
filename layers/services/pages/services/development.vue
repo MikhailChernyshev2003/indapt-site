@@ -32,7 +32,7 @@ const cardPositions = {
 
 /** Треугольник под карточками: [x, y, размер] */
 const cardDecor = {
-  desktop: [349, -27, 620],
+  desktop: [554, 178, 210],
   tablet: [2, 4, 633],
   mobile: [-140, -30, 620],
 } as const;
@@ -67,15 +67,7 @@ const stepItems = computed(() =>
         :min-height-tablet="811"
       >
         <template #decor>
-          <services-molecules-figure-reveal>
-            <img
-              src="/images/services/development/intro-blob.webp"
-              width="1240"
-              height="1240"
-              alt=""
-              loading="lazy"
-            />
-          </services-molecules-figure-reveal>
+          <services-molecules-layered-shape type="triangle" :offset="34" />
         </template>
       </services-sections-scatter-cards>
     </section>

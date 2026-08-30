@@ -63,8 +63,8 @@ const rows = computed(() => {
         </span>
         <div class="bento-cards__content">
           <h3 class="bento-cards__title" v-html="item.title" />
-          <p class="bento-cards__text" v-html="item.text" />
         </div>
+        <p class="bento-cards__text" v-html="item.text" />
       </article>
     </div>
   </section>
@@ -185,15 +185,18 @@ const rows = computed(() => {
 
       background-color: var(--white);
 
-      .bento-cards__text {
-        max-height: none;
-        margin-top: 24px;
+      // Заголовок поднимается transform'ом — раскладка карточки не меняется
 
+      .bento-cards__content {
+        transform: translateY(-8.75rem); // 140px
+      }
+
+      .bento-cards__text {
         opacity: 1;
 
         // Текст ждёт, пока карточка доедет до полной ширины, — как в партнёрстве
 
-        transition-delay: 0.35s;
+        transition-delay: 0.5s;
       }
     }
   }
@@ -235,6 +238,14 @@ const rows = computed(() => {
   }
 }
 
+.bento-cards__content {
+  transition: transform 0.5s v.$easing;
+
+  @include a.tablet {
+    transition: none;
+  }
+}
+
 .bento-cards__title {
   color: var(--dark-blue);
 
@@ -245,23 +256,31 @@ const rows = computed(() => {
   }
 }
 
+// Текст вынут из потока, как в партнёрстве: его появление не двигает
+// ни заголовок, ни соседние карточки — только opacity
+
 .bento-cards__text {
-  max-height: 0;
-  margin-top: 0;
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  left: 24px;
 
   color: var(--dark-blue-80);
 
   opacity: 0;
 
-  transition: opacity 0.3s;
+  transition: opacity 0.2s;
 
   @include t.body-l-medium;
 
   @include a.tablet {
-    max-height: none;
+    position: static;
+
     margin-top: 16px;
 
     opacity: 1;
+
+    transition: none;
   }
 
   @include a.mobile {

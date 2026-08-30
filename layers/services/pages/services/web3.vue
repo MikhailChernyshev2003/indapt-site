@@ -64,11 +64,7 @@ const techSlides = computed(() =>
       :paragraphs="WEB3_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-reveal-image
-        src="/images/services/web3/pattern.webp"
-        :width="1320"
-        :height="369"
-      />
+      <services-molecules-pattern-band type="hexagonGreen" />
     </div>
     <services-sections-feature-list
       class="service-page__features"
@@ -76,15 +72,9 @@ const techSlides = computed(() =>
     />
 
     <section class="service-page__block">
-      <services-molecules-figure-reveal class="service-page__create-figure">
-        <img
-          src="/images/services/web3/create-figure.webp"
-          width="1570"
-          height="2017"
-          alt=""
-          loading="lazy"
-        />
-      </services-molecules-figure-reveal>
+      <div class="service-page__create-figure">
+        <services-molecules-layered-shape type="hexagonGreen" :offset="26" />
+      </div>
       <services-molecules-section-head
         class="service-page__block-head"
         :title="t(`${I18N_KEY}.create.title`)"
@@ -129,6 +119,7 @@ const techSlides = computed(() =>
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0;
+  --pattern-band-bg: #f6fff0;
 
   padding-bottom: 112px;
 
@@ -148,11 +139,11 @@ const techSlides = computed(() =>
 
 .service-page__create-figure {
   position: absolute;
-  top: -395px;
-  left: 468px;
+  top: 79px;
+  left: 1067px;
   z-index: 0;
 
-  width: 785px;
+  width: 285px;
 
   pointer-events: none;
 
@@ -160,10 +151,16 @@ const techSlides = computed(() =>
     display: none;
   }
 
-  :deep(img) {
-    display: block;
-    width: 100%;
-    height: auto;
+  // Белое свечение из макета за слоёной фигурой
+
+  &::before {
+    position: absolute;
+    inset: -34%;
+
+    background: radial-gradient(50% 50% at 50% 50%, var(--white) 35%, rgb(255 255 255 / 0%) 100%);
+    border-radius: 50%;
+
+    content: '';
   }
 }
 

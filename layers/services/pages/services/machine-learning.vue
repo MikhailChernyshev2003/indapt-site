@@ -53,15 +53,11 @@ const solutionItems = computed(() =>
         :items="challengeItems"
       >
         <template #decor>
-          <services-molecules-figure-reveal class="service-page__bento-blob">
-            <img
-              src="/images/services/machine-learning/blob.webp"
-              width="2614"
-              height="2770"
-              alt=""
-              loading="lazy"
-            />
-          </services-molecules-figure-reveal>
+          <services-molecules-layered-shape
+            class="service-page__bento-blob"
+            type="star"
+            :offset="58"
+          />
         </template>
       </services-sections-bento-cards>
     </section>
@@ -120,11 +116,11 @@ const solutionItems = computed(() =>
 
 .service-page__bento-blob {
   position: absolute;
-  top: -43px;
-  left: -3px;
+  top: 91px;
+  left: 282px;
   z-index: 0;
 
-  width: 1307px;
+  width: 400px;
 
   pointer-events: none;
 

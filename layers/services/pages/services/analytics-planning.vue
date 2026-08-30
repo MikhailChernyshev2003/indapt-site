@@ -28,11 +28,7 @@ useSeoMeta({
       :paragraphs="ANALYTICS_PLANNING_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-reveal-image
-        src="/images/services/analytics-planning/pattern.webp"
-        :width="1320"
-        :height="369"
-      />
+      <services-molecules-pattern-band type="hexagonOrange" />
     </div>
     <!-- Картинка по правкам статична: скроллится только текст аккордеонов -->
     <services-molecules-sticky-kv
@@ -68,6 +64,8 @@ useSeoMeta({
   --service-row-hover: #feebd7;
 
   // По макету от нижнего края карточек до футера 112px
+
+  --pattern-band-bg: #ffefe0;
 
   padding-bottom: 112px;
 

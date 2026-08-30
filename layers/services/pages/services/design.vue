@@ -50,11 +50,7 @@ const methodTabs = computed(() =>
       :paragraphs="DESIGN_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-reveal-image
-        src="/images/services/design/rings.webp"
-        :width="1320"
-        :height="369"
-      />
+      <services-molecules-pattern-band type="hexagonPurple" />
     </div>
     <services-sections-feature-list
       class="service-page__features"
@@ -88,6 +84,7 @@ const methodTabs = computed(() =>
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: -144px;
+  --pattern-band-bg: #faf4ff;
 
   padding-bottom: 112px;
 
