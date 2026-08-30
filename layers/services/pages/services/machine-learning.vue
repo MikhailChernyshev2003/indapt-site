@@ -53,7 +53,15 @@ const solutionItems = computed(() =>
         :items="challengeItems"
       >
         <template #decor>
-          <services-molecules-service-decor shape="flower" />
+          <services-molecules-figure-reveal class="service-page__bento-blob">
+            <img
+              src="/images/services/machine-learning/blob.webp"
+              width="2614"
+              height="2770"
+              alt=""
+              loading="lazy"
+            />
+          </services-molecules-figure-reveal>
         </template>
       </services-sections-bento-cards>
     </section>
@@ -104,6 +112,30 @@ const solutionItems = computed(() =>
 
   @include a.mobile {
     padding-bottom: 80px;
+  }
+}
+
+// Клякса из макета больше своей ячейки: лежит абсолютом за карточками,
+// плотная часть по центру совпадает с положением в макете
+
+.service-page__bento-blob {
+  position: absolute;
+  top: -175px;
+  left: -63px;
+  z-index: 0;
+
+  width: 1307px;
+
+  pointer-events: none;
+
+  @include a.tablet {
+    display: none;
+  }
+
+  :deep(img) {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 }
 

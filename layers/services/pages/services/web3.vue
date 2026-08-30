@@ -68,7 +68,7 @@ const techSlides = computed(() =>
     />
     <div class="service-page__decor">
       <services-molecules-reveal-image
-        src="/images/services/web3/pattern.png"
+        src="/images/services/web3/pattern.webp"
         :width="1320"
         :height="369"
       />

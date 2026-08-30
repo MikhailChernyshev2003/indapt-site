@@ -51,7 +51,7 @@ const methodTabs = computed(() =>
     />
     <div class="service-page__decor">
       <services-molecules-reveal-image
-        src="/images/services/design/rings.png"
+        src="/images/services/design/rings.webp"
         :width="1320"
         :height="369"
       />

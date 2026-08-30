@@ -25,7 +25,7 @@ const cardPositions = {
 
 /** Круги под карточками: [x, y, диаметр] */
 const cardDecor = {
-  desktop: [366, 0, 589],
+  desktop: [340, -26, 640],
   tablet: [44, 101, 600],
   mobile: [-163, -30, 660],
 } as const;
@@ -45,13 +45,15 @@ const cardDecor = {
       :text="t(`${I18N_KEY}.development.info`)"
     >
       <template #decor>
-        <img
-          src="/images/services/support/sphere.png"
-          width="946"
-          height="946"
-          alt=""
-          loading="lazy"
-        />
+        <services-molecules-figure-reveal>
+          <img
+            src="/images/services/support/sphere.webp"
+            width="946"
+            height="946"
+            alt=""
+            loading="lazy"
+          />
+        </services-molecules-figure-reveal>
       </template>
     </services-sections-intro-block>
 
@@ -69,7 +71,15 @@ const cardDecor = {
         :min-height-tablet="810"
       >
         <template #decor>
-          <services-molecules-service-decor shape="circle" />
+          <services-molecules-figure-reveal>
+            <img
+              src="/images/services/support/cards-sphere.webp"
+              width="1280"
+              height="1280"
+              alt=""
+              loading="lazy"
+            />
+          </services-molecules-figure-reveal>
         </template>
       </services-sections-scatter-cards>
     </section>

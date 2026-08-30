@@ -32,7 +32,7 @@ useSeoMeta({
     />
     <div class="service-page__decor">
       <services-molecules-reveal-image
-        src="/images/services/analytics-planning/pattern.png"
+        src="/images/services/analytics-planning/pattern.webp"
         :width="1320"
         :height="369"
       />
@@ -40,7 +40,7 @@ useSeoMeta({
     <!-- Картинка по правкам статична: скроллится только текст аккордеонов -->
     <services-molecules-sticky-kv
       class="service-page__desc"
-      src="/images/services/analytics-planning/kv.png"
+      src="/images/services/analytics-planning/kv.webp"
       :width="1444"
       :height="1144"
       :left="-4"
