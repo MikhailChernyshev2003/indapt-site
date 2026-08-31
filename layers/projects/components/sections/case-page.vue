@@ -117,6 +117,13 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
 @use "@styles/shared" as s;
 @use "@styles/typography" as t;
 
+// Кольца сцены технологий по макету выходят за правый край экрана:
+// их должен резать край страницы, а не растягивать документ
+
+.case-page {
+  overflow-x: clip;
+}
+
 .case-page__body {
   display: flex;
   flex-direction: column;
