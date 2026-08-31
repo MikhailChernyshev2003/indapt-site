@@ -36,7 +36,7 @@ const cardDecor = {
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="SUPPORT_TAGS"
-      :image="'/images/services/support/hero.png'"
+      :image="'/images/services/support/hero.webp'"
     />
 
     <services-sections-intro-block
@@ -96,7 +96,7 @@ const cardDecor = {
   --scatter-radius: 14px;
   --hero-image-width: 510px;
   --hero-image-right: 60px;
-  --hero-image-bottom: -42px;
+  --hero-image-bottom: 0px;
 
   padding-bottom: 112px;
 

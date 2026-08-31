@@ -42,7 +42,7 @@ const methodTabs = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="DESIGN_TAGS"
-      :image="'/images/services/design/hero.png'"
+      :image="'/images/services/design/hero.webp'"
     />
     <services-sections-info
       class="service-page__info"
@@ -83,7 +83,7 @@ const methodTabs = computed(() =>
   --service-tile-bg: #efeefd;
   --hero-image-width: 510px;
   --hero-image-right: 60px;
-  --hero-image-bottom: -144px;
+  --hero-image-bottom: 0px;
   --pattern-band-bg: #faf4ff;
 
   padding-bottom: 112px;

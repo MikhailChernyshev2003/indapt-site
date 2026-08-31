@@ -58,7 +58,7 @@ const featurePaths = {
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="MARKETING_TAGS"
-      :image="'/images/services/marketing/hero.png'"
+      :image="'/images/services/marketing/hero.webp'"
     />
     <services-sections-info
       class="service-page__info"
@@ -130,7 +130,7 @@ const featurePaths = {
   --info-paragraph-gap: 16px;
   --hero-image-width: 510px;
   --hero-image-right: 60px;
-  --hero-image-bottom: -87px;
+  --hero-image-bottom: 0px;
 
   padding-bottom: 112px;
 

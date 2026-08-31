@@ -35,7 +35,7 @@ const solutionItems = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="MACHINE_LEARNING_TAGS"
-      :image="'/images/services/machine-learning/hero.png'"
+      :image="'/images/services/machine-learning/hero.webp'"
     />
     <services-sections-info
       class="service-page__info"
@@ -96,7 +96,7 @@ const solutionItems = computed(() =>
   --service-decor-shape: var(--services-pink);
   --hero-image-width: 714px;
   --hero-image-right: 60px;
-  --hero-image-bottom: -69px;
+  --hero-image-bottom: 0px;
 
   padding-bottom: 112px;
 

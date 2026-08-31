@@ -36,7 +36,7 @@ const alignmentItems = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="ENGINEERING_TAGS"
-      :image="'/images/services/engineering/hero.png'"
+      :image="'/images/services/engineering/hero.webp'"
     />
     <services-sections-info
       class="service-page__info"

@@ -20,7 +20,7 @@ useSeoMeta({
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="ANALYTICS_PLANNING_TAGS"
-      :image="'/images/services/analytics-planning/hero.png'"
+      :image="'/images/services/analytics-planning/hero.webp'"
     />
     <services-sections-info
       class="service-page__info"

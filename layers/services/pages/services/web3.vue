@@ -56,7 +56,7 @@ const techSlides = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="WEB3_TAGS"
-      :image="'/images/services/web3/hero.png'"
+      :image="'/images/services/web3/hero.webp'"
     />
     <services-sections-info
       class="service-page__info"
@@ -118,7 +118,7 @@ const techSlides = computed(() =>
   --service-decor-shape: var(--services-green);
   --hero-image-width: 510px;
   --hero-image-right: 60px;
-  --hero-image-bottom: 0;
+  --hero-image-bottom: 0px;
   --pattern-band-bg: #f6fff0;
 
   padding-bottom: 112px;
