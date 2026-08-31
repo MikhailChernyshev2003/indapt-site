@@ -7,6 +7,7 @@ const {
   offset = 26,
   animated = true,
   revealShift = 0,
+  triggerClosest = '',
 } = defineProps<{
   /** Фигура из общих данных (те же, что морфятся на главной) */
   type: string;
@@ -16,6 +17,8 @@ const {
   animated?: boolean;
   /** Сдвиг начала появления в % высоты экрана: второй объект стартует позже */
   revealShift?: number;
+  /** Селектор предка-триггера: нужен внутри sticky, где сама фигура не скроллится */
+  triggerClosest?: string;
 }>();
 
 // Данные слоёв общие с главной: layer_1 — плотное ядро, дальше слои шире.
@@ -51,13 +54,14 @@ useGsap(() => {
 
   const layerEls = [...root.querySelectorAll<HTMLElement>('.layered-shape__layer')];
   const outer = layerEls.slice(1);
+  const trigger = (triggerClosest && root.closest<HTMLElement>(triggerClosest)) || root;
 
   gsap.set(root, { scale: 0.7, opacity: 0 });
   gsap.set(outer, { opacity: 0 });
 
   tween = gsap.timeline({
     scrollTrigger: {
-      trigger: root,
+      trigger,
       start: `top bottom-=${revealShift}%`,
       end: `top bottom-=${revealShift + 40}%`,
       scrub: true,

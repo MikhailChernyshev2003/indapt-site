@@ -33,11 +33,19 @@ useSeoMeta({
     <!-- Картинка по правкам статична: скроллится только текст аккордеонов -->
     <services-molecules-sticky-kv
       class="service-page__desc"
-      src="/images/services/analytics-planning/kv.webp"
       :width="1444"
       :height="1144"
       :left="-4"
     >
+      <template #media>
+        <div class="service-page__kv-shape">
+          <services-molecules-layered-shape
+            type="hexagonOrange"
+            :offset="30"
+            trigger-closest=".sticky-kv"
+          />
+        </div>
+      </template>
       <services-sections-desc-services
         :i18n-key="I18N_KEY"
         :groups="ANALYTICS_PLANNING_GROUPS"
@@ -78,6 +86,14 @@ useSeoMeta({
   @include a.mobile {
     padding-bottom: 80px;
   }
+}
+
+// Ядро слоёного шестиугольника в центре кадра KV: слои наружу
+// добирают макетный размер
+
+.service-page__kv-shape {
+  width: 780px;
+  margin: 182px auto 0;
 }
 
 .service-page__info {

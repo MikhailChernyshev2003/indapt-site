@@ -1,16 +1,13 @@
 <script setup lang="ts">
 const {
-  src,
   width,
   height,
   left = 0,
 } = defineProps<{
-  /** Путь к картинке */
-  src: string;
-  /** Размеры по макету @1x */
+  /** Размеры кадра по макету @1x */
   width: number;
   height: number;
-  /** Смещение от левого края экрана по макету */
+  /** Смещение кадра от левого края экрана по макету */
   left?: number;
 }>();
 
@@ -32,14 +29,9 @@ const rootStyle = computed(() => ({
        и не перехватывает клики -->
   <div class="sticky-kv" :style="rootStyle">
     <div class="sticky-kv__frame">
-      <img
-        class="sticky-kv__img"
-        :src="src"
-        :width="width"
-        :height="height"
-        alt=""
-        loading="lazy"
-      />
+      <div class="sticky-kv__media">
+        <slot name="media" />
+      </div>
     </div>
     <div class="sticky-kv__content">
       <slot />
@@ -70,14 +62,13 @@ const rootStyle = computed(() => ({
   }
 }
 
-.sticky-kv__img {
+.sticky-kv__media {
   position: absolute;
   top: 0;
   left: var(--sticky-kv-left, 0);
 
   width: var(--sticky-kv-width);
-  max-width: none;
-  height: auto;
+  height: var(--sticky-kv-height);
 }
 
 .sticky-kv__content {

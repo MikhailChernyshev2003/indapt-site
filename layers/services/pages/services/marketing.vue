@@ -74,11 +74,19 @@ const featurePaths = {
     <!-- Картинка по правкам статична: скроллится только текст аккордеонов -->
     <services-molecules-sticky-kv
       class="service-page__features"
-      src="/images/services/marketing/kv.webp"
       :width="556"
       :height="1265"
       :left="-1"
     >
+      <template #media>
+        <div class="service-page__kv-shape">
+          <services-molecules-layered-shape
+            type="flower"
+            :offset="45"
+            trigger-closest=".sticky-kv"
+          />
+        </div>
+      </template>
       <services-sections-desc-services
         :i18n-key="I18N_KEY"
         :groups="MARKETING_FEATURES"
@@ -135,6 +143,14 @@ const featurePaths = {
   @include a.mobile {
     padding-bottom: 80px;
   }
+}
+
+// Ядро жёлтой массы у левого края, по центру высоты кадра; слои
+// расходятся наружу и частично уходят за край экрана, как в макете
+
+.service-page__kv-shape {
+  width: 340px;
+  margin: 462px 0 0 -80px;
 }
 
 .service-page__info {
