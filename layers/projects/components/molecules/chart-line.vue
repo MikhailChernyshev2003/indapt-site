@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
+
 const { color, dotX = 198 } = defineProps<{
   /** Цвет графика — акцент кейса */
   color: string;
@@ -7,12 +9,59 @@ const { color, dotX = 198 } = defineProps<{
 }>();
 
 const uid = useId();
+
+const rootRef = useTemplateRef<SVGSVGElement>('rootRef');
+
+let tween: gsap.core.Timeline | null = null;
+
+// Кривая прорисовывается, площадь проявляется следом, маркер выпрыгивает
+useGsap(() => {
+  const root = rootRef.value;
+
+  if (!root) return;
+
+  const line = root.querySelector<SVGPathElement>('.chart-line__stroke');
+  const length = line?.getTotalLength() ?? 0;
+
+  tween = gsap.timeline({
+    scrollTrigger: {
+      trigger: root,
+      start: 'top 88%',
+    },
+  });
+
+  if (line && length) {
+    tween.fromTo(line, { strokeDasharray: length, strokeDashoffset: length }, {
+      strokeDashoffset: 0,
+      duration: 1,
+      ease: 'power1.inOut',
+    });
+  }
+  tween
+    .from(root.querySelector('.chart-line__area'), {
+      autoAlpha: 0,
+      duration: 0.6,
+    }, '-=0.5')
+    .from(root.querySelector('.chart-line__dot'), {
+      scale: 0,
+      transformOrigin: 'center',
+      duration: 0.4,
+      ease: 'back.out(2.5)',
+    }, '-=0.2');
+});
+
+onBeforeUnmount(() => {
+  tween?.scrollTrigger?.kill();
+  tween?.kill();
+  tween = null;
+});
 </script>
 
 <template>
   <!-- Линейный график из макета: площадь под кривой, штрих с угасанием
        по краям и светящийся маркер. Геометрия снята из фигмы -->
   <svg
+    ref="rootRef"
     class="chart-line"
     viewBox="0 0 294 146"
     fill="none"

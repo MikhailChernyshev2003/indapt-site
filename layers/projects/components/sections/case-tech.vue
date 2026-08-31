@@ -228,7 +228,9 @@ onBeforeUnmount(() => {
   top: 50%;
   left: 50%;
 
-  width: 43%;
+  width: 52%;
+  height: 40%;
+  object-fit: contain;
 
   transform: translate(-50%, -50%);
 

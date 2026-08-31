@@ -165,8 +165,16 @@ useRiseReveal(rootRef, '.cases-list__row', 0.08);
       height: 329px;
     }
 
+    .cases-list__logo {
+      transform: scale(1.25);
+    }
+
+    .cases-list__desc {
+      color: var(--dark-blue);
+    }
+
     .cases-list__arrow {
-      transform: translate(4px, -4px);
+      transform: rotate(45deg);
     }
   }
 
@@ -214,6 +222,8 @@ useRiseReveal(rootRef, '.cases-list__row', 0.08);
 .cases-list__logo {
   object-fit: contain;
 
+  transition: transform 0.4s v.$easing;
+
   @include a.tablet {
     transform: scale(0.81);
   }
@@ -251,6 +261,7 @@ useRiseReveal(rootRef, '.cases-list__row', 0.08);
 .cases-list__desc {
   color: var(--dark-blue-80);
 
+  @include s.default-transition(color);
   @include t.body-l-medium;
 
   @include a.mobile {
