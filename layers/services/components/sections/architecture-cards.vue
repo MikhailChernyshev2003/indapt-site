@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { gsap } from 'gsap';
 import type { ArchitectureCardItem } from '@l-services/types';
 
 const { items, mark } = defineProps<{
@@ -18,23 +17,37 @@ const cardsRef = useTemplateRef<HTMLElement[]>('cardsRef');
 // Наведение считаем от позиции курсора, а не от mouseenter/mouseleave на
 // карточках. Раскрытая карточка сдвигает соседние, и под неподвижным курсором
 // меняется то, что под ним лежит: браузер шлёт leave и enter, состояние
-// переключается, карточки едут обратно — и так по кругу. pointermove без
-// реального движения мыши не приходит, поэтому качелей не возникает
+// переключается, карточки едут обратно — и так по кругу
+let lastX = -1;
+let lastY = -1;
+
+// Событие с теми же координатами браузер присылает сам, когда вёрстка уехала
+// из-под неподвижного указателя — после скролла и по ходу перехода высоты.
+// Реагировать на него нельзя: это тот же источник качелей, ради которого
+// отказались от mouseenter/mouseleave, просто по другому каналу
+const isStale = (event: PointerEvent) =>
+  event.clientX === lastX && event.clientY === lastY;
+
 const hitIndex = (event: PointerEvent) => {
   const cards = cardsRef.value;
 
   if (!cards?.length) return -1;
 
-  return cards.findIndex((card) => {
-    const { top, right, bottom, left } = card.getBoundingClientRect();
+  // Один хит-тест вместо обхода прямоугольников всех карточек: перебор
+  // заставлял браузер пересчитывать раскладку на каждое движение мыши,
+  // причём поверх высот, записанных в предыдущем кадре
+  const card = document
+    .elementFromPoint(event.clientX, event.clientY)
+    ?.closest<HTMLElement>('.architecture-cards__card');
 
-    return event.clientX >= left && event.clientX <= right
-      && event.clientY >= top && event.clientY <= bottom;
-  });
+  return card ? cards.indexOf(card) : -1;
 };
 
 const handlePointerMove = (event: PointerEvent) => {
-  if (!isDesktop.value) return;
+  if (!isDesktop.value || isStale(event)) return;
+
+  lastX = event.clientX;
+  lastY = event.clientY;
 
   const idx = hitIndex(event);
 
@@ -45,7 +58,13 @@ const handlePointerMove = (event: PointerEvent) => {
   hoveredIdx.value = idx;
 };
 
+// Уход курсора фильтровать по координатам нельзя: когда указатель покидает
+// окно, браузер шлёт leave с координатами последнего движения — такое событие
+// отсеклось бы, и карточка осталась бы раскрытой навсегда
 const handlePointerLeave = () => {
+  lastX = -1;
+  lastY = -1;
+
   hoveredIdx.value = -1;
 };
 
@@ -54,65 +73,128 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 /** На планшете и мобильном раскрыты все карточки, на десктопе — только наведённая */
 const isExpanded = (idx: number) => !isDesktop.value || hoveredIdx.value === idx;
 
-const HEIGHT_TWEEN = { duration: 0.35, ease: 'power2.out' };
+// Карточка, с которой курсор только что ушёл, держит полный текст, пока едет
+// вниз. Если подменить его сразу, строки исчезнут за один кадр и дальше
+// схлопываться будет пустая коробка; так текст просто уходит под границу
+const collapsingIdx = ref(-1);
 
-// Текст подменяется целиком, поэтому высота карточки меняется скачком, а
-// соседние карточки прыгают следом. Снимаем высоты до перерисовки, после неё
-// снимаем новые и проигрываем переход: при переезде с карточки на карточку
-// одна сжимается, вторая раскрывается, и колонка едет плавно
-const animateHeights = async () => {
+/** Полный текст — у наведённой карточки и у той, что ещё схлопывается */
+const isTextFull = (idx: number) => isExpanded(idx) || collapsingIdx.value === idx;
+
+// Текст подменяется целиком, поэтому натуральная высота карточки меняется
+// скачком, а соседние карточки прыгают следом. Единственное, чего не умеет
+// браузер, — анимировать height: auto, поэтому руками фиксируем текущую высоту
+// до перерисовки и ставим целевую после. Дальше карточку ведёт обычный
+// CSS-переход, тот же самый, что фон, заголовок и ромб: одна кривая, одна
+// длительность, один момент старта и одинаковое поведение при перехвате
+const syncHeights = async (prevIdx: number) => {
   const cards = cardsRef.value;
 
-  if (!isDesktop.value || !cards?.length) return;
+  if (!cards?.length) return;
+
+  // На время замера уезжающая карточка возвращается к короткому тексту:
+  // целевую высоту берём от конечного состояния, а не от того, что видно
+  collapsingIdx.value = -1;
 
   // Стартуем от того, что видно сейчас: если предыдущий переход не доиграл,
-  // это его промежуточная высота, и карточка не дёрнется
-  const before = cards.map(card => card.offsetHeight);
+  // это его промежуточная высота, и карточка не дёрнется. Дробная величина,
+  // а не offsetHeight: округление до целого само по себе давало полпикселя
+  // сдвига на старте и столько же на снятии инлайновой высоты
+  const before = cards.map(card => card.getBoundingClientRect().height);
 
   await nextTick();
 
-  cards.forEach((card, idx) => {
-    // Предыдущий переход снимаем всегда, даже если высота карточки не меняется.
-    // Иначе он остаётся в работе и продолжает тянуть уже свернувшуюся карточку
-    // к раскрытой высоте — именно это и выглядело как дёрганье
-    gsap.killTweensOf(card);
-
-    // Инлайновую высоту стираем, чтобы замерить ту, которую карточка займёт
-    // с новым текстом. Кадр между стиранием и возвратом не отрисовывается —
-    // всё происходит в одной задаче
+  // Дальше проходы без чередования чтений и записей: запись на одной карточке
+  // обесценивает замер на следующей, и браузер пересчитывает раскладку по разу
+  // на карточку вместо одного раза на всю секцию
+  cards.forEach((card) => {
     card.style.height = '';
+  });
 
-    const natural = card.offsetHeight;
+  const natural = cards.map(card => card.getBoundingClientRect().height);
 
-    if (before[idx] === natural) return;
+  const moving: [HTMLElement, number][] = [];
 
-    // Возвращаем ровно то, что видно сейчас, и дотягиваем до новой высоты.
-    // Через fromTo от снятого заранее значения переход стартовал бы заново,
-    // с разрывом скорости
+  cards.forEach((card, idx) => {
+    // Меньше половины пикселя — двигать нечего, а инлайновая высота мешала бы
+    // карточке подстроиться под ресайз
+    if (Math.abs(natural[idx] - before[idx]) < 0.5) return;
+
     card.style.height = `${before[idx]}px`;
+    moving.push([card, natural[idx]]);
+  });
 
-    gsap.to(card, {
-      ...HEIGHT_TWEEN,
-      height: natural,
-      clearProps: 'height',
-    });
+  if (!moving.length) return;
+
+  // Браузер должен увидеть стартовую высоту отдельным состоянием: иначе
+  // началом перехода останется height: auto, а из auto переход не запускается
+  // вовсе — высота встала бы скачком
+  void cards[0].offsetHeight;
+
+  moving.forEach(([card, height]) => {
+    card.style.height = `${height}px`;
+  });
+
+  // Полный текст возвращаем уезжающей карточке уже после старта перехода —
+  // в том же кадре, поэтому короткий вариант не успевает отрисоваться.
+  // Только если она действительно едет: без перехода полный текст просто
+  // раскрыл бы её обратно
+  const isCollapsing = prevIdx !== -1
+    && prevIdx !== hoveredIdx.value
+    && moving.some(([card]) => card === cards[prevIdx]);
+
+  if (isCollapsing) collapsingIdx.value = prevIdx;
+};
+
+const resetHeights = () => {
+  cardsRef.value?.forEach((card) => {
+    card.style.height = '';
   });
 };
 
-watch(hoveredIdx, animateHeights);
+// isDesktop в зависимостях, потому что за брейкпоинтом раскрываются сразу все
+// карточки: без этого на планшете оставались бы инлайновые высоты от десктопа
+watch([hoveredIdx, isDesktop], ([, desktop], [prevIdx, prevDesktop]) => {
+  // Смена брейкпоинта — не жест пользователя: карточки просто перестраиваются,
+  // анимировать тут нечего. Это же состояние приходит и после гидратации,
+  // когда угаданный на сервере брейкпоинт разошёлся с реальной шириной
+  if (desktop !== prevDesktop) {
+    collapsingIdx.value = -1;
+    resetHeights();
 
-onBeforeUnmount(() => {
-  const cards = cardsRef.value;
+    if (!desktop) hoveredIdx.value = -1;
 
-  if (cards?.length) gsap.killTweensOf(cards);
+    return;
+  }
+
+  if (!desktop) return;
+
+  syncHeights(prevIdx);
 });
+
+// Инлайновую высоту снимаем после перехода: дальше карточка должна
+// подстраиваться под контент и ресайз сама. Прерванный переход перепишет
+// следующий запуск syncHeights
+const handleTransitionEnd = (event: TransitionEvent) => {
+  if (event.propertyName !== 'height' || event.target !== event.currentTarget) return;
+
+  const card = event.currentTarget as HTMLElement;
+
+  // Сначала короткий текст, и только следующим кадром — снятие высоты: иначе
+  // карточка на кадр раскрылась бы обратно под всё ещё полный текст
+  if (collapsingIdx.value === cardsRef.value?.indexOf(card)) collapsingIdx.value = -1;
+
+  nextTick(() => {
+    card.style.height = '';
+  });
+};
 
 // Продолжение склеивается с началом в один абзац: в русской локали text
 // продолжает предложение и начинается со знака препинания («. По результатам…»),
 // в английской это самостоятельное предложение. Пробел ставим только во втором
 // случае, иначе перед точкой появился бы отбив
 const cardText = (item: ArchitectureCardItem, idx: number) => {
-  if (!isExpanded(idx)) return item.shortText;
+  if (!isTextFull(idx)) return item.shortText;
 
   const separator = /^[A-Za-zА-Яа-яЁё]/.test(item.text) ? ' ' : '';
 
@@ -132,6 +214,7 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
       :key="item.title"
       class="architecture-cards__card"
       :class="{ 'architecture-cards__card_expanded': isExpanded(idx) }"
+      @transitionend="handleTransitionEnd"
     >
       <div class="architecture-cards__head">
         <!-- По макету при наведении слева от заголовка появляется ромб.
@@ -183,13 +266,13 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
 
   @include s.default-transition(background-color);
 
-  // Наведение работает только на десктопе: на планшете и мобильном карточки
-  // и так раскрыты, подсвечивать там нечего
+  // Высоту ведёт тот же переход, что фон, заголовок и ромб: одна кривая, одна
+  // длительность, один старт — и при перехвате на середине все свойства
+  // перезапускаются одинаково. Только на десктопе: за брейкпоинтом инлайновая
+  // высота не ставится, анимировать нечего
 
   @include a.desktop-only {
-    @include s.hover {
-      background-color: var(--architecture-card-bg-hover, var(--light-blue));
-    }
+    @include s.default-transition(background-color, height);
   }
 
   @include a.tablet {
@@ -203,10 +286,20 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   }
 
   &_expanded {
-    // Место под ромб освобождает отступ заголовка, а не сам ромб
+    // Подсветка идёт от того же состояния, что и раскрытие. На нативном :hover
+    // это были два источника истины: в зазоре между карточками фон уже гас, а
+    // карточка ещё оставалась раскрытой, и движение разваливалось на два такта.
+    // mouse-only остаётся от прежнего :hover — на тач-экране шириной с десктоп
+    // подсвечивать нечего
 
-    .architecture-cards__head {
-      padding-left: var(--architecture-mark-space, 7.875rem); // 110 + 16
+    @include a.desktop-only {
+      @include s.mouse-only {
+        background-color: var(--architecture-card-bg-hover, var(--light-blue));
+      }
+    }
+
+    .architecture-cards__title {
+      transform: none;
     }
 
     .architecture-cards__mark {
@@ -223,7 +316,14 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   display: flex;
   align-items: center;
 
-  @include s.default-transition(padding-left);
+  // Место под ромб держим всегда. Пока отступ появлялся вместе с раскрытием,
+  // ширина заголовка менялась переходом: заголовок мог переноситься по строкам
+  // уже после того, как снят замер высоты. Это тот же дефект, из-за которого
+  // ромб вынесли из потока, просто через другое свойство
+
+  @include a.desktop-only {
+    padding-left: var(--architecture-mark-space, 7.875rem); // 110 + 16
+  }
 }
 
 // Ромб лежит поверх, вне потока: так его размер не попадает в высоту карточки,
@@ -258,9 +358,28 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
 
   @include t.lead-m-medium;
 
+  // Заголовок сдвигается трансформом, а не отступом: трансформ не участвует
+  // в раскладке, поэтому не влияет ни на перенос строк, ни на замер высоты
+
+  @include a.desktop-only {
+    transform: translateX(calc(var(--architecture-mark-space, 7.875rem) * -1));
+
+    @include s.default-transition(transform);
+  }
+
   @include a.mobile {
     @include t.body-l-medium;
   }
+}
+
+// Пока высота карточки едет переходом, она не равна натуральной. При
+// центрировании контент прыгнул бы на половину разницы в первом же кадре
+// и весь переход возвращался обратно. Прижимаем колонку к верху: в покое это
+// ничего не меняет — она и так самая высокая, — а во время перехода строки
+// просто проявляются снизу, под растущей границей
+
+.architecture-cards__content {
+  align-self: start;
 }
 
 .architecture-cards__number {

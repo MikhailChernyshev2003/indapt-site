@@ -12,7 +12,7 @@ export default {
     science: 'Наука и\u00A0образование',
     analytics: 'Аналитика и\u00A0планирование',
     engineering: 'Проектирование',
-    ml: 'Машинное<br/> обучение',
+    ml: 'Машинное обучение',
     development: 'Разработка',
     design: 'Дизайн',
     support: 'Поддержка',

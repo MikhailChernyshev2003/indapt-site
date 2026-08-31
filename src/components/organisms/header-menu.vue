@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
 import CloseIcon from 'assets/icons/close-icon.svg';
-import { EXPERTISE_NAV_HREFS, EXPERTISE_NAV_I18N_KEYS } from '~/shared/constants';
+import {
+  EXPERTISE_NAV_HREFS,
+  EXPERTISE_NAV_I18N_KEYS,
+  SERVICES_NAV_LINKS,
+} from '~/shared/constants';
 import type { NavigationItem } from '~/types/navigation';
 
 const { t, locale: currentLocale, localeCodes } = useI18n();
@@ -11,6 +15,14 @@ const NAVIGATION: ComputedRef<NavigationItem[]> = computed(() => [
   {
     to: '/about',
     name: t('header.about'),
+  },
+  {
+    to: '/services',
+    name: t('header.services'),
+    sublinks: SERVICES_NAV_LINKS.map(({ href, i18nKey }) => ({
+      to: href,
+      name: t(i18nKey),
+    })),
   },
   {
     to: '/expertise',

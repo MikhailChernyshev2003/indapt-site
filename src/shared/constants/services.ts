@@ -16,3 +16,19 @@ export const EXPERTISE_NAV_I18N_KEYS = [
   'header.science',
   'header.health',
 ] as const;
+
+/**
+ * Подменю «Услуги» в шапке. Порядок взят из макета меню и отличается
+ * от порядка реестра услуг: поддержка стоит последней. В меню подменю
+ * делится пополам на две колонки, поэтому важны и порядок, и число пунктов
+ */
+export const SERVICES_NAV_LINKS = [
+  { href: '/services/analytics-planning', i18nKey: 'header.analytics' },
+  { href: '/services/engineering', i18nKey: 'header.engineering' },
+  { href: '/services/machine-learning', i18nKey: 'header.ml' },
+  { href: '/services/design', i18nKey: 'header.design' },
+  { href: '/services/development', i18nKey: 'header.development' },
+  { href: '/services/marketing', i18nKey: 'header.marketing' },
+  { href: '/services/web3', i18nKey: 'header.web' },
+  { href: '/services/support', i18nKey: 'header.support' },
+] as const;
