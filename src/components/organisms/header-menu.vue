@@ -21,6 +21,10 @@ const NAVIGATION: ComputedRef<NavigationItem[]> = computed(() => [
     })),
   },
   {
+    to: '/projects',
+    name: t('header.projects'),
+  },
+  {
     to: '/work',
     name: t('header.work'),
   },

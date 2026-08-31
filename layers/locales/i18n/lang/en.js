@@ -1065,6 +1065,10 @@ Moscow International Business Center “Moscow City”, Federation Tower East`,
       technologies: 'Project Technologies',
       results: 'Results of Implementation',
       other: 'Other Cases',
+      chart: {
+        before: 'before launch',
+        after: 'after launch',
+      },
       subscribe: {
         title: 'Our portfolio is constantly growing.',
         text: 'Subscribe to our Telegram channel to stay updated.',
@@ -1275,6 +1279,7 @@ Moscow International Business Center “Moscow City”, Federation Tower East`,
           result_2: {
             text: 'Platform stability during peak loads increased',
           },
+          badge: '5x higher',
           result_3: {
             text: 'Unsuccessful transaction rate decreased by',
             value: '60%',

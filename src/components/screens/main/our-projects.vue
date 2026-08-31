@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getProjectHref } from '@l-projects/configs';
+
 const { isDesktop } = useDevice();
 
 const { t } = useI18n();
@@ -13,6 +15,7 @@ const projects = computed(() => [
     bgTablet: '/images/projects/gaz-bg-tablet.png',
     bgMobile: '/images/projects/gaz-bg-mobile.png',
     shape: '/images/projects/gaz-shape.svg',
+    to: getProjectHref('gazprom'),
   },
   {
     title: t('mainPage.projects.bmw.title'),
@@ -23,6 +26,7 @@ const projects = computed(() => [
     bgTablet: '/images/projects/bmw-bg-tablet.png',
     bgMobile: '/images/projects/bmw-bg-mobile.png',
     shape: '/images/projects/bmw-shape.svg',
+    to: getProjectHref('bmw'),
   },
   {
     title: t('mainPage.projects.university.title'),
@@ -33,6 +37,7 @@ const projects = computed(() => [
     bgTablet: '/images/projects/university-bg-tablet.png',
     bgMobile: '/images/projects/university-bg-mobile.png',
     shape: '/images/projects/university-shape.svg',
+    to: getProjectHref('university'),
   },
   {
     title: t('mainPage.projects.kassir.title'),
@@ -43,6 +48,7 @@ const projects = computed(() => [
     bgTablet: '/images/projects/kassir-bg-tablet.png',
     bgMobile: '/images/projects/kassir-bg-mobile.png',
     shape: '/images/projects/kassir-shape.svg',
+    to: getProjectHref('kassir'),
   },
 ]);
 
@@ -80,6 +86,13 @@ const renderList = computed(() => {
         <h2 class="our-projects__title">{{ t('mainPage.projects.title') }}</h2>
         <div class="our-projects__content">
           <p class="our-projects__content-text" v-html="t('mainPage.projects.text')" />
+          <atoms-button
+            class="our-projects__content-button"
+            href="/projects"
+            mode="secondary"
+          >
+            {{ t('mainPage.projects.button') }}
+          </atoms-button>
         </div>
       </div>
       <div

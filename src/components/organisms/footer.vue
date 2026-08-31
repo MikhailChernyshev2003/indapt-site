@@ -52,6 +52,11 @@ const clientsLinks = computed(() => [
     href: '/expertise',
   },
   {
+    id: 5,
+    text: t('footer.projects'),
+    href: '/projects',
+  },
+  {
     id: 6,
     text: t('footer.work'),
     href: '/work',

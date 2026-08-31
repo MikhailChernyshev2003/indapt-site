@@ -7,6 +7,8 @@ interface IProps {
   bg: string;
   bgTablet: string;
   bgMobile: string;
+  /** Ссылка на страницу кейса */
+  to?: string;
 }
 
 defineProps<IProps>();
@@ -16,6 +18,12 @@ const { isDesktop, isTablet } = useDevice();
 
 <template>
   <div class="project-card">
+    <nuxt-link
+      v-if="to"
+      class="project-card__link"
+      :to="to"
+      :aria-label="title"
+    />
     <div class="project-card__wrapper">
       <div class="project-card__content">
         <div class="project-card__texts">
@@ -79,6 +87,15 @@ const { isDesktop, isTablet } = useDevice();
 
   @include a.mobile {
     padding: 16px;
+  }
+
+  // Ссылка накрывает карточку целиком, не мешая ховер-эффектам
+
+  &__link {
+    position: absolute;
+    inset: 0;
+
+    z-index: 3;
   }
 
   &__bg {
