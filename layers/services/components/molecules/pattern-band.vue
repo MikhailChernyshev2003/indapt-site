@@ -6,18 +6,25 @@ const { type } = defineProps<{
 </script>
 
 <template>
-  <!-- Полоса из макета: цветной фон и два скопления слоёной фигуры по краям.
-       По правкам это два отдельных объекта: каждый появляется послойно,
-       правый стартует позже левого (reveal-shift). Обёртка-позиционер
-       обязательна — свой transform фигуры затирает gsap-масштаб появления -->
+  <!-- Полоса из макета: цветной фон и два крупных скопления колец,
+       обрезанных краями полосы. Кольца добираются клонами внешнего слоя
+       (rings): в макете их десять при шаге 33px и ядре 356px — снято
+       попиксельной подгонкой к экспортам всех трёх страниц. Позиции ядер
+       на каждой странице свои и задаются переменными. Правый кластер
+       появляется позже левого (reveal-shift) -->
   <div class="pattern-band">
     <div class="pattern-band__cluster pattern-band__cluster_start">
-      <services-molecules-layered-shape :type="type" :offset="30" />
+      <services-molecules-layered-shape
+        :type="type"
+        :offset="33"
+        :rings="10"
+      />
     </div>
     <div class="pattern-band__cluster pattern-band__cluster_end">
       <services-molecules-layered-shape
         :type="type"
-        :offset="30"
+        :offset="33"
+        :rings="10"
         :reveal-shift="12"
       />
     </div>
@@ -41,26 +48,37 @@ const { type } = defineProps<{
   }
 }
 
+// Ширина задаёт ядро; кольца расходятся наружу своими inset.
+// Координаты — левый верхний угол ядра, по умолчанию значения аналитики
+
 .pattern-band__cluster {
   position: absolute;
-  top: 50%;
 
-  width: var(--pattern-band-cluster-size, 17.5rem); // 280px
+  width: 22.25rem; // 356px
 
   @include a.mobile {
-    width: var(--pattern-band-cluster-size-mobile, 8.75rem); // 140px
+    width: 8.75rem; // 140px
   }
 
   &_start {
-    left: 4%;
+    top: var(--pattern-band-l-top, -4px);
+    left: var(--pattern-band-l-left, -4px);
 
-    transform: translateY(-54%);
+    @include a.mobile {
+      top: -30px;
+      left: -30px;
+    }
   }
 
   &_end {
-    right: 7%;
+    top: var(--pattern-band-r-top, 35px);
+    left: var(--pattern-band-r-left, 966px);
 
-    transform: translateY(-42%);
+    @include a.mobile {
+      top: 20px;
+      right: -30px;
+      left: auto;
+    }
   }
 }
 </style>

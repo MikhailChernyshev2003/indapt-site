@@ -41,7 +41,7 @@ useSeoMeta({
         <div class="service-page__kv-shape">
           <services-molecules-layered-shape
             type="hexagonOrange"
-            :offset="30"
+            :offset="42"
             trigger-closest=".sticky-kv"
           />
         </div>
@@ -70,6 +70,9 @@ useSeoMeta({
   --service-hero-to: #fef2e6;
   --service-decor-bg: #feefdf;
   --service-row-hover: #feebd7;
+  --hero-image-width: 516px;
+  --hero-image-right: 54px;
+  --hero-image-bottom: 0px;
 
   // По макету от нижнего края карточек до футера 112px
 
@@ -88,12 +91,14 @@ useSeoMeta({
   }
 }
 
-// Ядро слоёного шестиугольника в центре кадра KV: слои наружу
-// добирают макетный размер
+// Ядро слоёного шестиугольника KV. По макету центр фигуры лежит
+// в 40px за левым краем экрана, видна её правая половина; в кадре
+// ядро стоит по центру высоты. Числа сняты попиксельной подгонкой
+// фигуры к экспорту макета
 
 .service-page__kv-shape {
-  width: 780px;
-  margin: 182px auto 0;
+  width: 524px;
+  margin: 310px 0 0 -298px;
 }
 
 .service-page__info {

@@ -73,7 +73,11 @@ const techSlides = computed(() =>
 
     <section class="service-page__block">
       <div class="service-page__create-figure">
-        <services-molecules-layered-shape type="hexagonGreen" :offset="26" />
+        <services-molecules-layered-shape
+          type="hexagonGreen"
+          :offset="42"
+          :rotate="-10"
+        />
       </div>
       <services-molecules-section-head
         class="service-page__block-head"
@@ -121,6 +125,13 @@ const techSlides = computed(() =>
   --hero-image-bottom: 0px;
   --pattern-band-bg: #f6fff0;
 
+  // Позиции ядер кластеров полосы по макету этой страницы:
+  // правый кластер здесь у верхнего края, зеркально аналитике
+  --pattern-band-l-top: 114px;
+  --pattern-band-l-left: 8px;
+  --pattern-band-r-top: -111px;
+  --pattern-band-r-left: 1004px;
+
   padding-bottom: 112px;
 
   background-color: #fafef7;
@@ -139,11 +150,11 @@ const techSlides = computed(() =>
 
 .service-page__create-figure {
   position: absolute;
-  top: 79px;
-  left: 1067px;
+  top: 100px;
+  left: 1102px;
   z-index: 0;
 
-  width: 285px;
+  width: 312px;
 
   pointer-events: none;
 

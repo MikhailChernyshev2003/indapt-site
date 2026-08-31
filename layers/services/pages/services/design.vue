@@ -86,6 +86,12 @@ const methodTabs = computed(() =>
   --hero-image-bottom: 0px;
   --pattern-band-bg: #faf4ff;
 
+  // Позиции ядер кластеров полосы по макету этой страницы
+  --pattern-band-l-top: -86px;
+  --pattern-band-l-left: -19px;
+  --pattern-band-r-top: 119px;
+  --pattern-band-r-left: 1028px;
+
   padding-bottom: 112px;
 
   background-color: #faf6fe;

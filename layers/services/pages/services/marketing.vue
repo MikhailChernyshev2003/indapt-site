@@ -82,7 +82,7 @@ const featurePaths = {
         <div class="service-page__kv-shape">
           <services-molecules-layered-shape
             type="flower"
-            :offset="45"
+            :offset="41"
             trigger-closest=".sticky-kv"
           />
         </div>
@@ -148,9 +148,13 @@ const featurePaths = {
 // Ядро жёлтой массы у левого края, по центру высоты кадра; слои
 // расходятся наружу и частично уходят за край экрана, как в макете
 
+// Ядро жёлтого цветка KV. По макету центр фигуры на 290px за левым
+// краем экрана — видна только правая часть колец; по высоте кадра ядро
+// стоит по центру. Числа сняты попиксельной подгонкой к экспорту макета
+
 .service-page__kv-shape {
-  width: 340px;
-  margin: 462px 0 0 -80px;
+  width: 728px;
+  margin: 268px 0 0 -653px;
 }
 
 .service-page__info {
