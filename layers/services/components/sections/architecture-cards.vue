@@ -100,6 +100,11 @@ let motions: CardMotion[] = [];
 const EASE = 'cubic-bezier(0.12, 0.46, 0.47, 0.99)';
 const HEIGHT_DURATION = 0.4;
 
+// Высоты в проекте дробные (rem от ширины экрана), поэтому меряем через
+// getBoundingClientRect: округлённый offsetHeight занижал запас на доли
+// пикселя, и раскрытая карточка сдвигала блоки ниже на 1px
+const heightOf = (el: HTMLElement) => el.getBoundingClientRect().height;
+
 /** Высота колонки с коротким и с полным текстом; на время замера состояние подменяется и возвращается */
 const measure = ({ content, more }: CardMotion) => {
   const inlineHeight = content.style.height;
@@ -108,11 +113,11 @@ const measure = ({ content, more }: CardMotion) => {
   content.style.height = '';
   more.style.display = 'none';
 
-  const short = content.offsetHeight;
+  const short = heightOf(content);
 
   more.style.display = 'inline';
 
-  const full = content.offsetHeight;
+  const full = heightOf(content);
 
   content.style.height = inlineHeight;
   more.style.display = inlineDisplay;
@@ -139,10 +144,12 @@ const reserveHeight = () => {
 
     growth = Math.max(growth, full - short);
     // Если пересчёт пришёлся на наведение, текущая высота уже включает часть раскрытия
-    expanded += Math.max(0, motion.content.getBoundingClientRect().height - short);
+    expanded += Math.max(0, heightOf(motion.content) - short);
   });
 
-  section.style.minHeight = `${section.offsetHeight - expanded + growth}px`;
+  // Округляем вверх с запасом в пиксель: раскрытая карточка должна помещаться
+  // в секцию целиком, иначе секция подрастает на долю пикселя и блоки ниже дрожат
+  section.style.minHeight = `${Math.ceil(heightOf(section) - expanded + growth) + 1}px`;
 };
 
 /**
@@ -152,7 +159,7 @@ const reserveHeight = () => {
  */
 const freeze = (motion: CardMotion) => {
   motion.timeline?.kill();
-  motion.content.style.height = `${motion.content.getBoundingClientRect().height}px`;
+  motion.content.style.height = `${heightOf(motion.content)}px`;
 };
 
 const expand = (motion: CardMotion) => {
@@ -347,6 +354,16 @@ onBeforeUnmount(() => {
   gap: 12px;
 
   @include s.base-container;
+
+  // Пока карточка растёт, соседние ниже сдвигаются, и браузер «якорит»
+  // скролл на одной из них — подкручивает страницу на каждый кадр, и всё
+  // вокруг дрожит. Внутри секции якорей быть не должно: блок ниже стоит
+  // на месте благодаря запасу высоты (см. reserveHeight)
+
+  :deep(*),
+  & {
+    overflow-anchor: none;
+  }
 }
 
 // Ромб, заголовок и фон едут одной кривой и в один такт с высотой (см. EASE
