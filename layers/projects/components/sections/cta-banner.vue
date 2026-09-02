@@ -1,7 +1,22 @@
 <script setup lang="ts">
+import type { FigurePlacements, RingColors } from '@l-services/types';
 import { FOOTER_SOCIAL_URLS_RU } from '~/shared/constants/footer-social';
 
 const { t } = useI18n();
+
+/** Цвета колец: у этого паттерна в макете исходный синий градиент символа */
+const PATTERN_COLORS: RingColors = ['#0d3ff4', '#2ff0fe'];
+
+/**
+ * Паттерн в баннере: экземпляр «паттерн 3» относительно карточки
+ * (десктоп 7563:19524, планшет и мобильный — из соответствующих фреймов
+ * листинга). Ядро у правого края, кольца режет карточка
+ */
+const PATTERN: FigurePlacements = {
+  desktop: { x: 2226, y: 659, width: 1640, rotate: 172 },
+  tablet: { x: 1404, y: 597, width: 1149, rotate: 172 },
+  mobile: { x: 1025, y: 515, width: 887, rotate: 172 },
+};
 </script>
 
 <template>
@@ -9,14 +24,9 @@ const { t } = useI18n();
        с синим шестиугольным паттерном за текстом -->
   <section class="cta-banner">
     <div class="cta-banner__card">
-      <div class="cta-banner__decor" aria-hidden="true">
-        <services-molecules-layered-shape
-          type="hexagon"
-          :offset="79"
-          :rings="8"
-          :rotate="172"
-        />
-      </div>
+      <services-molecules-figure class="cta-banner__decor" :placement="PATTERN">
+        <services-molecules-ring-pattern shape="hexagon" :colors="PATTERN_COLORS" />
+      </services-molecules-figure>
       <div class="cta-banner__content">
         <div class="cta-banner__head">
           <h2 class="cta-banner__title" v-html="t('projects.general.subscribe.title')" />
@@ -60,20 +70,10 @@ const { t } = useI18n();
   }
 }
 
-// Ядро паттерна у правого края, кольца обрезает карточка
+// Паттерн лежит под контентом
 
 .cta-banner__decor {
-  position: absolute;
-  top: 105px;
-  left: 751px;
-
-  width: 162px;
-
-  pointer-events: none;
-
-  @include a.tablet {
-    left: 60%;
-  }
+  z-index: 0;
 }
 
 .cta-banner__content {

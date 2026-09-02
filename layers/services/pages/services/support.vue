@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { SUPPORT_CARDS, SUPPORT_TAGS } from '@l-services/configs';
+import {
+  SUPPORT_CARD_POSITIONS,
+  SUPPORT_CARDS,
+  SUPPORT_CARDS_FIGURE,
+  SUPPORT_RING_COLORS,
+  SUPPORT_TAGS,
+} from '@l-services/configs';
 
 const I18N_KEY = 'services.support';
 const SLUG = 'support';
@@ -16,19 +22,6 @@ const cardItems = computed(() =>
     text: t(`${I18N_KEY}.cards.${key}.description`),
   })),
 );
-
-/** Координаты сняты с макета: карточки лежат внахлёст */
-const cardPositions = {
-  desktop: [[0, 15], [779, 114], [111, 375]],
-  tablet: [[0, 0], [146, 320], [74, 616]],
-} as const;
-
-/** Круги под карточками: [x, y, диаметр] */
-const cardDecor = {
-  desktop: [560, 194, 200],
-  tablet: [44, 101, 600],
-  mobile: [-163, -30, 660],
-} as const;
 </script>
 
 <template>
@@ -45,11 +38,12 @@ const cardDecor = {
       :text="t(`${I18N_KEY}.development.info`)"
     >
       <template #decor>
-        <!-- Ядро в центре контейнера декора: слои расходятся наружу
-             и заполняют макетные 472px -->
-        <div class="service-page__intro-sphere">
-          <services-molecules-layered-shape type="circle" :offset="26" />
-        </div>
+        <services-molecules-figure>
+          <services-molecules-ring-pattern
+            shape="circle"
+            :colors="SUPPORT_RING_COLORS"
+          />
+        </services-molecules-figure>
       </template>
     </services-sections-intro-block>
 
@@ -57,17 +51,21 @@ const cardDecor = {
       <services-molecules-section-head
         class="service-page__block-head"
         :title="t(`${I18N_KEY}.cards.title`)"
+        :title-max-width="878"
       />
       <services-sections-scatter-cards
         class="service-page__block-body"
         :items="cardItems"
-        :positions="cardPositions"
-        :decor="cardDecor"
-        :min-height="590"
-        :min-height-tablet="810"
+        :positions="SUPPORT_CARD_POSITIONS"
+        :decor="SUPPORT_CARDS_FIGURE"
+        :min-height="561"
+        :min-height-tablet="811"
       >
         <template #decor>
-          <services-molecules-layered-shape type="circle" :offset="32" />
+          <services-molecules-ring-pattern
+            shape="circle"
+            :colors="SUPPORT_RING_COLORS"
+          />
         </template>
       </services-sections-scatter-cards>
     </section>
@@ -90,15 +88,19 @@ const cardDecor = {
   --service-hero-to: #ebfefc;
   --service-row-hover: #d4fdf8;
   --service-tile-bg: #eff6fd;
-  --service-decor-shape: #0099b6;
-  --scatter-bg: rgb(210 251 246 / 25%);
-  --scatter-border: #d9e7eb;
-  --scatter-radius: 14px;
+  --scatter-bg: rgb(60 246 225 / 5%);
+  --scatter-border: var(--dark-blue-10);
+  --scatter-radius: 16px;
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0px;
 
   padding-bottom: 112px;
+
+  // Фигуры макета уходят за правый край экрана: их должен резать край
+  // страницы, а не растягивать документ в горизонтальный скролл
+
+  overflow-x: clip;
 
   background-color: #fafffe;
 
@@ -109,11 +111,6 @@ const cardDecor = {
   @include a.mobile {
     padding-bottom: 80px;
   }
-}
-
-.service-page__intro-sphere {
-  width: 160px;
-  margin: 156px auto;
 }
 
 .service-page__intro {
@@ -144,7 +141,7 @@ const cardDecor = {
   }
 
   &-body {
-    margin-top: 49px;
+    margin-top: 60px;
 
     @include a.tablet {
       margin-top: 65px;

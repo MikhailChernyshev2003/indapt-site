@@ -15,7 +15,8 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 /** На планшете и мобильном раскрыты все карточки, на десктопе — только наведённая */
 const isExpanded = (idx: number) => !isDesktop.value || hoveredIdx.value === idx;
 
-// Ряды по три слота, как в макете: первый слот первого ряда занимает декор.
+// Ряды по три слота, как в макете: первый слот первого ряда пустой — под ним
+// лежит фигура из слота decor.
 // Ряды нужны как flex-контейнеры — внутри них ширина карточки перетекает
 // плавно (по правкам: анимация по аналогии с блоком партнёрства на /about),
 // а не скачет переносом на другую строку, как в общей сетке
@@ -35,15 +36,15 @@ const rows = computed(() => {
 
 <template>
   <section class="bento-cards" @mouseleave="hoveredIdx = -1">
+    <!-- Фигура из макета лежит за карточками и размещается относительно секции -->
+    <slot name="decor" />
     <div
       v-for="(row, rowIdx) in rows"
       :key="rowIdx"
       class="bento-cards__row"
     >
       <!-- Ячейку рисуем всегда: по макету карточки начинаются со второй колонки -->
-      <div v-if="rowIdx === 0" class="bento-cards__decor">
-        <slot name="decor" />
-      </div>
+      <div v-if="rowIdx === 0" class="bento-cards__spacer" />
       <article
         v-for="{ item, idx } in row"
         :key="item.title"
@@ -107,26 +108,24 @@ const rows = computed(() => {
   }
 }
 
-.bento-cards__decor {
+.bento-cards__spacer {
   // Треть ряда за вычетом двух жёлобов, как колонка сетки макета.
-  // Shrink разрешён: когда соседняя карточка раскрывается и ряду не хватает
-  // места, декор уступает ей ширину первым
+  // Когда карточка рядом раскрывается на две колонки, ряду не хватает места,
+  // и первой его отдаёт пустая ячейка — большой shrink забирает почти всё
+  // сжатие на неё, соседняя карточка остаётся своей ширины, как в макете
 
-  flex: 0 1 calc((100% - 32px) / 3);
+  flex: 0 100 calc((100% - 32px) / 3);
   min-width: 0;
-  overflow: hidden;
 
   @include a.tablet {
-    // В одну колонку декор не занимает ряд, а лежит за карточками во всю секцию
+    // В одну колонку пустой ячейки нет
 
-    position: absolute;
-    inset: 0;
+    display: none;
   }
 }
 
 .bento-cards__card {
-  // Позиционирование нужно, чтобы карточка перекрывала декор: на планшете он
-  // вынут из потока и иначе оказался бы поверх текста
+  // Позиционирование нужно, чтобы карточка лежала поверх фигуры
 
   position: relative;
 
@@ -145,9 +144,12 @@ const rows = computed(() => {
   padding: 24px;
   overflow: hidden;
 
+  // Карточка по макету полупрозрачная и размывает фигуру под собой
+
   background-color: var(--bento-card-bg, var(--dark-blue-5));
   border: 1px solid var(--dark-blue-10);
   border-radius: var(--bento-card-radius, 0.75rem); // 12px
+  backdrop-filter: blur(35px);
 
   // Ширина перетекает плавно — как у карточек партнёрства на /about
 

@@ -1,84 +1,59 @@
 <script setup lang="ts">
-const { type } = defineProps<{
-  /** Фигура кластеров из общих данных, например hexagonOrange */
-  type: string;
+import type { FigurePlacements, RingColors, RingShape } from '@l-services/types';
+
+const {
+  clusters,
+  shape = 'hexagon',
+  colors,
+  image,
+} = defineProps<{
+  /** Размещение скоплений колец по макету, обычно два */
+  clusters: FigurePlacements[];
+  /** Фигура колец */
+  shape?: RingShape;
+  /** Цвета колец; не нужны, если полоса собрана из картинки */
+  colors?: RingColors;
+  /** Растр вместо колец: в макете дизайна полоса нарисована картинкой */
+  image?: string;
 }>();
 </script>
 
 <template>
-  <!-- Полоса из макета: цветной фон и два крупных скопления колец,
-       обрезанных краями полосы. Кольца добираются клонами внешнего слоя
-       (rings): в макете их десять при шаге 33px и ядре 356px — снято
-       попиксельной подгонкой к экспортам всех трёх страниц. Позиции ядер
-       на каждой странице свои и задаются переменными. Правый кластер
-       появляется позже левого (reveal-shift) -->
+  <!-- Полоса из макета: цветной фон и два скопления колец, обрезанных
+       краями полосы. Каждое скопление появляется по скроллу как фигура
+       на главной, правое — чуть позже левого -->
   <div class="pattern-band">
-    <div class="pattern-band__cluster pattern-band__cluster_start">
-      <services-molecules-layered-shape
-        :type="type"
-        :offset="33"
-        :rings="10"
+    <services-molecules-figure
+      v-for="(cluster, idx) in clusters"
+      :key="idx"
+      :placement="cluster"
+      :reveal-shift="idx * 12"
+    >
+      <img
+        v-if="image"
+        :src="image"
+        alt=""
+        loading="lazy"
       />
-    </div>
-    <div class="pattern-band__cluster pattern-band__cluster_end">
-      <services-molecules-layered-shape
-        :type="type"
-        :offset="33"
-        :rings="10"
-        :reveal-shift="12"
+      <services-molecules-ring-pattern
+        v-else-if="colors"
+        :shape="shape"
+        :colors="colors"
       />
-    </div>
+    </services-molecules-figure>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@styles/adaptive" as a;
-
 .pattern-band {
   position: relative;
 
-  height: var(--pattern-band-height, 23.0625rem); // 369px
+  // Высота полосы по макету одна на всех брейкпоинтах
+
+  height: 369px;
   overflow: hidden;
 
   background: var(--pattern-band-bg, var(--white));
   border-radius: 16px;
-
-  @include a.mobile {
-    height: var(--pattern-band-height-mobile, 11.25rem); // 180px
-  }
-}
-
-// Ширина задаёт ядро; кольца расходятся наружу своими inset.
-// Координаты — левый верхний угол ядра, по умолчанию значения аналитики
-
-.pattern-band__cluster {
-  position: absolute;
-
-  width: 22.25rem; // 356px
-
-  @include a.mobile {
-    width: 8.75rem; // 140px
-  }
-
-  &_start {
-    top: var(--pattern-band-l-top, -4px);
-    left: var(--pattern-band-l-left, -4px);
-
-    @include a.mobile {
-      top: -30px;
-      left: -30px;
-    }
-  }
-
-  &_end {
-    top: var(--pattern-band-r-top, 35px);
-    left: var(--pattern-band-r-left, 966px);
-
-    @include a.mobile {
-      top: 20px;
-      right: -30px;
-      left: auto;
-    }
-  }
 }
 </style>

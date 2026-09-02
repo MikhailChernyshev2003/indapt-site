@@ -25,16 +25,6 @@ export interface ServiceDescGroup {
   collapses: string[];
 }
 
-/** Фигуры из общих данных src/data/shapes, которые встречаются в макетах услуг */
-export type ServiceDecorShape = 'circle' | 'triangle' | 'star' | 'flower';
-
-export interface ServiceDecorLayer {
-  /** Контур слоя в системе координат 174×174 */
-  path: string;
-  /** Прозрачность слоя из данных фигуры */
-  opacity: number;
-}
-
 export interface ServiceFeatureItem {
   /** Заголовок блока */
   title: string;
@@ -55,17 +45,6 @@ export interface ScatterCardPositions {
   /** Координаты карточек, индексы совпадают с items */
   desktop: readonly ScatterCardPoint[];
   tablet: readonly ScatterCardPoint[];
-}
-
-/** Размещение фигуры под карточками: [x, y, диаметр] */
-export type ScatterDecorPlacement = readonly [number, number, number];
-
-export interface ScatterDecorPositions {
-  desktop: ScatterDecorPlacement;
-  /** По умолчанию равно десктопному */
-  tablet?: ScatterDecorPlacement;
-  /** По умолчанию равно планшетному */
-  mobile?: ScatterDecorPlacement;
 }
 
 export interface NumberedLineItem {
@@ -129,4 +108,52 @@ export interface ServiceDescPaths {
   collapseLabel?: string;
   /** Ключ текста раскрывающегося пункта */
   collapseText?: string;
+}
+
+/** Фигуры паттернов макета: те же кольца, что у морфинга на главной */
+export type RingShape = 'hexagon' | 'star' | 'circle';
+
+/** Цвета градиента колец: начало и конец, любой CSS-цвет */
+export type RingColors = readonly [string, string];
+
+/**
+ * Размещение фигуры по макету на одном брейкпоинте: левый верхний угол
+ * экземпляра до поворота, его размер и угол поворота — так, как они лежат
+ * в матрице ноды Figma (положительный угол — по часовой, как в CSS rotate).
+ * Координаты в px по макету относительно контейнера фигуры
+ */
+export interface FigurePlacement {
+  x: number;
+  y: number;
+  width: number;
+  /** Без высоты её задаёт содержимое: у svg и картинок — пропорция */
+  height?: number;
+  rotate?: number;
+}
+
+/**
+ * Размещение по брейкпоинтам. Планшет по умолчанию повторяет десктоп,
+ * мобильный — планшет; null прячет фигуру на брейкпоинте
+ */
+export interface FigurePlacements {
+  desktop: FigurePlacement | null;
+  tablet?: FigurePlacement | null;
+  mobile?: FigurePlacement | null;
+}
+
+/** Кадр статичной картинки внутри прокручиваемого блока, px по макету */
+export interface StickyFrame {
+  width: number;
+  height: number;
+  /** Смещение кадра от левого края экрана */
+  left?: number;
+  /** Смещение кадра от верха блока в покое, пока он не «прилип» */
+  top?: number;
+}
+
+/** Кадры по брейкпоинтам: незаданный повторяет предыдущий, как у фигур */
+export interface StickyFrames {
+  desktop: StickyFrame;
+  tablet?: StickyFrame;
+  mobile?: StickyFrame;
 }

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import {
+  DEVELOPMENT_CARD_POSITIONS,
   DEVELOPMENT_CARDS,
+  DEVELOPMENT_CARDS_FIGURE,
   DEVELOPMENT_STEPS,
+  DEVELOPMENT_STEPS_FIGURE,
   DEVELOPMENT_TAGS,
   SERVICES,
 } from '@l-services/configs';
@@ -24,19 +27,6 @@ const cardItems = computed(() =>
   })),
 );
 
-/** Координаты сняты с макета: карточки лежат внахлёст */
-const cardPositions = {
-  desktop: [[0, 0], [779, 100], [111, 360]],
-  tablet: [[0, 0], [147, 320], [74, 616]],
-} as const;
-
-/** Треугольник под карточками: [x, y, размер] */
-const cardDecor = {
-  desktop: [554, 178, 210],
-  tablet: [2, 4, 633],
-  mobile: [-140, -30, 620],
-} as const;
-
 const stepItems = computed(() =>
   DEVELOPMENT_STEPS.map(key => ({
     title: t(`${I18N_KEY}.list.${key}.title`),
@@ -57,40 +47,47 @@ const stepItems = computed(() =>
       <services-molecules-section-head
         class="service-page__block-head"
         :title="t(`${I18N_KEY}.cards.title`)"
+        :title-max-width="910"
       />
       <services-sections-scatter-cards
         class="service-page__block-body"
         :items="cardItems"
-        :positions="cardPositions"
-        :decor="cardDecor"
-        :min-height="578"
+        :positions="DEVELOPMENT_CARD_POSITIONS"
+        :decor="DEVELOPMENT_CARDS_FIGURE"
+        :min-height="561"
         :min-height-tablet="811"
       >
         <template #decor>
-          <services-molecules-layered-shape type="triangle" :offset="34" />
+          <img
+            src="/images/services/development/triangle.webp"
+            alt=""
+            loading="lazy"
+          />
         </template>
       </services-sections-scatter-cards>
     </section>
 
     <section class="service-page__block service-page__block_steps">
+      <!-- Тот же треугольник лежит за шагами и уходит за правый край экрана -->
+      <services-molecules-figure
+        class="service-page__steps-figure"
+        :placement="DEVELOPMENT_STEPS_FIGURE"
+      >
+        <img
+          src="/images/services/development/triangle.webp"
+          alt=""
+          loading="lazy"
+        />
+      </services-molecules-figure>
       <services-molecules-section-head
         class="service-page__block-head"
         :title="t(`${I18N_KEY}.list.title`)"
+        :title-max-width="1068"
       />
       <services-sections-timeline-steps
         class="service-page__block-body"
         :items="stepItems"
-      >
-        <template #decor>
-          <img
-            src="/images/services/development/timeline-blob.webp"
-            width="1844"
-            height="1835"
-            alt=""
-            loading="lazy"
-          />
-        </template>
-      </services-sections-timeline-steps>
+      />
     </section>
 
     <services-sections-expertise class="service-page__expertise" />
@@ -111,9 +108,9 @@ const stepItems = computed(() =>
   --service-hero-to: #dae6fe;
   --service-row-hover: #dfeafe;
   --service-tile-bg: #eaf1fe;
-  --service-decor-shape: #5374e5;
-  --scatter-border: #d4dced;
-  --scatter-radius: 12px;
+  --scatter-bg: rgb(23 100 246 / 5%);
+  --scatter-border: var(--dark-blue-10);
+  --scatter-radius: 16px;
   --timeline-pin-active-bg: #3e5eff;
   --timeline-pin-bg: #c9dbfd;
   --timeline-pin-number: #586995;
@@ -123,6 +120,11 @@ const stepItems = computed(() =>
   --hero-image-bottom: -40px;
 
   padding-bottom: 112px;
+
+  // Фигуры макета уходят за правый край экрана: их должен резать край
+  // страницы, а не растягивать документ в горизонтальный скролл
+
+  overflow-x: clip;
 
   background-color: #f5f9ff;
 
@@ -147,9 +149,7 @@ const stepItems = computed(() =>
   }
 
   &_steps {
-    --timeline-decor-top: 9px;
-    --timeline-decor-right: -269px;
-    --timeline-decor-width: 922px;
+    position: relative;
 
     margin-top: 81px;
 
@@ -170,6 +170,14 @@ const stepItems = computed(() =>
         margin-top: 32px;
       }
     }
+
+    // Фигура лежит под заголовком и шагами
+
+    .service-page__block-head,
+    .service-page__block-body {
+      position: relative;
+      z-index: 1;
+    }
   }
 
   &-head {
@@ -177,7 +185,7 @@ const stepItems = computed(() =>
   }
 
   &-body {
-    margin-top: 61px;
+    margin-top: 60px;
 
     @include a.tablet {
       margin-top: 62px;
@@ -187,6 +195,10 @@ const stepItems = computed(() =>
       margin-top: 32px;
     }
   }
+}
+
+.service-page__steps-figure {
+  z-index: 0;
 }
 
 .service-page__expertise {

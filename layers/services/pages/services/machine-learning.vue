@@ -2,7 +2,9 @@
 import {
   MACHINE_LEARNING_CHALLENGES,
   MACHINE_LEARNING_INFO,
+  MACHINE_LEARNING_RING_COLORS,
   MACHINE_LEARNING_SOLUTIONS,
+  MACHINE_LEARNING_STAR,
   MACHINE_LEARNING_TAGS,
 } from '@l-services/configs';
 
@@ -53,11 +55,12 @@ const solutionItems = computed(() =>
         :items="challengeItems"
       >
         <template #decor>
-          <services-molecules-layered-shape
-            class="service-page__bento-blob"
-            type="star"
-            :offset="58"
-          />
+          <services-molecules-figure :placement="MACHINE_LEARNING_STAR">
+            <services-molecules-ring-pattern
+              shape="star"
+              :colors="MACHINE_LEARNING_RING_COLORS"
+            />
+          </services-molecules-figure>
         </template>
       </services-sections-bento-cards>
     </section>
@@ -93,12 +96,20 @@ const solutionItems = computed(() =>
   --service-hero-to: #fdf5f5;
   --service-row-hover: #f0e6e6;
   --service-tile-bg: #eeedf5;
-  --service-decor-shape: var(--services-pink);
   --hero-image-width: 714px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0px;
 
+  // Карточки по макету: тёмно-красная заливка на 3% и радиус 16px
+  --bento-card-bg: rgb(104 0 3 / 3%);
+  --bento-card-radius: 1rem;
+
   padding-bottom: 112px;
+
+  // Фигуры макета уходят за правый край экрана: их должен резать край
+  // страницы, а не растягивать документ в горизонтальный скролл
+
+  overflow-x: clip;
 
   background-color: #f9f5f5;
 
@@ -108,30 +119,6 @@ const solutionItems = computed(() =>
 
   @include a.mobile {
     padding-bottom: 80px;
-  }
-}
-
-// Клякса из макета больше своей ячейки: лежит абсолютом за карточками,
-// плотная часть по центру совпадает с положением в макете
-
-.service-page__bento-blob {
-  position: absolute;
-  top: 91px;
-  left: 282px;
-  z-index: 0;
-
-  width: 400px;
-
-  pointer-events: none;
-
-  @include a.tablet {
-    display: none;
-  }
-
-  :deep(img) {
-    display: block;
-    width: 100%;
-    height: auto;
   }
 }
 

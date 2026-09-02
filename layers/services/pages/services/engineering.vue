@@ -99,6 +99,11 @@ const alignmentItems = computed(() =>
 
   padding-bottom: 112px;
 
+  // Фигуры макета уходят за правый край экрана: их должен резать край
+  // страницы, а не растягивать документ в горизонтальный скролл
+
+  overflow-x: clip;
+
   background-color: #fafafa;
 
   @include a.tablet {

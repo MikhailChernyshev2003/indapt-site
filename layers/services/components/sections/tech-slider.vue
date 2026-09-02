@@ -193,12 +193,11 @@ const breakpoints = {
 }
 
 .tech-slider__slider {
+  // Ряд по макету держит высоту раскрытой карточки (405px), чтобы блок
+  // под лентой не прыгал, пока картинка растёт
+
+  min-height: var(--tech-slider-row-height, 25.3125rem); // 405px
   margin-top: 52px;
-
-  // Увеличенная карточка выходит за исходную высоту ленты — без visible
-  // свипер обрезал бы её рост
-
-  overflow: visible;
 
   @include a.mobile {
     margin-top: 32px;
@@ -210,43 +209,46 @@ const breakpoints = {
 .tech-slider__slide {
   width: 418px;
 
-  // По правкам активная карточка заметно увеличивается (в референсе макета
-  // 544/418 ≈ 1.3), уходящая при пролистывании — уменьшается. Масштаб растёт
-  // от верхнего левого угла: подписи остаются на своей строке, а рост уходит
-  // вправо и вниз, в свободное поле ленты
-
-  transform-origin: left top;
-
-  @include s.default-transition(transform);
-
   @include a.mobile {
     width: 335px;
   }
 
-  @include s.hover {
-    z-index: 1;
+  // По макету («Саrds», варианты hover) при наведении растёт картинка
+  // карточки: 290 → 324px, подписи сдвигаются следом. По комментарию
+  // в макете карточка, уходящая при пролистывании, наоборот, уменьшается —
+  // класс на предыдущем слайде ставит swiper. Только на десктопе: на тач-
+  // экранах карточки листаются пальцем, наведения нет
 
-    transform: scale(1.3);
-  }
+  @include a.desktop-only {
+    @include s.hover {
+      .tech-slider__image {
+        height: var(--tech-slider-image-height-hover, 20.25rem); // 324px
+      }
+    }
 
-  // Класс на предыдущем слайде ставит swiper
-
-  &.swiper-slide-prev {
-    transform: scale(0.94);
-    transform-origin: right center;
+    &.swiper-slide-prev .tech-slider__image {
+      height: var(--tech-slider-image-height-prev, 16rem); // 256px
+    }
   }
 }
 
 .tech-slider__image {
   display: block;
-
-  // Высота не фиксирована: по макету иллюстрации слайдов разной высоты,
-  // и подписи под ними стоят на разном уровне
-
   width: 100%;
-  height: auto;
+
+  // Высота картинки фиксирована по макету и меняется при наведении;
+  // сама иллюстрация подстраивается под рамку
+
+  height: var(--tech-slider-image-height, 18.125rem); // 290px
+  object-fit: cover;
 
   border-radius: 16px;
+
+  @include s.default-transition(height);
+
+  @include a.mobile {
+    height: var(--tech-slider-image-height-mobile, 15.75rem); // 252px
+  }
 }
 
 .tech-slider__label {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  DESIGN_BAND,
   DESIGN_FEATURES,
   DESIGN_INFO,
   DESIGN_METHODS,
@@ -50,7 +51,10 @@ const methodTabs = computed(() =>
       :paragraphs="DESIGN_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-pattern-band type="hexagonPurple" />
+      <services-molecules-pattern-band
+        :clusters="DESIGN_BAND"
+        image="/images/services/design/band.webp"
+      />
     </div>
     <services-sections-feature-list
       class="service-page__features"
@@ -78,21 +82,18 @@ const methodTabs = computed(() =>
   --service-hero-from: #e3c7fd;
   --service-hero-to: #fbf6ff;
   --service-row-hover: #ebe3fd;
-  --service-decor-bg: #f9f3ff;
-  --service-decor-shape: #8d19fc;
   --service-tile-bg: #efeefd;
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0px;
-  --pattern-band-bg: #faf4ff;
-
-  // Позиции ядер кластеров полосы по макету этой страницы
-  --pattern-band-l-top: -86px;
-  --pattern-band-l-left: -19px;
-  --pattern-band-r-top: 119px;
-  --pattern-band-r-left: 1028px;
+  --pattern-band-bg: #f9f3ff;
 
   padding-bottom: 112px;
+
+  // Фигуры макета уходят за правый край экрана: их должен резать край
+  // страницы, а не растягивать документ в горизонтальный скролл
+
+  overflow-x: clip;
 
   background-color: #faf6fe;
 

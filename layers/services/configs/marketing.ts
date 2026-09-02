@@ -1,4 +1,4 @@
-import type { ServiceDescGroup } from '@l-services/types';
+import type { FigurePlacements, ServiceDescGroup, StickyFrames } from '@l-services/types';
 
 /** Теги услуги в порядке вывода, ключи из services.marketing.tags */
 export const MARKETING_TAGS = [
@@ -40,3 +40,33 @@ export const MARKETING_FEATURES: ServiceDescGroup[] = [
 
 /** Пункты блока «Создаём» */
 export const MARKETING_CREATE = ['item_1', 'item_2', 'item_3', 'item_4'];
+
+/**
+ * Кадр статичной картинки за раскрывающимися блоками: фрейм 8917:9031;
+ * планшет — 8917:9440, мобильный — 8917:9732.
+ * Смещение кадра считается от верха списка блоков
+ */
+export const MARKETING_KV_FRAMES: StickyFrames = {
+  desktop: { width: 556, height: 1265, top: 350 },
+  tablet: { width: 768, height: 1561, top: 289 },
+  mobile: { width: 375, height: 1154, top: 412 },
+};
+
+/** На десктопе кадр целиком отрисован картинкой из макета */
+export const MARKETING_KV_IMAGE: FigurePlacements = {
+  desktop: { x: 0, y: 0, width: 556, height: 1265 },
+  tablet: null,
+};
+
+/** На планшете и мобильном кадр собирается из растра цветка и засвета над ним */
+export const MARKETING_KV_FLOWER: FigurePlacements = {
+  desktop: null,
+  tablet: { x: -779, y: 754.22, width: 1036.5, height: 885.9, rotate: -38.3 },
+  mobile: { x: -576.13, y: 557.81, width: 766.6, height: 655.2, rotate: -38.3 },
+};
+
+export const MARKETING_KV_GLOW: FigurePlacements = {
+  desktop: null,
+  tablet: { x: 117.12, y: 1232.54, width: 744, height: 350.1, rotate: -68 },
+  mobile: { x: 86.62, y: 911.57, width: 550.3, height: 259, rotate: -68 },
+};

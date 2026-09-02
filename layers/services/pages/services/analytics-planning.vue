@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import {
+  ANALYTICS_PLANNING_BAND,
   ANALYTICS_PLANNING_GROUPS,
   ANALYTICS_PLANNING_INFO,
+  ANALYTICS_PLANNING_KV,
+  ANALYTICS_PLANNING_KV_FRAMES,
+  ANALYTICS_PLANNING_RING_COLORS,
   ANALYTICS_PLANNING_TAGS,
 } from '@l-services/configs';
 
@@ -28,23 +32,26 @@ useSeoMeta({
       :paragraphs="ANALYTICS_PLANNING_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-pattern-band type="hexagonOrange" />
+      <services-molecules-pattern-band
+        :clusters="ANALYTICS_PLANNING_BAND"
+        :colors="ANALYTICS_PLANNING_RING_COLORS"
+      />
     </div>
     <!-- Картинка по правкам статична: скроллится только текст аккордеонов -->
     <services-molecules-sticky-kv
       class="service-page__desc"
-      :width="1444"
-      :height="1144"
-      :left="-4"
+      :frames="ANALYTICS_PLANNING_KV_FRAMES"
     >
       <template #media>
-        <div class="service-page__kv-shape">
-          <services-molecules-layered-shape
-            type="hexagonOrange"
-            :offset="42"
-            trigger-closest=".sticky-kv"
+        <services-molecules-figure
+          :placement="ANALYTICS_PLANNING_KV"
+          trigger-closest=".sticky-kv"
+        >
+          <services-molecules-ring-pattern
+            shape="hexagon"
+            :colors="ANALYTICS_PLANNING_RING_COLORS"
           />
-        </div>
+        </services-molecules-figure>
       </template>
       <services-sections-desc-services
         :i18n-key="I18N_KEY"
@@ -68,19 +75,27 @@ useSeoMeta({
   --service-accent: var(--services-orange);
   --service-hero-from: #fddebe;
   --service-hero-to: #fef2e6;
-  --service-decor-bg: #feefdf;
   --service-row-hover: #feebd7;
+  --pattern-band-bg: #feefdf;
   --hero-image-width: 516px;
   --hero-image-right: 54px;
   --hero-image-bottom: 0px;
 
   // По макету от нижнего края карточек до футера 112px
 
-  --pattern-band-bg: #ffefe0;
-
   padding-bottom: 112px;
 
+  // Фигуры макета уходят за правый край экрана: их должен резать край
+  // страницы, а не растягивать документ в горизонтальный скролл
+
+  overflow-x: clip;
+
   background-color: #fffaf5;
+
+  // Кадр статичной картинки (sticky-kv) уходит под поток страницы
+  // отрицательным z-index — контекст наложения должен быть свой
+
+  isolation: isolate;
 
   @include a.tablet {
     padding-bottom: 108px;
@@ -89,16 +104,6 @@ useSeoMeta({
   @include a.mobile {
     padding-bottom: 80px;
   }
-}
-
-// Ядро слоёного шестиугольника KV. По макету центр фигуры лежит
-// в 40px за левым краем экрана, видна её правая половина; в кадре
-// ядро стоит по центру высоты. Числа сняты попиксельной подгонкой
-// фигуры к экспорту макета
-
-.service-page__kv-shape {
-  width: 524px;
-  margin: 310px 0 0 -298px;
 }
 
 .service-page__info {

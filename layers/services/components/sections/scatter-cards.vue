@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
 import type {
+  FigurePlacements,
   ScatterCardPositions,
-  ScatterDecorPlacement,
-  ScatterDecorPositions,
   ServiceFeatureItem,
 } from '@l-services/types';
 
@@ -19,8 +18,8 @@ const {
   items: ServiceFeatureItem[];
   /** Координаты карточек по брейкпоинтам, индексы совпадают с items */
   positions: ScatterCardPositions;
-  /** Размещение фигуры в слоте decor; без него фигура тянется на всю сцену */
-  decor?: ScatterDecorPositions;
+  /** Размещение фигуры из слота decor по макету относительно сцены */
+  decor?: FigurePlacements;
   /** Ширина карточки на десктопе и планшете */
   cardWidth?: number;
   /** Карточки вынуты из потока и высоту не задают — она приходит из макета */
@@ -35,30 +34,11 @@ const {
 // относительно паддингов контейнера на любой ширине, кроме макетной
 const toRem = (px: number) => `${px / 16}rem`;
 
-const decorVars = (placement: ScatterDecorPlacement | undefined, suffix: string) => {
-  if (!placement) return {};
-
-  const [x, y, size] = placement;
-
-  return {
-    [`--scatter-decor-x${suffix}`]: toRem(x),
-    [`--scatter-decor-y${suffix}`]: toRem(y),
-    [`--scatter-decor-size${suffix}`]: toRem(size),
-  };
-};
-
-const rootStyle = computed(() => {
-  const tablet = decor?.tablet ?? decor?.desktop;
-
-  return {
-    '--scatter-card-width': toRem(cardWidth),
-    '--scatter-min-height': toRem(minHeight),
-    '--scatter-min-height-tablet': toRem(minHeightTablet ?? minHeight),
-    ...decorVars(decor?.desktop, ''),
-    ...decorVars(tablet, '-tablet'),
-    ...decorVars(decor?.mobile ?? tablet, '-mobile'),
-  };
-});
+const rootStyle = computed(() => ({
+  '--scatter-card-width': toRem(cardWidth),
+  '--scatter-min-height': toRem(minHeight),
+  '--scatter-min-height-tablet': toRem(minHeightTablet ?? minHeight),
+}));
 
 const stageRef = useTemplateRef<HTMLElement>('stageRef');
 
@@ -66,8 +46,9 @@ const stageRef = useTemplateRef<HTMLElement>('stageRef');
 // при скролле по очереди. Прогресс привязан к прокрутке (scrub), а не к запуску
 // твина: одноразовый триггер успевал отработать вхолостую на mount, пока
 // картинки не загрузились и позиции считались по короткой странице.
-// Очередь задаёт сдвиг диапазонов: у каждого следующего элемента он начинается
-// на шаг позже, поэтому они проявляются один за другим
+// Очередь задаёт сдвиг диапазонов: у каждой следующей плашки он начинается
+// на шаг позже, поэтому они проявляются одна за другой. Паттерн появляется
+// сам, как фигура на главной (см. figure)
 const REVEAL_STEP = 8;
 const REVEAL_LENGTH = 25;
 
@@ -81,7 +62,7 @@ const revealAnimation = () => {
 
   if (!stage) return;
 
-  const targets = stage.querySelectorAll<HTMLElement>('.scatter-cards__decor, .scatter-cards__card');
+  const targets = stage.querySelectorAll<HTMLElement>('.scatter-cards__card');
 
   targets.forEach((target, idx) => {
     const offset = idx * REVEAL_STEP;
@@ -129,9 +110,13 @@ const cardStyle = (idx: number) => {
          совпадали с макетом: у абсолютного позиционирования точка отсчёта —
          внешний край padding, а в макете он же — край контента -->
     <div ref="stageRef" class="scatter-cards__stage">
-      <div v-if="$slots.decor" class="scatter-cards__decor">
+      <services-molecules-figure
+        v-if="$slots.decor"
+        class="scatter-cards__decor"
+        :placement="decor"
+      >
         <slot name="decor" />
-      </div>
+      </services-molecules-figure>
       <article
         v-for="(item, idx) in items"
         :key="item.title"
@@ -178,27 +163,7 @@ const cardStyle = (idx: number) => {
 }
 
 .scatter-cards__decor {
-  position: absolute;
-  top: var(--scatter-decor-y, 0);
-  left: var(--scatter-decor-x, 0);
-
   z-index: 0;
-
-  width: var(--scatter-decor-size, 100%);
-
-  @include a.tablet {
-    top: var(--scatter-decor-y-tablet, 0);
-    left: var(--scatter-decor-x-tablet, 0);
-
-    width: var(--scatter-decor-size-tablet, 100%);
-  }
-
-  @include a.mobile {
-    top: var(--scatter-decor-y-mobile, 0);
-    left: var(--scatter-decor-x-mobile, 0);
-
-    width: var(--scatter-decor-size-mobile, 100%);
-  }
 }
 
 .scatter-cards__card {
@@ -216,11 +181,12 @@ const cardStyle = (idx: number) => {
 
   color: var(--dark-blue);
 
-  // Фон полупрозрачный — сквозь карточку виден декор
+  // Фон полупрозрачный — сквозь карточку виден размытый декор
 
   background: var(--scatter-bg, var(--white));
   border: 1px solid var(--scatter-border, var(--dark-blue-20));
   border-radius: var(--scatter-radius, 0.75rem); // 12px
+  backdrop-filter: blur(35px);
 
   @include a.tablet {
     top: var(--scatter-card-y-tablet, 0);

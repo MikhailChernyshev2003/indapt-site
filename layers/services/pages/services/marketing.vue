@@ -3,6 +3,10 @@ import {
   MARKETING_CREATE,
   MARKETING_FEATURES,
   MARKETING_INFO,
+  MARKETING_KV_FLOWER,
+  MARKETING_KV_FRAMES,
+  MARKETING_KV_GLOW,
+  MARKETING_KV_IMAGE,
   MARKETING_TABS,
   MARKETING_TAGS,
 } from '@l-services/configs';
@@ -74,18 +78,35 @@ const featurePaths = {
     <!-- Картинка по правкам статична: скроллится только текст аккордеонов -->
     <services-molecules-sticky-kv
       class="service-page__features"
-      :width="556"
-      :height="1265"
-      :left="-1"
+      :frames="MARKETING_KV_FRAMES"
     >
       <template #media>
-        <div class="service-page__kv-shape">
-          <services-molecules-layered-shape
-            type="flower"
-            :offset="41"
-            trigger-closest=".sticky-kv"
+        <services-molecules-figure
+          :placement="MARKETING_KV_IMAGE"
+          trigger-closest=".sticky-kv"
+        >
+          <img
+            src="/images/services/marketing/kv.webp"
+            alt=""
+            loading="lazy"
           />
-        </div>
+        </services-molecules-figure>
+        <services-molecules-figure
+          :placement="MARKETING_KV_FLOWER"
+          trigger-closest=".sticky-kv"
+        >
+          <img
+            src="/images/services/marketing/flower.webp"
+            alt=""
+            loading="lazy"
+          />
+        </services-molecules-figure>
+        <services-molecules-figure
+          :placement="MARKETING_KV_GLOW"
+          :animated="false"
+        >
+          <div class="service-page__kv-glow" />
+        </services-molecules-figure>
       </template>
       <services-sections-desc-services
         :i18n-key="I18N_KEY"
@@ -126,7 +147,6 @@ const featurePaths = {
   --service-hero-from: #fff6b0;
   --service-hero-to: #fffce5;
   --service-row-hover: #fff8bd;
-  --service-decor-shape: #ebce53;
   --info-paragraph-gap: 16px;
   --hero-image-width: 510px;
   --hero-image-right: 60px;
@@ -134,7 +154,17 @@ const featurePaths = {
 
   padding-bottom: 112px;
 
+  // Фигуры макета уходят за правый край экрана: их должен резать край
+  // страницы, а не растягивать документ в горизонтальный скролл
+
+  overflow-x: clip;
+
   background-color: #fffef5;
+
+  // Кадр статичной картинки (sticky-kv) уходит под поток страницы
+  // отрицательным z-index — контекст наложения должен быть свой
+
+  isolation: isolate;
 
   @include a.tablet {
     padding-bottom: 108px;
@@ -145,16 +175,15 @@ const featurePaths = {
   }
 }
 
-// Ядро жёлтой массы у левого края, по центру высоты кадра; слои
-// расходятся наружу и частично уходят за край экрана, как в макете
+// Засвет из макета гасит нижний край цветка: размытый эллипс цвета фона
 
-// Ядро жёлтого цветка KV. По макету центр фигуры на 290px за левым
-// краем экрана — видна только правая часть колец; по высоте кадра ядро
-// стоит по центру. Числа сняты попиксельной подгонкой к экспорту макета
+.service-page__kv-glow {
+  width: 100%;
+  height: 100%;
 
-.service-page__kv-shape {
-  width: 728px;
-  margin: 268px 0 0 -653px;
+  background-color: rgb(255 254 245 / 80%);
+  border-radius: 50%;
+  filter: blur(100px);
 }
 
 .service-page__info {

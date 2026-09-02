@@ -43,10 +43,6 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="timeline-steps">
-    <!-- Декор из макета лежит за шагами и уходит за правый край экрана -->
-    <div v-if="$slots.decor" class="timeline-steps__decor">
-      <slot name="decor" />
-    </div>
     <article
       v-for="(item, idx) in items"
       ref="itemsRef"
@@ -77,33 +73,13 @@ onBeforeUnmount(() => {
 @use "@styles/typography" as t;
 
 .timeline-steps {
-  position: relative;
-
   @include s.base-container;
-}
-
-.timeline-steps__decor {
-  position: absolute;
-  top: var(--timeline-decor-top, 0);
-  right: var(--timeline-decor-right, 0);
-  z-index: 0;
-
-  width: var(--timeline-decor-width, 57.625rem); // 922px
-
-  pointer-events: none;
-
-  @include a.tablet {
-    display: none;
-  }
 }
 
 // Контент отбит от края контейнера на 86px на всех брейкпоинтах,
 // в оставшемся месте стоит колонка меток
 
 .timeline-steps__item {
-  position: relative;
-  z-index: 1;
-
   display: grid;
   grid-template-columns: 86px 1fr;
 

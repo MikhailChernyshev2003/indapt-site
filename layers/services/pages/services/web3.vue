@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import {
+  WEB3_BAND,
   WEB3_CREATE,
+  WEB3_CREATE_GLOWS,
+  WEB3_CREATE_PATTERN,
   WEB3_FEATURES,
   WEB3_INFO,
+  WEB3_RING_COLORS,
   WEB3_SLIDES,
   WEB3_TAGS,
 } from '@l-services/configs';
@@ -64,7 +68,10 @@ const techSlides = computed(() =>
       :paragraphs="WEB3_INFO"
     />
     <div class="service-page__decor">
-      <services-molecules-pattern-band type="hexagonGreen" />
+      <services-molecules-pattern-band
+        :clusters="WEB3_BAND"
+        :colors="WEB3_RING_COLORS"
+      />
     </div>
     <services-sections-feature-list
       class="service-page__features"
@@ -72,12 +79,23 @@ const techSlides = computed(() =>
     />
 
     <section class="service-page__block">
-      <div class="service-page__create-figure">
-        <services-molecules-layered-shape
-          type="hexagonGreen"
-          :offset="42"
-          :rotate="-10"
-        />
+      <!-- Паттерн из макета лежит за пунктами и уходит за края блока,
+           поверх него — белые засветы. Всё это режется границами блока -->
+      <div class="service-page__block-bg">
+        <services-molecules-figure :placement="WEB3_CREATE_PATTERN">
+          <services-molecules-ring-pattern
+            shape="hexagon"
+            :colors="WEB3_RING_COLORS"
+          />
+        </services-molecules-figure>
+        <services-molecules-figure
+          v-for="(glow, idx) in WEB3_CREATE_GLOWS"
+          :key="idx"
+          :placement="glow"
+          :animated="false"
+        >
+          <div class="service-page__glow" />
+        </services-molecules-figure>
       </div>
       <services-molecules-section-head
         class="service-page__block-head"
@@ -118,21 +136,17 @@ const techSlides = computed(() =>
   --service-hero-from: #c9f6ab;
   --service-hero-to: #ecfde2;
   --service-row-hover: #eafee1;
-  --service-decor-bg: #f5fff0;
-  --service-decor-shape: var(--services-green);
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0px;
-  --pattern-band-bg: #f6fff0;
-
-  // Позиции ядер кластеров полосы по макету этой страницы:
-  // правый кластер здесь у верхнего края, зеркально аналитике
-  --pattern-band-l-top: 114px;
-  --pattern-band-l-left: 8px;
-  --pattern-band-r-top: -111px;
-  --pattern-band-r-left: 1004px;
+  --pattern-band-bg: #f5fff0;
 
   padding-bottom: 112px;
+
+  // Фигуры макета уходят за правый край экрана: их должен резать край
+  // страницы, а не растягивать документ в горизонтальный скролл
+
+  overflow-x: clip;
 
   background-color: #fafef7;
 
@@ -145,34 +159,25 @@ const techSlides = computed(() =>
   }
 }
 
-// Фигура из макета лежит за пунктами «Что мы создаём» и уходит
-// за правый край экрана. Плотная часть выровнена по макету
-
-.service-page__create-figure {
+.service-page__block-bg {
   position: absolute;
-  top: 100px;
-  left: 1102px;
+  inset: 0;
+
   z-index: 0;
 
-  width: 312px;
+  overflow: hidden;
+}
 
-  pointer-events: none;
+// Засветы из макета: белые эллипсы с сильным размытием
 
-  @include a.tablet {
-    display: none;
-  }
+.service-page__glow {
+  width: 100%;
+  height: 100%;
 
-  // Белое свечение из макета за слоёной фигурой
-
-  &::before {
-    position: absolute;
-    inset: -34%;
-
-    background: radial-gradient(50% 50% at 50% 50%, var(--white) 35%, rgb(255 255 255 / 0%) 100%);
-    border-radius: 50%;
-
-    content: '';
-  }
+  background-color: var(--white);
+  border-radius: 50%;
+  opacity: 0.7;
+  filter: blur(120px);
 }
 
 .service-page__info {

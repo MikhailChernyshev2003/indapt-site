@@ -4,6 +4,7 @@ export * from './development';
 export * from './engineering';
 export * from './machine-learning';
 export * from './marketing';
+export * from './ring-shapes';
 export * from './services';
 export * from './support';
 export * from './web3';
