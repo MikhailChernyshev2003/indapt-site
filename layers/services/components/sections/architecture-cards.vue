@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
+import { SplitText } from 'gsap/SplitText';
 import type { ArchitectureCardItem } from '@l-services/types';
 
 const { items, mark } = defineProps<{
@@ -22,7 +24,7 @@ let lastX = -1;
 let lastY = -1;
 
 // Событие с теми же координатами браузер присылает сам, когда вёрстка уехала
-// из-под неподвижного указателя — после скролла и по ходу перехода высоты.
+// из-под неподвижного указателя — после скролла и по ходу анимации высоты.
 // Реагировать на него нельзя: это тот же источник качелей, ради которого
 // отказались от mouseenter/mouseleave, просто по другому каналу
 const isStale = (event: PointerEvent) =>
@@ -33,9 +35,6 @@ const hitIndex = (event: PointerEvent) => {
 
   if (!cards?.length) return -1;
 
-  // Один хит-тест вместо обхода прямоугольников всех карточек: перебор
-  // заставлял браузер пересчитывать раскладку на каждое движение мыши,
-  // причём поверх высот, записанных в предыдущем кадре
   const card = document
     .elementFromPoint(event.clientX, event.clientY)
     ?.closest<HTMLElement>('.architecture-cards__card');
@@ -73,133 +72,177 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 /** На планшете и мобильном раскрыты все карточки, на десктопе — только наведённая */
 const isExpanded = (idx: number) => !isDesktop.value || hoveredIdx.value === idx;
 
-// Карточка, с которой курсор только что ушёл, держит полный текст, пока едет
-// вниз. Если подменить его сразу, строки исчезнут за один кадр и дальше
-// схлопываться будет пустая коробка; так текст просто уходит под границу
-const collapsingIdx = ref(-1);
-
-/** Полный текст — у наведённой карточки и у той, что ещё схлопывается */
-const isTextFull = (idx: number) => isExpanded(idx) || collapsingIdx.value === idx;
-
-// Текст подменяется целиком, поэтому натуральная высота карточки меняется
-// скачком, а соседние карточки прыгают следом. Единственное, чего не умеет
-// браузер, — анимировать height: auto, поэтому руками фиксируем текущую высоту
-// до перерисовки и ставим целевую после. Дальше карточку ведёт обычный
-// CSS-переход, тот же самый, что фон, заголовок и ромб: одна кривая, одна
-// длительность, один момент старта и одинаковое поведение при перехвате
-const syncHeights = async (prevIdx: number) => {
-  const cards = cardsRef.value;
-
-  if (!cards?.length) return;
-
-  // На время замера уезжающая карточка возвращается к короткому тексту:
-  // целевую высоту берём от конечного состояния, а не от того, что видно
-  collapsingIdx.value = -1;
-
-  // Стартуем от того, что видно сейчас: если предыдущий переход не доиграл,
-  // это его промежуточная высота, и карточка не дёрнется. Дробная величина,
-  // а не offsetHeight: округление до целого само по себе давало полпикселя
-  // сдвига на старте и столько же на снятии инлайновой высоты
-  const before = cards.map(card => card.getBoundingClientRect().height);
-
-  await nextTick();
-
-  // Дальше проходы без чередования чтений и записей: запись на одной карточке
-  // обесценивает замер на следующей, и браузер пересчитывает раскладку по разу
-  // на карточку вместо одного раза на всю секцию
-  cards.forEach((card) => {
-    card.style.height = '';
-  });
-
-  const natural = cards.map(card => card.getBoundingClientRect().height);
-
-  const moving: [HTMLElement, number][] = [];
-
-  cards.forEach((card, idx) => {
-    // Меньше половины пикселя — двигать нечего, а инлайновая высота мешала бы
-    // карточке подстроиться под ресайз
-    if (Math.abs(natural[idx] - before[idx]) < 0.5) return;
-
-    card.style.height = `${before[idx]}px`;
-    moving.push([card, natural[idx]]);
-  });
-
-  if (!moving.length) return;
-
-  // Браузер должен увидеть стартовую высоту отдельным состоянием: иначе
-  // началом перехода останется height: auto, а из auto переход не запускается
-  // вовсе — высота встала бы скачком
-  void cards[0].offsetHeight;
-
-  moving.forEach(([card, height]) => {
-    card.style.height = `${height}px`;
-  });
-
-  // Полный текст возвращаем уезжающей карточке уже после старта перехода —
-  // в том же кадре, поэтому короткий вариант не успевает отрисоваться.
-  // Только если она действительно едет: без перехода полный текст просто
-  // раскрыл бы её обратно
-  const isCollapsing = prevIdx !== -1
-    && prevIdx !== hoveredIdx.value
-    && moving.some(([card]) => card === cards[prevIdx]);
-
-  if (isCollapsing) collapsingIdx.value = prevIdx;
-};
-
-const resetHeights = () => {
-  cardsRef.value?.forEach((card) => {
-    card.style.height = '';
-  });
-};
-
-// isDesktop в зависимостях, потому что за брейкпоинтом раскрываются сразу все
-// карточки: без этого на планшете оставались бы инлайновые высоты от десктопа
-watch([hoveredIdx, isDesktop], ([, desktop], [prevIdx, prevDesktop]) => {
-  // Смена брейкпоинта — не жест пользователя: карточки просто перестраиваются,
-  // анимировать тут нечего. Это же состояние приходит и после гидратации,
-  // когда угаданный на сервере брейкпоинт разошёлся с реальной шириной
-  if (desktop !== prevDesktop) {
-    collapsingIdx.value = -1;
-    resetHeights();
-
-    if (!desktop) hoveredIdx.value = -1;
-
-    return;
-  }
-
-  if (!desktop) return;
-
-  syncHeights(prevIdx);
-});
-
-// Инлайновую высоту снимаем после перехода: дальше карточка должна
-// подстраиваться под контент и ресайз сама. Прерванный переход перепишет
-// следующий запуск syncHeights
-const handleTransitionEnd = (event: TransitionEvent) => {
-  if (event.propertyName !== 'height' || event.target !== event.currentTarget) return;
-
-  const card = event.currentTarget as HTMLElement;
-
-  // Сначала короткий текст, и только следующим кадром — снятие высоты: иначе
-  // карточка на кадр раскрылась бы обратно под всё ещё полный текст
-  if (collapsingIdx.value === cardsRef.value?.indexOf(card)) collapsingIdx.value = -1;
-
-  nextTick(() => {
-    card.style.height = '';
-  });
-};
-
 // Продолжение склеивается с началом в один абзац: в русской локали text
 // продолжает предложение и начинается со знака препинания («. По результатам…»),
 // в английской это самостоятельное предложение. Пробел ставим только во втором
 // случае, иначе перед точкой появился бы отбив
-const cardText = (item: ArchitectureCardItem, idx: number) => {
-  if (!isTextFull(idx)) return item.shortText;
+const moreText = (item: ArchitectureCardItem) =>
+  `${/^[A-Za-zА-Яа-яЁё]/.test(item.text) ? ' ' : ''}${item.text}`;
 
-  const separator = /^[A-Za-zА-Яа-яЁё]/.test(item.text) ? ' ' : '';
+// Раскрытие карточки — одна GSAP-раскадровка на карточку. Продолжение текста
+// всегда стоит в абзаце, а не подменяется: его буквы проявляются одна за
+// другой, а колонка текста плавно доезжает до новой высоты. Высота карточки
+// идёт за колонкой сама, поэтому замерять и фиксировать её не нужно, и
+// заголовку с ромбом нечего перескакивать: они едут в одном такте с текстом
+interface CardMotion {
+  content: HTMLElement;
+  more: HTMLElement;
+  chars: Element[];
+  split: SplitText;
+  timeline: gsap.core.Timeline | null;
+}
 
-  return `${item.shortText}${separator}${item.text}`;
+let motions: CardMotion[] = [];
+
+// Кривая проекта (см. $easing в variables.scss) — чтобы высота, ромб и заголовок
+// разгонялись одинаково
+const EASE = 'cubic-bezier(0.12, 0.46, 0.47, 0.99)';
+const HEIGHT_DURATION = 0.4;
+
+/** Высота колонки с коротким и с полным текстом; продолжение прячем только на замер */
+const measure = ({ content, more }: CardMotion) => {
+  const inlineHeight = content.style.height;
+
+  content.style.height = '';
+  more.style.display = 'none';
+
+  const short = content.offsetHeight;
+
+  more.style.display = 'inline';
+
+  const full = content.offsetHeight;
+
+  content.style.height = inlineHeight;
+
+  return { short, full };
 };
+
+/**
+ * Текущая высота колонки становится стартовой: новая раскадровка идёт с того
+ * места, где остановилась прежняя. Снимать её нужно до того, как продолжение
+ * покажется или спрячется, иначе стартом стала бы уже конечная высота
+ */
+const freeze = (motion: CardMotion) => {
+  motion.timeline?.kill();
+  motion.content.style.height = `${motion.content.getBoundingClientRect().height}px`;
+};
+
+const expand = (motion: CardMotion) => {
+  const { content, chars } = motion;
+
+  freeze(motion);
+
+  motion.more.style.display = 'inline';
+
+  const { full } = measure(motion);
+
+  // Буквы идут от начала к концу и заканчивают позже высоты: последние строки
+  // дописываются уже в доехавшей карточке
+  motion.timeline = gsap.timeline({
+    onComplete: () => {
+      content.style.height = '';
+    },
+  })
+    .to(content, { height: full, duration: HEIGHT_DURATION, ease: EASE }, 0)
+    .to(chars, {
+      opacity: 1,
+      y: 0,
+      duration: 0.3,
+      ease: 'power2.out',
+      stagger: { each: 0.003, from: 'start' },
+    }, 0.05);
+};
+
+const collapse = (motion: CardMotion) => {
+  const { content, more, chars } = motion;
+
+  freeze(motion);
+
+  const { short } = measure(motion);
+
+  // Буквы гаснут с конца, высота трогается чуть позже: нижние строки успевают
+  // исчезнуть раньше, чем их срежет граница колонки
+  motion.timeline = gsap.timeline({
+    onComplete: () => {
+      more.style.display = '';
+      content.style.height = '';
+    },
+  })
+    .to(chars, {
+      opacity: 0,
+      y: 4,
+      duration: 0.18,
+      ease: 'power1.in',
+      stagger: { each: 0.0025, from: 'end' },
+    }, 0)
+    .to(content, { height: short, duration: HEIGHT_DURATION, ease: EASE }, 0.12);
+};
+
+// За брейкпоинтом карточки раскрыты всегда: буквы и высота живут в CSS,
+// инлайновые значения снимаем
+const resetMotions = () => {
+  motions.forEach((motion) => {
+    motion.timeline?.kill();
+    motion.timeline = null;
+    motion.more.style.display = '';
+    motion.content.style.height = '';
+    gsap.set(motion.chars, { clearProps: 'all' });
+  });
+};
+
+/** Десктопное исходное состояние: продолжение спрятано, буквы прозрачны */
+const collapseAll = () => {
+  motions.forEach((motion) => {
+    motion.more.style.display = '';
+    gsap.set(motion.chars, { opacity: 0, y: 4 });
+  });
+};
+
+useGsap(() => {
+  const cards = cardsRef.value;
+
+  if (!cards?.length) return;
+
+  motions = cards.map((card) => {
+    const content = card.querySelector<HTMLElement>('.architecture-cards__content')!;
+    const more = card.querySelector<HTMLElement>('.architecture-cards__text-more')!;
+
+    // Слова остаются целыми блоками, поэтому разбиение на буквы не меняет переносы
+    const split = new SplitText(more, { type: 'words,chars' });
+
+    return { content, more, chars: split.chars, split, timeline: null };
+  });
+
+  if (isDesktop.value) collapseAll();
+});
+
+watch(hoveredIdx, (idx, prevIdx) => {
+  if (!isDesktop.value || !motions.length) return;
+
+  if (prevIdx !== -1) collapse(motions[prevIdx]);
+  if (idx !== -1) expand(motions[idx]);
+});
+
+// Смена брейкпоинта — не жест пользователя: карточки просто перестраиваются.
+// Это же состояние приходит и после гидратации, когда угаданный на сервере
+// брейкпоинт разошёлся с реальной шириной
+watch(isDesktop, (desktop) => {
+  hoveredIdx.value = -1;
+
+  if (!motions.length) return;
+
+  resetMotions();
+
+  if (desktop) collapseAll();
+});
+
+onBeforeUnmount(() => {
+  motions.forEach((motion) => {
+    motion.timeline?.kill();
+    motion.split.revert();
+  });
+  motions = [];
+});
 </script>
 
 <template>
@@ -214,13 +257,10 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
       :key="item.title"
       class="architecture-cards__card"
       :class="{ 'architecture-cards__card_expanded': isExpanded(idx) }"
-      @transitionend="handleTransitionEnd"
     >
       <div class="architecture-cards__head">
         <!-- По макету при наведении слева от заголовка появляется ромб.
-             Он вынут из потока: в потоке его размер участвовал бы в высоте
-             карточки, а меняется он CSS-переходом — замер высоты попадал бы
-             на промежуточное значение -->
+             Он вынут из потока, чтобы его размер не участвовал в высоте карточки -->
         <span v-if="mark" class="architecture-cards__mark">
           <img
             class="architecture-cards__mark-image"
@@ -234,7 +274,10 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
       </div>
       <div class="architecture-cards__content">
         <span class="architecture-cards__number">{{ itemNumber(idx) }}</span>
-        <p class="architecture-cards__text" v-html="cardText(item, idx)" />
+        <p class="architecture-cards__text">
+          <span v-html="item.shortText" />
+          <span class="architecture-cards__text-more" v-html="moreText(item)" />
+        </p>
       </div>
     </article>
   </section>
@@ -244,6 +287,7 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
 @use "@styles/adaptive" as a;
 @use "@styles/shared" as s;
 @use "@styles/typography" as t;
+@use "@styles/variables" as v;
 
 .architecture-cards {
   display: flex;
@@ -252,6 +296,11 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
 
   @include s.base-container;
 }
+
+// Ромб, заголовок и фон едут одной кривой и в один такт с высотой (см. EASE
+// в скрипте), чуть дольше стандартных 0.3s — чтобы исчезновение не рубилось
+
+$card-motion: 0.4s v.$easing;
 
 .architecture-cards__card {
   display: grid;
@@ -264,16 +313,7 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   background-color: var(--architecture-card-bg, var(--white));
   border-radius: 16px;
 
-  @include s.default-transition(background-color);
-
-  // Высоту ведёт тот же переход, что фон, заголовок и ромб: одна кривая, одна
-  // длительность, один старт — и при перехвате на середине все свойства
-  // перезапускаются одинаково. Только на десктопе: за брейкпоинтом инлайновая
-  // высота не ставится, анимировать нечего
-
-  @include a.desktop-only {
-    @include s.default-transition(background-color, height);
-  }
+  transition: background-color $card-motion;
 
   @include a.tablet {
     grid-template-columns: 1fr;
@@ -286,11 +326,9 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   }
 
   &_expanded {
-    // Подсветка идёт от того же состояния, что и раскрытие. На нативном :hover
-    // это были два источника истины: в зазоре между карточками фон уже гас, а
-    // карточка ещё оставалась раскрытой, и движение разваливалось на два такта.
-    // mouse-only остаётся от прежнего :hover — на тач-экране шириной с десктоп
-    // подсвечивать нечего
+    // Подсветка идёт от того же состояния, что и раскрытие: на нативном :hover
+    // в зазоре между карточками фон гас раньше, чем схлопывалась карточка.
+    // mouse-only — на тач-экране шириной с десктоп подсвечивать нечего
 
     @include a.desktop-only {
       @include s.mouse-only {
@@ -316,18 +354,15 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   display: flex;
   align-items: center;
 
-  // Место под ромб держим всегда. Пока отступ появлялся вместе с раскрытием,
-  // ширина заголовка менялась переходом: заголовок мог переноситься по строкам
-  // уже после того, как снят замер высоты. Это тот же дефект, из-за которого
-  // ромб вынесли из потока, просто через другое свойство
+  // Место под ромб держим всегда: пока отступ появлялся вместе с раскрытием,
+  // менялась ширина заголовка, а с ней и переносы строк
 
   @include a.desktop-only {
     padding-left: var(--architecture-mark-space, 7.875rem); // 110 + 16
   }
 }
 
-// Ромб лежит поверх, вне потока: так его размер не попадает в высоту карточки,
-// а значит и в замер, по которому едет переход высоты
+// Ромб лежит поверх, вне потока: его размер не попадает в высоту карточки
 
 .architecture-cards__mark {
   position: absolute;
@@ -340,7 +375,7 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
 
   opacity: 0;
 
-  @include s.default-transition(opacity, transform);
+  transition: opacity $card-motion, transform $card-motion;
 
   @include a.tablet {
     display: none;
@@ -359,12 +394,12 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   @include t.lead-m-medium;
 
   // Заголовок сдвигается трансформом, а не отступом: трансформ не участвует
-  // в раскладке, поэтому не влияет ни на перенос строк, ни на замер высоты
+  // в раскладке и не влияет на переносы строк
 
   @include a.desktop-only {
     transform: translateX(calc(var(--architecture-mark-space, 7.875rem) * -1));
 
-    @include s.default-transition(transform);
+    transition: transform $card-motion;
   }
 
   @include a.mobile {
@@ -372,14 +407,13 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
   }
 }
 
-// Пока высота карточки едет переходом, она не равна натуральной. При
-// центрировании контент прыгнул бы на половину разницы в первом же кадре
-// и весь переход возвращался обратно. Прижимаем колонку к верху: в покое это
-// ничего не меняет — она и так самая высокая, — а во время перехода строки
-// просто проявляются снизу, под растущей границей
+// Колонку текста ведёт скрипт: её высота едет между короткой и полной,
+// а строки за границей режутся. Прижата к верху, чтобы во время движения
+// строки просто проявлялись снизу, а не прыгали к центру
 
 .architecture-cards__content {
   align-self: start;
+  overflow: hidden;
 }
 
 .architecture-cards__number {
@@ -403,6 +437,15 @@ const cardText = (item: ArchitectureCardItem, idx: number) => {
 
   @include a.mobile {
     @include t.body-s-medium;
+  }
+}
+
+// Продолжение на десктопе появляется только при наведении — до того, как
+// скрипт возьмёт его в работу, оно спрятано стилями
+
+.architecture-cards__text-more {
+  @include a.desktop-only {
+    display: none;
   }
 }
 </style>
