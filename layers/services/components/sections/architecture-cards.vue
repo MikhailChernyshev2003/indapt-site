@@ -14,6 +14,7 @@ const { isDesktop } = useDevice();
 
 const hoveredIdx = ref(-1);
 
+const sectionRef = useTemplateRef<HTMLElement>('sectionRef');
 const cardsRef = useTemplateRef<HTMLElement[]>('cardsRef');
 
 // Наведение считаем от позиции курсора, а не от mouseenter/mouseleave на
@@ -99,9 +100,10 @@ let motions: CardMotion[] = [];
 const EASE = 'cubic-bezier(0.12, 0.46, 0.47, 0.99)';
 const HEIGHT_DURATION = 0.4;
 
-/** Высота колонки с коротким и с полным текстом; продолжение прячем только на замер */
+/** Высота колонки с коротким и с полным текстом; на время замера состояние подменяется и возвращается */
 const measure = ({ content, more }: CardMotion) => {
   const inlineHeight = content.style.height;
+  const inlineDisplay = more.style.display;
 
   content.style.height = '';
   more.style.display = 'none';
@@ -113,8 +115,34 @@ const measure = ({ content, more }: CardMotion) => {
   const full = content.offsetHeight;
 
   content.style.height = inlineHeight;
+  more.style.display = inlineDisplay;
 
   return { short, full };
+};
+
+// Секция заранее держит высоту «со всеми карточками свёрнутыми плюс самое
+// длинное продолжение»: раскрытая карточка растёт внутрь этого запаса,
+// и блоки ниже не ездят вслед за ней. Запас в px, поэтому пересчитывается
+// на ресайз и после загрузки шрифтов
+const reserveHeight = () => {
+  const section = sectionRef.value;
+
+  if (!section || !motions.length) return;
+
+  section.style.minHeight = '';
+
+  let growth = 0;
+  let expanded = 0;
+
+  motions.forEach((motion) => {
+    const { short, full } = measure(motion);
+
+    growth = Math.max(growth, full - short);
+    // Если пересчёт пришёлся на наведение, текущая высота уже включает часть раскрытия
+    expanded += Math.max(0, motion.content.getBoundingClientRect().height - short);
+  });
+
+  section.style.minHeight = `${section.offsetHeight - expanded + growth}px`;
 };
 
 /**
@@ -153,15 +181,19 @@ const expand = (motion: CardMotion) => {
     }, 0.05);
 };
 
-const collapse = (motion: CardMotion) => {
+/**
+ * Сворачивание. Буквы гаснут с конца, а высота по умолчанию трогается чуть
+ * позже: нижние строки успевают исчезнуть раньше, чем их срежет граница.
+ * При переезде на соседнюю карточку задержки нет: уход и приход идут одной
+ * кривой с одного момента, сумма высот не меняется — секция стоит на месте
+ */
+const collapse = (motion: CardMotion, heightDelay = 0.12) => {
   const { content, more, chars } = motion;
 
   freeze(motion);
 
   const { short } = measure(motion);
 
-  // Буквы гаснут с конца, высота трогается чуть позже: нижние строки успевают
-  // исчезнуть раньше, чем их срежет граница колонки
   motion.timeline = gsap.timeline({
     onComplete: () => {
       more.style.display = '';
@@ -175,12 +207,14 @@ const collapse = (motion: CardMotion) => {
       ease: 'power1.in',
       stagger: { each: 0.0025, from: 'end' },
     }, 0)
-    .to(content, { height: short, duration: HEIGHT_DURATION, ease: EASE }, 0.12);
+    .to(content, { height: short, duration: HEIGHT_DURATION, ease: EASE }, heightDelay);
 };
 
 // За брейкпоинтом карточки раскрыты всегда: буквы и высота живут в CSS,
 // инлайновые значения снимаем
 const resetMotions = () => {
+  if (sectionRef.value) sectionRef.value.style.minHeight = '';
+
   motions.forEach((motion) => {
     motion.timeline?.kill();
     motion.timeline = null;
@@ -213,13 +247,26 @@ useGsap(() => {
     return { content, more, chars: split.chars, split, timeline: null };
   });
 
-  if (isDesktop.value) collapseAll();
+  if (isDesktop.value) {
+    collapseAll();
+    reserveHeight();
+    document.fonts?.ready.then(() => isDesktop.value && reserveHeight());
+  }
 });
+
+let resizeFrame = 0;
+
+const handleResize = () => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(() => isDesktop.value && reserveHeight());
+};
+
+useEventListener(window, 'resize', handleResize);
 
 watch(hoveredIdx, (idx, prevIdx) => {
   if (!isDesktop.value || !motions.length) return;
 
-  if (prevIdx !== -1) collapse(motions[prevIdx]);
+  if (prevIdx !== -1) collapse(motions[prevIdx], idx === -1 ? undefined : 0);
   if (idx !== -1) expand(motions[idx]);
 });
 
@@ -233,10 +280,14 @@ watch(isDesktop, (desktop) => {
 
   resetMotions();
 
-  if (desktop) collapseAll();
+  if (desktop) {
+    collapseAll();
+    reserveHeight();
+  }
 });
 
 onBeforeUnmount(() => {
+  cancelAnimationFrame(resizeFrame);
   motions.forEach((motion) => {
     motion.timeline?.kill();
     motion.split.revert();
@@ -247,6 +298,7 @@ onBeforeUnmount(() => {
 
 <template>
   <section
+    ref="sectionRef"
     class="architecture-cards"
     @pointermove="handlePointerMove"
     @pointerleave="handlePointerLeave"
