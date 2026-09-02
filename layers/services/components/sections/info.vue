@@ -10,13 +10,16 @@ const { t } = useI18n();
 </script>
 
 <template>
+  <!-- Первый абзац по раскадровке насыщается вместе с меткой, остальные
+       появляются следом снизу (см. text-reveal) -->
   <services-molecules-text-reveal is="section" class="service-info">
     <span class="service-info__label" data-reveal="text">(info)</span>
-    <div class="service-info__text" data-reveal="text">
+    <div class="service-info__text">
       <p
-        v-for="paragraph in paragraphs"
+        v-for="(paragraph, idx) in paragraphs"
         :key="paragraph"
         class="service-info__paragraph"
+        :data-reveal="idx ? 'paragraph' : 'text'"
         v-html="t(`${i18nKey}.${paragraph}`)"
       />
     </div>

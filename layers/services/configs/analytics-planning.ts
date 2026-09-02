@@ -59,13 +59,12 @@ export const ANALYTICS_PLANNING_BAND: FigurePlacements[] = [
 
 /**
  * Кадр статичной фигуры за аккордеонами: KV 7563:14034 (виден фрейм
- * 7563:14035), планшет — 7563:14291, мобильный — 7563:14420.
- * Смещение кадра считается от верха списка аккордеонов
+ * 7563:14035), планшет — 7563:14291, мобильный — 7563:14420
  */
 export const ANALYTICS_PLANNING_KV_FRAMES: StickyFrames = {
-  desktop: { width: 457, height: 932, top: 471 },
-  tablet: { width: 771, height: 1144, top: 410 },
-  mobile: { width: 375, height: 887, top: 892 },
+  desktop: { width: 457, height: 932 },
+  tablet: { width: 771, height: 1144 },
+  mobile: { width: 375, height: 887 },
 };
 
 /** Фигура внутри кадра: экземпляр «паттерн 4» относительно кадра */

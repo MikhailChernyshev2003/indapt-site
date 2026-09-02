@@ -43,13 +43,12 @@ export const MARKETING_CREATE = ['item_1', 'item_2', 'item_3', 'item_4'];
 
 /**
  * Кадр статичной картинки за раскрывающимися блоками: фрейм 8917:9031;
- * планшет — 8917:9440, мобильный — 8917:9732.
- * Смещение кадра считается от верха списка блоков
+ * планшет — 8917:9440, мобильный — 8917:9732
  */
 export const MARKETING_KV_FRAMES: StickyFrames = {
-  desktop: { width: 556, height: 1265, top: 350 },
-  tablet: { width: 768, height: 1561, top: 289 },
-  mobile: { width: 375, height: 1154, top: 412 },
+  desktop: { width: 556, height: 1265 },
+  tablet: { width: 768, height: 1561 },
+  mobile: { width: 375, height: 1154 },
 };
 
 /** На десктопе кадр целиком отрисован картинкой из макета */
