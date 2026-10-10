@@ -28,7 +28,7 @@ const schema = object({
   position: string().required(t('contactForm.required')),
   phone: string()
     .required(t('contactForm.phoneError'))
-    .matches(/^[0-9\s\-\(\)\+]+$/, t('contactForm.phoneError')),
+    .matches(/^[0-9\s\-()+]+$/, t('contactForm.phoneError')),
   email: string()
     .required(t('contactForm.emailError'))
     .email(t('contactForm.emailError')),
@@ -39,10 +39,14 @@ const schema = object({
 
 const isLoading = ref(false);
 const errorMessage = ref('');
+// Итог отправки для пользователя: раньше результат уходил только в консоль,
+// и после нажатия кнопки на экране ничего не менялось
+const submitStatus = ref<'success' | 'error' | null>(null);
 
 const handleSubmit = async (data: InferType<typeof schema>) => {
   isLoading.value = true;
   errorMessage.value = '';
+  submitStatus.value = null;
 
   try {
     const result = await sendContactForm({
@@ -53,12 +57,14 @@ const handleSubmit = async (data: InferType<typeof schema>) => {
       email: data.email,
     });
 
+    submitStatus.value = 'success';
     console.log(result.message || t('contactForm.submitSuccess'));
   }
   catch (error) {
     errorMessage.value = error instanceof Error && error.message
       ? error.message
       : t('contactForm.submitError');
+    submitStatus.value = 'error';
     console.log(errorMessage.value);
   }
   finally {
@@ -140,6 +146,18 @@ const emits = defineEmits(['close']);
           >
             {{ t('contactForm.button') }}
           </atoms-button>
+
+          <transition name="fade">
+            <!-- Текст ответа сервера не показываем: там может быть HTML/отладка PHP -->
+            <p
+              v-if="submitStatus"
+              class="contact-form__status"
+              :class="`contact-form__status_${submitStatus}`"
+              role="status"
+            >
+              {{ submitStatus === 'success' ? t('contactForm.submitSuccess') : t('contactForm.submitError') }}
+            </p>
+          </transition>
         </div>
       </form-block>
     </div>
@@ -285,6 +303,18 @@ const emits = defineEmits(['close']);
 
   &__actions {
     margin-top: 40px;
+  }
+
+  &__status {
+    margin-top: 16px;
+
+    color: var(--dark-blue);
+
+    @include t.body-s-medium;
+
+    &_error {
+      color: var(--red);
+    }
   }
 }
 </style>

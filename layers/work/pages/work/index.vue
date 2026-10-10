@@ -68,22 +68,25 @@ onMounted(async () => {
     <work-sections-vacancies class="work__vacancies" @open-form="handlerForm" />
     <work-sections-mail class="work__mail" />
 
-    <transition name="fade" appear>
-      <teleport to="body">
-        <div
-          v-if="isFormOpen"
-          class="work__overlay-form"
-          @click="handlerForm"
-        >
-          <work-organisms-response-form
-            class="work__response-form"
-            :vacancy="formVacancyTitle"
-            @click.stop
-            @close="handlerForm('')"
-          />
-        </div>
-      </teleport>
-    </transition>
+    <!-- client-only как у модалок в шапке: teleport внутри transition на SSR даёт hydration mismatch -->
+    <client-only>
+      <transition name="fade" appear>
+        <teleport to="body">
+          <div
+            v-if="isFormOpen"
+            class="work__overlay-form"
+            @click="handlerForm"
+          >
+            <work-organisms-response-form
+              class="work__response-form"
+              :vacancy="formVacancyTitle"
+              @click.stop
+              @close="handlerForm('')"
+            />
+          </div>
+        </teleport>
+      </transition>
+    </client-only>
   </div>
 </template>
 

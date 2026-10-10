@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+let trustTimeline: gsap.core.Timeline | null = null;
+let trustTimer = 0;
+
 useGsap(() => {
-  setTimeout(() => {
-    const tl = gsap.timeline({
+  trustTimer = window.setTimeout(() => {
+    trustTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: '.about-page__trust-relative',
         start: 'top bottom+=20%',
@@ -10,11 +15,20 @@ useGsap(() => {
       },
     });
 
-    tl.to('.about-page__trust-relative-decor', {
+    trustTimeline.to('.about-page__trust-relative-decor', {
       opacity: 0.5,
       scale: 1,
     });
   }, 1000);
+});
+
+// Таймлайн создаётся по таймеру, мимо контекста useGsap, поэтому гасим его
+// сами: иначе его триггер переживал переход на другую страницу
+onBeforeUnmount(() => {
+  clearTimeout(trustTimer);
+  trustTimeline?.scrollTrigger?.kill();
+  trustTimeline?.kill();
+  trustTimeline = null;
 });
 
 onMounted(async () => {
@@ -28,6 +42,9 @@ onMounted(async () => {
 
   setTimeout(() => {
     document.body.classList.add('after-init');
+    // Триггеры (пин owners) мерились, пока body был fixed и полосы прокрутки не было;
+    // с обычным скроллбаром (Windows) pin-spacer оставался шире окна и давал горизонтальный скролл
+    ScrollTrigger.refresh();
   }, 1300);
 });
 </script>

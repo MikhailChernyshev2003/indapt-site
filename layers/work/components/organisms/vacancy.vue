@@ -32,21 +32,23 @@ const scrollToVacancy = async () => {
   }, 600);
 };
 
-watch(
-  () => route.query.scrollTo,
-  (newVal) => {
-    if (import.meta.client && newVal && +newVal === props.id) {
-      isOpen.value = true;
+const openFromQuery = (value: unknown) => {
+  if (import.meta.client && value && +value === props.id) {
+    isOpen.value = true;
 
-      nextTick(() => {
-        scrollToVacancy();
-      });
-    }
-  },
-  {
-    immediate: true,
-  },
-);
+    nextTick(() => {
+      scrollToVacancy();
+    });
+  }
+};
+
+watch(() => route.query.scrollTo, openFromQuery);
+
+// Первое раскрытие — после гидрации: с immediate-watch класс vacancy_open расходился с SSR,
+// Vue его не применял, и при заходе по ссылке /work?scrollTo=… вакансия оставалась закрытой
+onMounted(() => {
+  openFromQuery(route.query.scrollTo);
+});
 </script>
 
 <template>

@@ -14,6 +14,12 @@ const errorMessage = computed(() => {
 });
 
 const handlerError = () => clearError({ redirect: '/' });
+
+// error.vue рендерится без layouts/default.vue, поэтому класс, снимающий position: fixed с body,
+// никто не ставит — при прямом заходе на 404 страница не скроллилась и футер был обрезан.
+onMounted(() => {
+  document.body.classList.add('after-init');
+});
 </script>
 
 <template>
@@ -113,7 +119,9 @@ const handlerError = () => clearError({ redirect: '/' });
   max-width: 1146px;
 }
 
+// Не 100vw: с классическим скроллбаром футер вылезал за край и обрезался по бокам
+
 .error__footer {
-  width: 100vw;
+  width: 100%;
 }
 </style>

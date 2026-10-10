@@ -25,11 +25,14 @@ const { t } = useI18n();
 @use "@/assets/styles/adaptive" as a;
 @use "@/assets/styles/typography" as t;
 
+// Ширина 100%, а не 100vw: 100vw включает классический скроллбар (Windows)
+// и давал горизонтальную прокрутку
+
 .in-progress {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100vw;
+  width: 100%;
   height: auto;
   min-height: 100vh;
 

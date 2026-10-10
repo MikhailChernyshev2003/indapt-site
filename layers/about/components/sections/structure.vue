@@ -158,7 +158,47 @@ const { t, tm, rt } = useI18n();
       padding-bottom: 8px;
 
       @include a.tablet {
+        padding-top: 4px;
         padding-bottom: 16px;
+      }
+
+      @include a.mobile {
+        padding-top: 0;
+      }
+    }
+
+    // Общий collapse-text перевёрстан под макет услуг (отступы ушли в тело блока),
+    // здесь возвращаем прежние отступы структуры: 8/8/12px под свёрнутым пунктом
+    // и +12px под раскрытым текстом, без верхнего отступа у тела
+
+    .collapse-text__body {
+      padding-bottom: 8px;
+
+      transition-property: opacity, grid-template-rows, padding-bottom;
+
+      @include a.mobile {
+        padding-bottom: 12px;
+      }
+    }
+
+    &:last-child .collapse-text__body {
+      @include a.mobile {
+        padding-bottom: 16px;
+      }
+    }
+
+    &.collapse-text_open .collapse-text__body {
+      padding-top: 0;
+      padding-bottom: 20px;
+
+      @include a.mobile {
+        padding-bottom: 24px;
+      }
+    }
+
+    &.collapse-text_open:last-child .collapse-text__body {
+      @include a.mobile {
+        padding-bottom: 28px;
       }
     }
 

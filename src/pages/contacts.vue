@@ -10,7 +10,9 @@ useSeoMeta({
 onMounted(async () => {
   await nextTick();
 
-  gsap.set(['.address__title', '.address__list-item', '.email__list-item', '.email__title'], {
+  // Основной email (.email__item) идёт в общей очереди появления, иначе он стоял
+  // на месте раньше заголовка «(Email)» и остальных адресов
+  gsap.set(['.address__title', '.address__list-item', '.email__title', '.email__item', '.email__list-item'], {
     opacity: 0,
     y: 30,
   });
@@ -20,7 +22,7 @@ onMounted(async () => {
     duration: 0.2,
   });
 
-  gsap.to(['.address__title', '.address__list-item', '.email__title', '.email__list-item'], {
+  gsap.to(['.address__title', '.address__list-item', '.email__title', '.email__item', '.email__list-item'], {
     opacity: 1,
     y: 0,
     duration: 0.4,
