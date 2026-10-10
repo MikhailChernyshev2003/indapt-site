@@ -6,6 +6,7 @@ import {
   cleanupMainPageAnimations,
   desktopAnim,
   getTimeline,
+  lockAutoScroll,
 } from '~/animation/page-main';
 
 definePageMeta({
@@ -14,15 +15,20 @@ definePageMeta({
 
 const RESIZE_DEBOUNCE_MS = 250;
 const RESIZE_WIDTH_THRESHOLD_PX = 80;
+const RESIZE_HEIGHT_THRESHOLD_PX = 80;
+// Чуть дольше scrub (1с), чтобы onStart-колбэки при восстановлении не скроллили страницу
+const RESTORE_AUTO_SCROLL_LOCK_MS = 1500;
 
 const heroBackground = ref();
 const digitalServicesRef = ref();
 const ourProjectsRef = ref();
 const isCameraReady = ref(false);
 const lastViewportWidth = ref(0);
+const lastViewportHeight = ref(0);
 const { setPendingCameraReady } = useAppLoader();
 
 const isDesktopViewport = (): boolean => window.innerWidth >= 1024;
+const isCoarsePointer = (): boolean => window.matchMedia('(pointer: coarse)').matches;
 
 const startAnimations = (skipIntro = false): void => {
   const hero = heroBackground.value;
@@ -53,45 +59,89 @@ const reinitAnimations = (): void => {
   cleanupMainPageAnimations({
     camera: hero.cameraRef,
     sphere: hero.sphereRef,
+    resetStyles: true,
   });
 
   window.dispatchEvent(new Event('resize'));
 
   nextTick(() => {
+    lockAutoScroll(RESTORE_AUTO_SCROLL_LOCK_MS);
     startAnimations(true);
     ScrollTrigger.refresh();
     window.scrollTo(0, scrollY);
+    // Сразу ставим таймлайн в позицию скролла, без секундной перемотки scrub
+    ScrollTrigger.update();
+    getTimeline()?.scrollTrigger?.getTween()?.progress(1);
   });
 };
 
 const debouncedResize = useDebounceFn(() => {
   const width = window.innerWidth;
+  const height = window.innerHeight;
 
   if (!lastViewportWidth.value) {
     lastViewportWidth.value = width;
+    lastViewportHeight.value = height;
     return;
   }
 
-  if (Math.abs(width - lastViewportWidth.value) < RESIZE_WIDTH_THRESHOLD_PX) return;
+  const isWidthChanged = Math.abs(width - lastViewportWidth.value) >= RESIZE_WIDTH_THRESHOLD_PX;
+  // Сфера и vh-смещения считаются от размеров окна при сборке таймлайна:
+  // на десктопе после смены одной высоты сфера уезжала за край. На тач-устройствах
+  // высоту не учитываем — её постоянно меняет адресная строка браузера
+  const isHeightChanged = !isCoarsePointer()
+    && Math.abs(height - lastViewportHeight.value) >= RESIZE_HEIGHT_THRESHOLD_PX;
+
+  if (!isWidthChanged && !isHeightChanged) return;
 
   lastViewportWidth.value = width;
+  lastViewportHeight.value = height;
   reinitAnimations();
 }, RESIZE_DEBOUNCE_MS);
 
+// В скрытой вкладке requestAnimationFrame стоит: твины интро замирают на первом
+// кадре (пустой экран), а setTimeout сборки таймлайна продолжает идти, и шаги
+// расходятся. Поэтому интро запускаем, только когда страница видна
+let pendingVisibleStart: (() => void) | null = null;
+
+const clearPendingVisibleStart = (): void => {
+  if (!pendingVisibleStart) return;
+  document.removeEventListener('visibilitychange', pendingVisibleStart);
+  pendingVisibleStart = null;
+};
+
+const startAnimationsWhenVisible = (): void => {
+  clearPendingVisibleStart();
+
+  if (!document.hidden) {
+    startAnimations(false);
+    return;
+  }
+
+  pendingVisibleStart = () => {
+    if (document.hidden) return;
+    clearPendingVisibleStart();
+    startAnimations(false);
+  };
+  document.addEventListener('visibilitychange', pendingVisibleStart);
+};
+
 const handleCameraReady = (): void => {
   isCameraReady.value = true;
-  setPendingCameraReady(() => startAnimations(false));
+  setPendingCameraReady(startAnimationsWhenVisible);
 };
 
 onMounted(async () => {
   await nextTick();
   window.scroll(0, 0);
   lastViewportWidth.value = window.innerWidth;
+  lastViewportHeight.value = window.innerHeight;
   window.addEventListener('resize', debouncedResize);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', debouncedResize);
+  clearPendingVisibleStart();
 
   const hero = heroBackground.value;
   cleanupMainPageAnimations({

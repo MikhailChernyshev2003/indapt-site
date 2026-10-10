@@ -4,7 +4,7 @@ import {
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
-  Clock, MathUtils,
+  Clock,
 } from 'three';
 import { useElementBounding } from '@vueuse/core';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
@@ -44,7 +44,9 @@ const handleResize = async () => {
   camera.aspect = aspect.value;
   camera.updateProjectionMatrix();
   renderer.setSize(width.value, height.value);
-  renderer.setPixelRatio(2);
+  // Тот же предел, что при инициализации: иначе после любого ресайза
+  // экраны с DPR 1 начинали рендерить канвас в 4 раза больше пикселей
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 };
 
 const tickCallback = ref<TTickCallback | null>(null);

@@ -8,8 +8,119 @@ gsap.registerPlugin(CustomEase, CustomWiggle);
 let tl;
 let introTimeoutId = null;
 const splitInstances = [];
+let autoScrollLockedUntil = 0;
+
+// Элементы, которым десктопный и адаптивный таймлайны пишут инлайн-стили.
+// При пересборке анимаций (ресайз через 1024) их нужно сбросить: иначе стили
+// одного режима (x: 50vw, y: 30vh, x: 100vw, скрытые карточки) остаются в другом
+const RESET_SELECTORS = [
+  '.main__background',
+  '.main__info',
+  '.main__development-experts',
+  '.main__services',
+  '.main__projects',
+  '.main__partners',
+  '.main__vacancies',
+  '.digital-conductor',
+  '.digital-conductor__container',
+  '.digital-conductor__info',
+  '.digital-conductor__scroll-button-wrapper',
+  '.digital-conductor__scroll-button',
+  '.digital-info__info-text_2',
+  '.digital-info__info-text-gradient',
+  '.digital-info__link',
+  '.development-experts__shape',
+  '.development-experts__list-item',
+  '.digital-services__list',
+  '.digital-services__list-item .service-card__inner',
+  '.digital-services__list-item .service-card__decor',
+  '.digital-services__list-item .service-card__img',
+  '.digital-services__list-item .service-card__title',
+  '.our-projects',
+  '.our-projects__info',
+  '.our-projects__content',
+  '.our-projects__row',
+  '.our-projects__row-item',
+  '.project-card__wrapper',
+  '.our-partners__row-item',
+  '.our-partners__row-item-overlay',
+  '.our-partners__shape',
+  '.vacancies__info-text',
+  '.vacancies__info-button',
+  '.vacancies__shape-wrapper',
+];
+const RESET_PROPS = 'transform,opacity,visibility,zIndex,filter,pointerEvents,height,overflow,top,background,color,transition';
 
 export const getTimeline = () => tl;
+
+// Пока анимации восстанавливают позицию после пересборки, onStart-колбэки
+// таймлайна не должны уводить страницу авто-скроллом к другой секции
+export const lockAutoScroll = (ms) => {
+  autoScrollLockedUntil = performance.now() + ms;
+};
+
+// При prefers-reduced-motion не перебрасываем страницу программным скроллом
+// к следующей секции: пользователь листает сам, сценарий таймлайна тот же
+const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+const isAutoScrollLocked = () => prefersReducedMotion() || performance.now() < autoScrollLockedUntil;
+
+// Доводка к секции работает только вперёд: если страница уже ниже цели
+// (утащили скроллбар, End, сильный флик), onStart, догнавший скролл,
+// не должен возвращать её назад к 1740/3480/1600
+const canAutoScrollTo = position => !isAutoScrollLocked() && !(position > 0 && window.scrollY >= position);
+
+// Адаптив: секции выше экрана. Прижатые к низу сцены (проекты, партнёры,
+// вакансии, эксперты на мобильном) уходили заголовком под шапку, прижатые
+// к верху — низом за экран. Секцию сначала ставим так, чтобы заголовок был
+// под шапкой (enterY), затем «прокручиваем» её до низа (settleY)
+const ADAPTIVE_SCROLL_DISTANCE_PX = 10000;
+const SECTION_FIT_HEADER_GAP_PX = 8;
+const SECTION_FIT_TOLERANCE_PX = 24;
+const SCROLL_THROUGH_UNITS_PER_SCREEN = 24; // ≈1:1 со скроллом пальцем
+const SCROLL_THROUGH_MIN_UNITS = 3;
+const SCROLL_THROUGH_MAX_UNITS = 40;
+const SCROLL_THROUGH_HOLD_UNITS = 3;
+
+const getSectionFit = (selector, titleSelector) => {
+  const section = document.querySelector(selector);
+  const wrapper = document.querySelector('.main__wrapper');
+  if (!section || !wrapper) return { enterY: 0, settleY: 0, viewportHeight: 0 };
+
+  const viewportHeight = wrapper.offsetHeight;
+  // offsetHeight, а не rect: при пересборке посреди страницы шапка может быть спрятана
+  const headerHeight = document.querySelector('.header')?.offsetHeight ?? 0;
+  // offsetTop не учитывает transform, который уже выставлен секции
+  const top = section.offsetTop;
+  const bottom = top + section.offsetHeight;
+  const title = section.querySelector(titleSelector);
+  const titleTop = top + (title ? title.getBoundingClientRect().top - section.getBoundingClientRect().top : 0);
+  const minTitleTop = headerHeight + SECTION_FIT_HEADER_GAP_PX;
+
+  // Верх секции — к верху экрана: её собственный отступ рассчитан под шапку
+  const enterY = titleTop < minTitleTop ? Math.max(-top, minTitleTop - titleTop) : 0;
+  const overflowBottom = bottom + enterY - viewportHeight;
+  const settleY = overflowBottom > SECTION_FIT_TOLERANCE_PX ? enterY - overflowBottom : enterY;
+
+  return { enterY, settleY, viewportHeight };
+};
+
+const resetMainPageStyles = (sphere) => {
+  const targets = RESET_SELECTORS.flatMap(selector => [...document.querySelectorAll(selector)]);
+
+  if (targets.length) {
+    gsap.set(targets, { clearProps: RESET_PROPS });
+  }
+
+  // У path внутри svg чистим только opacity: сброс transform удалил бы их собственный атрибут
+  gsap.set('.development-experts__shape path', { clearProps: 'opacity' });
+
+  // Новый таймлайн запишет стартовое значение прогресса сферы из текущего,
+  // поэтому возвращаем её в исходное состояние
+  if (sphere?.animation && sphere.animation.progress > 0) {
+    sphere.animation.progress = 0;
+  }
+};
 
 const fittedDistance = ref({
   distance: 0,
@@ -21,7 +132,7 @@ const trackSplit = (target, vars) => {
   return split;
 };
 
-export const cleanupMainPageAnimations = ({ camera, sphere } = {}) => {
+export const cleanupMainPageAnimations = ({ camera, sphere, resetStyles = false } = {}) => {
   if (introTimeoutId) {
     clearTimeout(introTimeoutId);
     introTimeoutId = null;
@@ -33,7 +144,7 @@ export const cleanupMainPageAnimations = ({ camera, sphere } = {}) => {
     tl = null;
   }
 
-  splitInstances.splice(0).forEach((split) => split.revert());
+  splitInstances.splice(0).forEach(split => split.revert());
 
   gsap.killTweensOf(window);
 
@@ -46,26 +157,38 @@ export const cleanupMainPageAnimations = ({ camera, sphere } = {}) => {
     gsap.killTweensOf(sphere.animation);
   }
 
+  if (resetStyles) {
+    resetMainPageStyles(sphere);
+  }
+
   fittedDistance.value.distance = 0;
 };
 
+// При быстром скролле туда-обратно появление и скрытие заголовка стартуют
+// почти одновременно, и последние буквы «застревали» видимыми. Гасим только
+// предыдущий твин этого же заголовка: overwrite убил бы и пустой твин
+// таймлайна с onStart/onReverseComplete на тех же буквах
+const textTweens = new WeakMap();
+
 const animText = (el, reversed = false) => {
+  textTweens.get(el)?.kill();
+
   if (reversed) {
-    gsap.to([...el].reverse(), {
+    textTweens.set(el, gsap.to([...el].reverse(), {
       opacity: 0,
       y: 20,
       duration: 0.05,
       stagger: 0.01,
-    });
+    }));
     return;
   }
 
-  gsap.to(el, {
+  textTweens.set(el, gsap.to(el, {
     opacity: 1,
     y: 0,
     duration: 0.05,
     stagger: 0.01,
-  });
+  }));
 };
 
 export const desktopAnim = (hero, camera, sphere, options = {}) => {
@@ -119,6 +242,8 @@ export const desktopAnim = (hero, camera, sphere, options = {}) => {
   };
 
   const scrollWindowTo = (position, duration = 1.5) => {
+    if (!canAutoScrollTo(position)) return;
+
     gsap.killTweensOf(window);
     gsap.to(window, {
       duration,
@@ -1276,16 +1401,57 @@ export const adaptiveAnim = (
       },
     );
 
+    const sectionFit = {
+      experts: getSectionFit('.main__development-experts', '.development-experts__title'),
+      projects: getSectionFit('.main__projects', '.our-projects__title'),
+      partners: getSectionFit('.main__partners', '.our-partners__title'),
+      vacancies: getSectionFit('.main__vacancies', '.vacancies__info-title'),
+    };
+    // Время, добавленное «прокруткой» секций: на него удлиняем скролл, чтобы
+    // px на единицу таймлайна не менялись и все прежние позиции (1600 и т. д.) остались
+    let addedUnits = 0;
+
     tl = gsap.timeline({
       scrollTrigger: {
         trigger: '.main__wrapper',
         start: 'top top',
         pin: true,
-        end: '+=10000px',
+        // Таймлайн к первому refresh уже собран: ScrollTrigger откладывает его на тик
+        end: (self) => {
+          const total = self.animation?.duration() ?? 0;
+          const base = total - addedUnits;
+          const distance = addedUnits > 0 && base > 0
+            ? Math.round(ADAPTIVE_SCROLL_DISTANCE_PX * total / base)
+            : ADAPTIVE_SCROLL_DISTANCE_PX;
+          return `+=${distance}px`;
+        },
         scrub: 1,
         anticipatePin: 1,
       },
     });
+
+    // Досматриваем высокую секцию до низа: пауза, затем сдвиг ≈1:1 со скроллом.
+    // holdAfter — пауза на низу секции, если следом она сразу исчезает
+    const scrollSectionThrough = (selector, { enterY, settleY, viewportHeight }, position, holdAfter = 0) => {
+      const distance = Math.abs(enterY - settleY);
+      if (distance < 1 || !viewportHeight) return;
+
+      const before = tl.duration();
+      tl.to(selector, {
+        y: settleY,
+        duration: gsap.utils.clamp(
+          SCROLL_THROUGH_MIN_UNITS,
+          SCROLL_THROUGH_MAX_UNITS,
+          SCROLL_THROUGH_UNITS_PER_SCREEN * distance / viewportHeight,
+        ),
+        delay: SCROLL_THROUGH_HOLD_UNITS,
+        ease: 'none',
+      }, position);
+      if (holdAfter) {
+        tl.to({}, { duration: holdAfter }, '>');
+      }
+      addedUnits += tl.duration() - before;
+    };
 
     tl.to('.digital-conductor__container', {
       y: -300,
@@ -1321,6 +1487,7 @@ export const adaptiveAnim = (
         duration: 20,
         onStart() {
           sphere.initAnimation(new Vector3(0, -getTopEdgeY() / 2, 0));
+          if (!canAutoScrollTo(1600)) return;
           gsap.to(window, { duration: 2, scrollTo: 1600, ease: 'linear' });
         },
       },
@@ -1368,6 +1535,7 @@ export const adaptiveAnim = (
       autoAlpha: 1,
       duration: 5,
       onReverseComplete: () => {
+        if (isAutoScrollLocked()) return;
         gsap.to(window, { duration: 3, scrollTo: 0, ease: 'linear' });
       },
     });
@@ -1390,7 +1558,7 @@ export const adaptiveAnim = (
 
     tl.to('.main__development-experts', {
       autoAlpha: 1,
-      y: 0,
+      y: sectionFit.experts.enterY,
       zIndex: 3,
       duration: 25,
       delay: 10,
@@ -1431,6 +1599,7 @@ export const adaptiveAnim = (
         animText(splitTitleDevelopmentExpert.chars, true);
       },
     }, '<');
+    scrollSectionThrough('.main__development-experts', sectionFit.experts);
     tl.to('.main__development-experts', {
       autoAlpha: 0,
       filter: 'blur(5px)',
@@ -1611,13 +1780,14 @@ export const adaptiveAnim = (
       '.main__projects',
       {
         autoAlpha: 1,
-        y: 0,
+        y: sectionFit.projects.enterY,
         filter: 'blur(0px)',
         zIndex: 5,
         duration: 20,
       },
       '<',
     );
+    const projectsEnteredAt = tl.recent().endTime();
     tl.to(
       splitTitleOurProject.chars,
       {
@@ -1655,6 +1825,8 @@ export const adaptiveAnim = (
       },
       '<+=5',
     );
+    // Пока карточки едут, поднимаем секцию, чтобы их низ был виден целиком
+    scrollSectionThrough('.main__projects', sectionFit.projects, projectsEnteredAt);
     tl.to('.our-projects__shape', {
       opacity: 0,
       duration: 2,
@@ -1669,7 +1841,7 @@ export const adaptiveAnim = (
       '.main__partners',
       {
         autoAlpha: 1,
-        y: 0,
+        y: sectionFit.partners.enterY,
         zIndex: 6,
         duration: isMobile ? 20 : 10,
         delay: isMobile ? 7 : 0,
@@ -1689,6 +1861,7 @@ export const adaptiveAnim = (
       opacity: 1,
       duration: 6,
     }, '<+=5');
+    scrollSectionThrough('.main__partners', sectionFit.partners, undefined, SCROLL_THROUGH_HOLD_UNITS * 2);
     tl.to('.main__partners', {
       autoAlpha: 0,
       zIndex: 0,
@@ -1698,7 +1871,7 @@ export const adaptiveAnim = (
       '.main__vacancies',
       {
         autoAlpha: 1,
-        y: 0,
+        y: sectionFit.vacancies.enterY,
         zIndex: 7,
         duration: 20,
         delay: isMobile ? 15 : 0,
@@ -1713,6 +1886,7 @@ export const adaptiveAnim = (
         animText(splitTitleVacancies.chars, true);
       },
     }, isMobile ? '<' : '<+=3');
+    scrollSectionThrough('.main__vacancies', sectionFit.vacancies);
   };
 
   const schedulePageAnimations = () => {

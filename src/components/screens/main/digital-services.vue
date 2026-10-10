@@ -389,7 +389,10 @@ const services = computed(() => [
 
     width: 142px;
 
-    transition: transform 0.6s;
+    // top/right тоже анимируем: у формы «flower» другие координаты,
+    // и без перехода фигура скачком перескакивала на новое место
+
+    transition: transform 0.6s, top 0.6s, right 0.6s;
 
     @include a.mobile {
       width: 100px;
