@@ -132,7 +132,10 @@ onMounted(() => {
   left: 0;
   z-index: 10;
 
-  width: 100vw;
+  // Ширину задают left/right: с 100vw шапка заезжала под постоянную полосу
+  // прокрутки (Chrome с мышью или «показывать всегда»), и её размытие
+  // рисовало там серую полосу-«тень» справа
+
   padding: 28px 0 27px;
 
   background: linear-gradient(180deg, var(--sea-blue-0) 62%, color-mix(in srgb, var(--sea-blue) 9%, transparent) 100%);
