@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PROJECT_TECH, getProjectCase } from '@l-projects/configs';
-import Infra from '@l-projects/assets/images/infra/kassir.svg?url';
+import Infra from '@l-projects/assets/images/infra/kassir.webp';
+import InfraMobile from '@l-projects/assets/images/infra/kassir-mobile.webp';
 
 const SLUG = 'kassir';
 const I18N_KEY = `projects.${SLUG}`;
@@ -14,8 +15,16 @@ useSeoMeta({
   title: () => `${t(`${I18N_KEY}.title`)}`,
 });
 
-/** Строки результатов слева: ключи локали в порядке макета */
-const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
+/** Строки результатов слева: ключи локали в порядке макета,
+ * последняя подпись в макете набрана на всю ширину строки */
+const ROW_RESULTS = [
+  { key: 'result_1' },
+  { key: 'result_3' },
+  { key: 'result_4', wide: true },
+];
+
+// Жёлтые стрелки-тренды — цвет кейса
+const TREND_COLOR = '#ffc627';
 </script>
 
 <template>
@@ -23,7 +32,7 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
     class="case-kassir"
     :case-item="caseItem"
     :hero-logo="[207, 207]"
-    :infra="Infra"
+    :infra="{ src: Infra, mobile: InfraMobile, tabletPosition: '34%' }"
     :bubbles="tech.bubbles"
     :rings="tech.rings"
   >
@@ -31,10 +40,12 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
       <div class="case-kassir__results">
         <div class="case-kassir__rows">
           <projects-molecules-stat-row
-            v-for="key in ROW_RESULTS"
-            :key="key"
-            :text="t(`${I18N_KEY}.content.results.${key}.text`)"
-            :value="t(`${I18N_KEY}.content.results.${key}.value`)"
+            v-for="row in ROW_RESULTS"
+            :key="row.key"
+            :text="t(`${I18N_KEY}.content.results.${row.key}.text`)"
+            :value="t(`${I18N_KEY}.content.results.${row.key}.value`)"
+            :color="TREND_COLOR"
+            :wide="row.wide"
           />
         </div>
         <article class="case-kassir__chart-card">
@@ -89,7 +100,7 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
   display: flex;
   flex: 1 1 549px;
   flex-direction: column;
-  gap: 40px;
+  gap: 19px;
   justify-content: space-between;
   min-height: 489px;
   padding: 40px;
@@ -98,12 +109,16 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
   border-radius: 16px;
 
   @include a.tablet {
+    // На планшете и мобильном карточка с графиком идёт первой
+
     flex: none;
+    order: -1;
   }
 
   @include a.mobile {
-    gap: 24px;
-    padding: 20px;
+    gap: 60px;
+    min-height: 0;
+    padding: 24px;
   }
 }
 
@@ -112,10 +127,14 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
 
   color: var(--dark-blue);
 
-  @include t.lead-s-medium;
+  @include t.lead-m-medium;
+
+  @include a.tablet {
+    max-width: none;
+  }
 
   @include a.mobile {
-    @include t.body-s-medium;
+    @include t.lead-s-medium;
   }
 }
 </style>

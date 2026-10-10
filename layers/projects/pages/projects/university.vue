@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PROJECT_TECH, getProjectCase } from '@l-projects/configs';
-import Infra from '@l-projects/assets/images/infra/university.svg?url';
+import Infra from '@l-projects/assets/images/infra/university.webp';
+import InfraMobile from '@l-projects/assets/images/infra/university-mobile.webp';
 import Decor from '@l-projects/assets/images/university-decor.svg?url';
 
 const SLUG = 'university';
@@ -21,7 +22,7 @@ useSeoMeta({
     class="case-university"
     :case-item="caseItem"
     :hero-logo="[158, 194]"
-    :infra="Infra"
+    :infra="{ src: Infra, mobile: InfraMobile, tabletPosition: '51%' }"
     :bubbles="tech.bubbles"
     :rings="tech.rings"
   >
@@ -34,13 +35,15 @@ useSeoMeta({
           :value="t(`${I18N_KEY}.content.results.result_1.value`)"
           color="#0081ff"
           :column-height="310"
+          :mobile-column-height="304"
           :bar-height="75"
-          :fade-to="0.39"
+          :fade-to="0.1"
         />
         <article class="case-university__decor-card">
           <div class="case-university__lead">
             <p class="case-university__text" v-html="t(`${I18N_KEY}.content.results.result_2.text`)" />
             <projects-molecules-stat-value
+              class="case-university__value"
               :preposition="t(`${I18N_KEY}.content.results.result_2.preposition`)"
               :value="t(`${I18N_KEY}.content.results.result_2.value`)"
             />
@@ -87,18 +90,16 @@ useSeoMeta({
   }
 }
 
-// Вторая карточка: значение и сферы-декор из макета
+// Вторая карточка: значение и сфера-диаграмма 310×310 из макета целиком
+// справа; на мобильном всё в столбик: текст, сфера во всю ширину, значение
 
 .case-university__decor-card {
-  position: relative;
-
   display: flex;
   flex: 1 1 656px;
   gap: 24px;
   justify-content: space-between;
   min-height: 390px;
   padding: 40px;
-  overflow: hidden;
 
   background-color: var(--white);
   border-radius: 16px;
@@ -108,41 +109,53 @@ useSeoMeta({
   }
 
   @include a.mobile {
+    flex-direction: column;
     min-height: 0;
-    padding: 20px;
+    padding: 24px;
   }
 }
 
 .case-university__lead {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 16px;
   justify-content: space-between;
+  min-width: 0;
+
+  @include a.mobile {
+    display: contents;
+  }
 }
 
 .case-university__text {
-  max-width: 242px;
-
   color: var(--dark-blue);
 
-  @include t.lead-s-medium;
+  @include t.lead-m-medium;
 
   @include a.mobile {
-    max-width: none;
+    @include t.lead-s-medium;
+  }
+}
 
-    @include t.body-s-medium;
+.case-university__value {
+  @include a.mobile {
+    order: 2;
   }
 }
 
 .case-university__decor {
-  position: absolute;
-  right: -40px;
-  bottom: -60px;
-
+  flex: none;
+  align-self: flex-start;
   width: 310px;
+  height: 310px;
 
   @include a.mobile {
-    width: 200px;
+    order: 1;
+
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
   }
 }
 </style>

@@ -26,7 +26,9 @@ const { hero = false } = defineProps<{
   border: 1px solid var(--dark-blue-20);
   border-radius: 200px;
 
-  @include t.caption-l-semi;
+  // По макету текст тега — Medium, не SemiBold
+
+  @include t.body-l-medium;
 
   @include a.mobile {
     padding: 8px 16px;
@@ -35,11 +37,25 @@ const { hero = false } = defineProps<{
   }
 
   &_hero {
-    padding: 8px 24px;
+    // Высота тега шапки по макету: 42px на десктопе и 44px ниже
+
+    padding: 7px 24px;
 
     background: linear-gradient(90deg, var(--white) 0%, var(--white-40) 100%);
     border-color: var(--dark-blue-10);
     border-radius: 50px;
+
+    @include a.tablet {
+      padding: 9px 24px;
+
+      @include t.caption-s-medium;
+    }
+
+    @include a.mobile {
+      padding: 12px 24px;
+
+      @include t.caption-xs-medium;
+    }
   }
 }
 </style>

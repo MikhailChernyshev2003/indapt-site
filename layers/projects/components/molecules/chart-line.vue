@@ -1,12 +1,31 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
 
-const { color, dotX = 198 } = defineProps<{
+const { color, variant = 'step' } = defineProps<{
   /** Цвет графика — акцент кейса */
   color: string;
-  /** Позиция маркера по макету (x левого края внешнего круга) */
-  dotX?: number;
+  /** Форма кривой из макета: «ступенька» вниз или спад с подъёмом */
+  variant?: 'step' | 'dip';
 }>();
+
+// Геометрия обеих кривых снята из фигмы (Vector 3211 — площадь, 3212 — штрих);
+// dotX — левый край маркера, его центр лежит на кривой
+const SHAPES = {
+  step: {
+    area: 'M134.5 63.9C106.34 57.54 -0.5 66 -0.5 66L-0.5 135.5L292 136.5L292 100.5C279 106.67 228.18 115.55 202.5 108.5C174.89 100.94 169.74 72.1 134.5 63.9Z',
+    stroke: 'M0 67.5C15 66.2 100 59.9 134.5 63.9C170 68.2 175 92.5 206.5 108.9C235 115.5 275 106.5 292 101.9',
+    areaTo: 136,
+    dotX: 223.5,
+  },
+  dip: {
+    area: 'M120 76C91.84 69.53 0 60.5 0 60.5L0 139L292 139L292 81.5C279 87.67 220.68 111.44 206.5 109C184.68 105.24 155.24 84.1 120 76Z',
+    stroke: 'M-1.5 62C-1.5 62 91.84 69.53 120 76C155.24 84.1 184.68 105.24 206.5 109C220.68 111.44 278.5 89.67 291.5 83.5',
+    areaTo: 139,
+    dotX: 198.5,
+  },
+};
+
+const shape = computed(() => SHAPES[variant]);
 
 const uid = useId();
 
@@ -64,6 +83,7 @@ onBeforeUnmount(() => {
     ref="rootRef"
     class="chart-line"
     viewBox="0 0 294 146"
+    preserveAspectRatio="xMidYMin slice"
     fill="none"
     aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
@@ -74,7 +94,7 @@ onBeforeUnmount(() => {
         x1="148"
         y1="64"
         x2="146.5"
-        y2="136"
+        :y2="shape.areaTo"
         gradientUnits="userSpaceOnUse"
       >
         <stop
@@ -126,17 +146,17 @@ onBeforeUnmount(() => {
     </defs>
     <path
       class="chart-line__area"
-      d="M134.5 63.9C106.34 57.54 -0.5 66 -0.5 66L-0.5 135.5L292 136.5L292 100.5C279 106.67 228.18 115.55 202.5 108.5C174.89 100.94 169.74 72.1 134.5 63.9Z"
+      :d="shape.area"
       :fill="`url(#cl-area-${uid})`"
     />
     <path
       class="chart-line__stroke"
-      d="M0 67.5C15 66.2 100 59.9 134.5 63.9C170 68.2 175 92.5 206.5 108.9C235 115.5 275 106.5 292 101.9"
+      :d="shape.stroke"
       :stroke="`url(#cl-line-${uid})`"
       stroke-width="3"
       stroke-linecap="round"
     />
-    <g class="chart-line__dot" :transform="`translate(${dotX} 97)`">
+    <g class="chart-line__dot" :transform="`translate(${shape.dotX} 97)`">
       <circle
         cx="12"
         cy="12"
@@ -161,9 +181,17 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@styles/adaptive" as a;
+
 .chart-line {
   display: block;
   width: 100%;
   height: auto;
+
+  @include a.mobile {
+    // Во всю ширину карточки кривая масштабируется, низ подрезается как в макете
+
+    height: 146px;
+  }
 }
 </style>

@@ -6,8 +6,9 @@ const { caseItem } = defineProps<{
   caseItem: ProjectCaseItem;
   /** Размер логотипа в шапке по макету, px */
   heroLogo: [number, number];
-  /** Диаграмма инфраструктуры кейса */
-  infra: string;
+  /** Иллюстрация инфраструктуры: десктопная, отдельная мобильная из макета
+   * и кадр на планшете — object-position по горизонтали */
+  infra: { src: string; mobile: string; tabletPosition: string };
   /** Пузыри и кольца сцены технологий */
   bubbles: ProjectTechBubble[];
   rings: ProjectTechRing[];
@@ -68,29 +69,42 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
               v-html="text"
             />
           </div>
-          <img
+          <picture
             class="case-page__infra"
-            :src="infra"
-            width="985"
-            height="357"
-            alt=""
-            loading="lazy"
-          />
+            :style="{ '--infra-tablet-position': infra.tabletPosition }"
+          >
+            <source
+              media="(max-width: 576px)"
+              :srcset="infra.mobile"
+              width="335"
+              height="160"
+            />
+            <img
+              class="case-page__infra-img"
+              :src="infra.src"
+              width="985"
+              height="357"
+              alt=""
+              loading="lazy"
+            />
+          </picture>
         </projects-molecules-case-row>
         <projects-molecules-case-row
           class="case-page__solution"
           :label="t('projects.general.solution')"
         >
-          <div
-            v-for="solution in solutions"
-            :key="solution.label"
-            class="case-page__solution-item"
-          >
-            <div class="case-page__solution-head">
-              <span class="case-page__solution-label">{{ solution.label }}</span>
-              <h3 class="case-page__solution-title" v-html="solution.title" />
+          <div class="case-page__solutions">
+            <div
+              v-for="solution in solutions"
+              :key="solution.label"
+              class="case-page__solution-item"
+            >
+              <div class="case-page__solution-head">
+                <span class="case-page__solution-label">{{ solution.label }}</span>
+                <h3 class="case-page__solution-title" v-html="solution.title" />
+              </div>
+              <p class="case-page__solution-text" v-html="solution.text" />
             </div>
-            <p class="case-page__solution-text" v-html="solution.text" />
           </div>
         </projects-molecules-case-row>
       </div>
@@ -133,12 +147,11 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
   @include s.base-container;
 
   @include a.tablet {
-    gap: 80px;
-    margin-top: 56px;
+    margin-top: 60px;
   }
 
   @include a.mobile {
-    gap: 56px;
+    gap: 80px;
     margin-top: 40px;
   }
 }
@@ -153,31 +166,61 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  @include a.mobile {
+    gap: 10px;
+  }
 }
+
+// Текст проблемы в макете набран Involve, как заголовки
 
 .case-page__issue-text {
   max-width: 873px;
 
   color: var(--dark-blue);
 
-  @include t.lead-m-medium;
+  @include t.h5;
 
   @include a.mobile {
-    @include t.body-l-medium;
+    @include t.h6;
   }
 }
 
 .case-page__infra {
+  display: block;
+  overflow: hidden;
+
+  border-radius: 16px;
+}
+
+.case-page__infra-img {
+  display: block;
   width: 100%;
   height: auto;
 
-  border-radius: 16px;
+  @include a.tablet {
+    // На планшете плашка той же высоты, что на десктопе, а сцена
+    // кадрируется по ширине — у каждого кейса свой кадр из макета
+
+    height: 357px;
+    object-fit: cover;
+    object-position: var(--infra-tablet-position, 0) center;
+  }
 
   @include a.mobile {
-    // На мобильном полоса ниже — диаграмма обрезается по центру
+    // На мобильном своя картинка из макета под плашку 335x160
 
-    height: 160px;
-    object-fit: cover;
+    height: auto;
+  }
+}
+
+.case-page__solutions {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+
+  @include a.mobile {
+    gap: 24px;
   }
 }
 
@@ -186,34 +229,39 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
   flex-direction: column;
   gap: 8px;
 
-  &:not(:first-child) {
-    margin-top: 28px;
+  @include a.mobile {
+    gap: 6px;
   }
 }
 
 .case-page__solution-head {
   display: flex;
   gap: 16px;
-  align-items: baseline;
+  align-items: flex-start;
+
+  @include a.mobile {
+    // На мобильном номер шага стоит отдельной строкой над заголовком
+
+    flex-direction: column;
+    gap: 20px;
+  }
 }
 
 .case-page__solution-label {
+  flex: none;
+
   color: var(--dark-blue-60);
 
   @include t.caption-l-semi;
-
-  @include a.mobile {
-    @include t.caption-s-semi-128;
-  }
 }
 
 .case-page__solution-title {
   color: var(--dark-blue);
 
-  @include t.lead-m-medium;
+  @include t.h5;
 
   @include a.mobile {
-    @include t.body-l-semi;
+    @include t.h6;
   }
 }
 
@@ -223,10 +271,6 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
   color: var(--dark-blue-80);
 
   @include t.body-l-medium;
-
-  @include a.mobile {
-    @include t.body-s-medium;
-  }
 }
 
 .case-page__results {
@@ -235,6 +279,9 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
   gap: 60px;
 
   @include a.mobile {
+    // В макете у заголовка в две строки рамка ниже текста — по видимому
+    // тексту до карточек 32px
+
     gap: 32px;
   }
 }
@@ -242,22 +289,22 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
 .case-page__results-title {
   color: var(--dark-blue);
 
-  @include t.h2;
+  @include t.h1;
+
+  @include a.tablet {
+    @include t.h2;
+  }
 
   @include a.mobile {
-    font-size: 32px;
+    @include t.h3;
   }
 }
 
 .case-page__other {
   margin-top: 120px;
 
-  @include a.tablet {
-    margin-top: 80px;
-  }
-
   @include a.mobile {
-    margin-top: 56px;
+    margin-top: 80px;
   }
 }
 
@@ -265,13 +312,8 @@ useRiseReveal(blockRef, '.case-page__issue-text, .case-page__infra, .case-page__
   margin-top: 120px;
   padding-bottom: 120px;
 
-  @include a.tablet {
-    margin-top: 80px;
-    padding-bottom: 80px;
-  }
-
   @include a.mobile {
-    margin-top: 56px;
+    margin-top: 80px;
     padding-bottom: 96px;
   }
 }

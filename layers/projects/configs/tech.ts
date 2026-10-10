@@ -16,22 +16,26 @@ import TensorflowLogo from '@l-projects/assets/images/tech/tensorflow.svg?url';
 import DjangoLogo from '@l-projects/assets/images/tech/django.svg?url';
 import IotLogo from '@l-projects/assets/images/tech/iot.svg?url';
 
-// Кольца сцены технологий: у кейсов с шестью пузырями своя раскладка
+/** Кольцо сцены; double — в макете слой продублирован, кольцо вдвое плотнее */
+export type TechRing = ProjectTechRing & { double?: boolean };
 
-const RINGS_WIDE: ProjectTechRing[] = [
-  { size: 518, x: 984, y: -80 },
-  { size: 280, x: 51, y: -26 },
-  { size: 227, x: 658, y: 195 },
+// Кольца сцены технологий: у кейсов с шестью пузырями своя раскладка.
+// В широкой раскладке макета каждое кольцо лежит двумя слоями, в компактной — одним
+
+const RINGS_WIDE: TechRing[] = [
+  { size: 518, x: 984, y: -80, double: true },
+  { size: 280, x: 51, y: -26, double: true },
+  { size: 227, x: 658, y: 195, double: true },
 ];
 
-const RINGS_COMPACT: ProjectTechRing[] = [
-  { size: 473, x: 995, y: -220 },
-  { size: 313, x: 245, y: 32 },
+const RINGS_COMPACT: TechRing[] = [
+  { size: 473, x: 995, y: -167 },
+  { size: 313, x: 245, y: 153.5 },
 ];
 
 /** Сцены технологий по кейсам: позиции сняты с макета (сцена 1320x487).
  * Логотипы — символы «logo ...» из макета, по ховеру виден каждый */
-export const PROJECT_TECH: Record<string, { bubbles: ProjectTechBubble[]; rings: ProjectTechRing[] }> = {
+export const PROJECT_TECH: Record<string, { bubbles: ProjectTechBubble[]; rings: TechRing[] }> = {
   kassir: {
     bubbles: [
       { label: 'Golang', size: 300, x: 0, y: 65, logo: GolangLogo },

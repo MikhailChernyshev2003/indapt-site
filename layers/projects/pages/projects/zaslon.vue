@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PROJECT_TECH, getProjectCase } from '@l-projects/configs';
-import Infra from '@l-projects/assets/images/infra/zaslon.svg?url';
+import Infra from '@l-projects/assets/images/infra/zaslon.webp';
+import InfraMobile from '@l-projects/assets/images/infra/zaslon-mobile.webp';
 
 const SLUG = 'zaslon';
 const I18N_KEY = `projects.${SLUG}`;
@@ -14,11 +15,11 @@ useSeoMeta({
   title: () => `${t(`${I18N_KEY}.title`)}`,
 });
 
-/** Карточки с линейными графиками: ключ и маркер на кривой из макета */
+/** Карточки с линейными графиками: ключ и форма кривой из макета */
 const LINE_RESULTS = [
-  { key: 'result_2', dotX: 198 },
-  { key: 'result_3', dotX: 224 },
-];
+  { key: 'result_2', variant: 'dip' },
+  { key: 'result_3', variant: 'step' },
+] as const;
 </script>
 
 <template>
@@ -26,7 +27,7 @@ const LINE_RESULTS = [
     class="case-zaslon"
     :case-item="caseItem"
     :hero-logo="[202, 193]"
-    :infra="Infra"
+    :infra="{ src: Infra, mobile: InfraMobile, tabletPosition: '12%' }"
     :bubbles="tech.bubbles"
     :rings="tech.rings"
   >
@@ -48,7 +49,7 @@ const LINE_RESULTS = [
             :text="t(`${I18N_KEY}.content.results.${line.key}.text`)"
             :value="t(`${I18N_KEY}.content.results.${line.key}.value`)"
             color="#f32941"
-            :dot-x="line.dotX"
+            :variant="line.variant"
           />
         </div>
       </div>
@@ -66,7 +67,7 @@ const LINE_RESULTS = [
   --project-hero-logo-radius: 16px;
   --projects-cta-bg: rgb(140 171 253 / 20%);
 
-  background-color: #fdf5f5;
+  background-color: #f9f5f5;
 }
 
 .case-zaslon__results {
@@ -94,6 +95,11 @@ const LINE_RESULTS = [
 
   @include a.tablet {
     flex: none;
+  }
+
+  @include a.mobile {
+    // В мобильном макете кейса кривая заходит под подпись — карточки компактнее
+    --stat-line-chart-offset: -39px;
   }
 }
 </style>

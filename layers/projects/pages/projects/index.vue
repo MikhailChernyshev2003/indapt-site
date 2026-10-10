@@ -37,14 +37,11 @@ useSeoMeta({
   margin-top: 120px;
   padding-bottom: 120px;
 
-  @include a.tablet {
-    margin-top: 80px;
-    padding-bottom: 80px;
-  }
+  // На мобильном в макете отступ до футера вдвое меньше, чем до списка
 
   @include a.mobile {
-    margin-top: 56px;
-    padding-bottom: 56px;
+    margin-top: 80px;
+    padding-bottom: 40px;
   }
 }
 </style>

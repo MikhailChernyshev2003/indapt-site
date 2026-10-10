@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { gsap } from 'gsap';
-import type { ProjectTechBubble, ProjectTechRing } from '@l-projects/types';
+import type { ProjectTechBubble } from '@l-projects/types';
+import type { TechRing } from '@l-projects/configs';
+import SwipeHintIcon from '@l-projects/assets/images/swipe-hint.svg';
 
 const { bubbles, rings } = defineProps<{
   /** Пузыри технологий: позиции сцены 1320x487 по макету */
   bubbles: ProjectTechBubble[];
   /** Кольца-декор сцены */
-  rings: ProjectTechRing[];
+  rings: TechRing[];
   /** Цвет колец — акцент кейса */
   ringColor: string;
 }>();
@@ -32,14 +34,17 @@ const shiftField = () => {
 
   if (!stage || !row) return;
 
-  const shift = row.scrollWidth - stage.clientWidth;
+  // Ширины тянутся от html font-size: сдвиг пересчитываем на каждом
+  // refresh (ресайз, поворот), иначе поле доезжало бы не до конца или дальше
+  const shift = () => Math.max(0, row.scrollWidth - stage.clientWidth);
 
-  if (shift <= 0) return;
+  if (shift() <= 0) return;
 
   tween = gsap.to(row, {
-    x: -shift,
+    x: () => -shift(),
     ease: 'none',
     scrollTrigger: {
+      invalidateOnRefresh: true,
       trigger: stage,
       start: 'top 80%',
       end: 'bottom 30%',
@@ -94,7 +99,7 @@ onBeforeUnmount(() => {
             height: toRem(ring.size),
           }"
         >
-          <projects-molecules-ring-circles :color="ringColor" double />
+          <projects-molecules-ring-circles :color="ringColor" :double="ring.double" />
         </div>
         <div
           v-for="(bubble, idx) in bubbles"
@@ -124,6 +129,8 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
+    <!-- Подсказка «листайте» из макета: на планшете и мобильном сцена едет по скроллу -->
+    <swipe-hint-icon class="case-tech__hint" aria-hidden="true" />
   </section>
 </template>
 
@@ -135,32 +142,62 @@ onBeforeUnmount(() => {
 .case-tech {
   display: flex;
   flex-direction: column;
-  gap: 60px;
+
+  // Под подсказкой в макете отступ до «Результатов» больше общего шага страницы
+
+  @include a.tablet {
+    padding-bottom: 40px;
+  }
 
   @include a.mobile {
-    gap: 40px;
+    padding-bottom: 45px;
   }
 }
 
 .case-tech__title {
   color: var(--dark-blue);
 
-  @include t.h2;
+  @include t.h1;
+
+  @include a.tablet {
+    @include t.h2;
+  }
 
   @include a.mobile {
-    font-size: 32px;
+    @include t.h3;
   }
 }
 
 .case-tech__stage {
   position: relative;
 
-  // Сцена пузырей по макету
+  // Сцена пузырей по макету. Своего overflow нет: пузыри и кольца
+  // режет край экрана (overflow-x: clip у case-page), а не край контейнера
 
   height: 487px;
+  margin-top: 60px;
+
+  @include a.mobile {
+    margin-top: 40px;
+  }
+}
+
+.case-tech__hint {
+  display: none;
+  flex: none;
+  align-self: center;
+  width: 66px;
+  height: 48px;
+
+  color: var(--dark-blue);
 
   @include a.tablet {
-    overflow: hidden;
+    display: block;
+    margin-top: 36px;
+  }
+
+  @include a.mobile {
+    margin-top: 11px;
   }
 }
 

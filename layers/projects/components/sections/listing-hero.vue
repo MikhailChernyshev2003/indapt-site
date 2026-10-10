@@ -6,7 +6,7 @@ const { t } = useI18n();
 
 <template>
   <!-- Шапка разводящей: заголовок с подводкой и синяя полоса
-       со стеклянной иллюстрацией, выходящей за её верх -->
+       со стеклянной иллюстрацией, стоящей на её нижнем крае -->
   <section class="listing-hero">
     <div class="listing-hero__head">
       <h1 class="listing-hero__title" v-html="t('projects.title')" />
@@ -32,7 +32,7 @@ const { t } = useI18n();
   padding-top: 160px;
 
   @include a.tablet {
-    padding-top: 114px;
+    padding-top: 112px;
   }
 
   @include a.mobile {
@@ -40,25 +40,40 @@ const { t } = useI18n();
   }
 }
 
+// Подводка стоит сразу за заголовком: в макете у заголовка своя
+// колонка 318px, а не растяжка на всю ширину
+
 .listing-hero__head {
   display: flex;
   gap: 16px;
   align-items: flex-end;
-  justify-content: space-between;
 
   @include s.base-container;
 
   @include a.tablet {
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
     align-items: flex-start;
+  }
+
+  @include a.mobile {
+    gap: 10px;
   }
 }
 
 .listing-hero__title {
+  flex: none;
+  width: 318px;
+
   color: var(--dark-blue);
 
   @include t.h1;
+
+  @include a.tablet {
+    width: auto;
+
+    @include t.h2;
+  }
 
   @include a.mobile {
     @include t.h4;
@@ -73,12 +88,12 @@ const { t } = useI18n();
   @include t.lead-m-medium;
 
   @include a.mobile {
-    @include t.body-s-medium;
+    @include t.body-s-medium-135;
   }
 }
 
-// Полоса с иллюстрацией: картинка стоит правее центра
-// и поднимается над верхним краем полосы, как в макете
+// Полоса с иллюстрацией: картинка правее центра, низ подставки
+// обрезан нижним краем полосы (экспорт из макета уже обрезан)
 
 .listing-hero__band {
   position: relative;
@@ -90,7 +105,7 @@ const { t } = useI18n();
 
   @include a.tablet {
     height: 303px;
-    margin-top: 40px;
+    margin-top: 24px;
   }
 
   @include a.mobile {
@@ -101,21 +116,19 @@ const { t } = useI18n();
 
 .listing-hero__img {
   position: absolute;
-  top: -127px;
+  bottom: 0;
   left: 487px;
 
   width: 506px;
 
   @include a.tablet {
-    top: -54px;
     left: 208px;
 
     width: 405px;
   }
 
   @include a.mobile {
-    top: -34px;
-    left: 79px;
+    left: 78px;
 
     width: 236px;
   }

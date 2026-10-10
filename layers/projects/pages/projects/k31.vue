@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PROJECT_TECH, getProjectCase } from '@l-projects/configs';
-import Infra from '@l-projects/assets/images/infra/k31.svg?url';
+import Infra from '@l-projects/assets/images/infra/k31.webp';
+import InfraMobile from '@l-projects/assets/images/infra/k31-mobile.webp';
 
 const SLUG = 'k31';
 const I18N_KEY = `projects.${SLUG}`;
@@ -24,7 +25,7 @@ const SERIES_SECONDARY = [40, 51, 40, 61, 51, 76, 65, 84, 61, 40, 61, 72, 51];
     class="case-k31"
     :case-item="caseItem"
     :hero-logo="[186, 86]"
-    :infra="Infra"
+    :infra="{ src: Infra, mobile: InfraMobile, tabletPosition: '20%' }"
     :bubbles="tech.bubbles"
     :rings="tech.rings"
   >
@@ -42,6 +43,7 @@ const SERIES_SECONDARY = [40, 51, 40, 61, 51, 76, 65, 84, 61, 40, 61, 72, 51];
             :primary="SERIES_PRIMARY"
             :secondary="SERIES_SECONDARY"
             color="#ff7f18"
+            :mobile-count="6"
           />
         </article>
         <projects-molecules-stat-big-card
@@ -51,7 +53,9 @@ const SERIES_SECONDARY = [40, 51, 40, 61, 51, 76, 65, 84, 61, 40, 61, 72, 51];
           :value="t(`${I18N_KEY}.content.results.result_2.value`)"
           color="#ff7f18"
           :column-height="310"
-          :bar-height="75"
+          :bar-height="91"
+          :track-opacity="0.4"
+          :fade-to="0.04"
         />
       </div>
     </template>
@@ -97,15 +101,20 @@ const SERIES_SECONDARY = [40, 51, 40, 61, 51, 76, 65, 84, 61, 40, 61, 72, 51];
   }
 
   @include a.mobile {
-    padding: 20px;
+    padding: 24px;
   }
 }
+
+// Значение по макету: на десктопе сразу за колонкой текста, на планшете у правого края
 
 .case-k31__chart-head {
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  justify-content: space-between;
+
+  @include a.tablet {
+    justify-content: space-between;
+  }
 
   @include a.mobile {
     flex-direction: column;
@@ -113,14 +122,20 @@ const SERIES_SECONDARY = [40, 51, 40, 61, 51, 76, 65, 84, 61, 40, 61, 72, 51];
 }
 
 .case-k31__chart-text {
-  max-width: 401px;
+  flex: 0 1 401px;
 
   color: var(--dark-blue);
 
-  @include t.lead-s-medium;
+  @include t.lead-m-medium;
+
+  @include a.tablet {
+    flex-basis: 326px;
+  }
 
   @include a.mobile {
-    @include t.body-s-medium;
+    flex: none;
+
+    @include t.lead-s-medium;
   }
 }
 

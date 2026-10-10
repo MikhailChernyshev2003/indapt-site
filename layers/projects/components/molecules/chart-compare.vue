@@ -53,10 +53,11 @@ defineProps<{
   <!-- Сравнение «до/после»: два столбца с подписями и тёмная плашка -->
   <div ref="rootRef" class="chart-compare">
     <div class="chart-compare__bars">
-      <div class="chart-compare__bar chart-compare__bar_before" :style="{ background: color }">
+      <!-- Прозрачность только у заливки, чтобы цифры и плашка оставались плотными -->
+      <div class="chart-compare__bar chart-compare__bar_before" :style="{ background: `${color}33` }">
         <span class="chart-compare__value">{{ beforeValue }}</span>
       </div>
-      <div class="chart-compare__bar chart-compare__bar_after" :style="{ background: color }">
+      <div class="chart-compare__bar chart-compare__bar_after" :style="{ background: `${color}cc` }">
         <span class="chart-compare__value">{{ afterValue }}</span>
         <span v-if="badge" class="chart-compare__badge">{{ badge }}</span>
       </div>
@@ -98,24 +99,20 @@ defineProps<{
     height: 100px;
 
     border-radius: 8px 0 0 8px;
-
-    opacity: 0.2;
   }
 
   &_after {
     height: 214px;
 
     border-radius: 8px 8px 8px 0;
-
-    opacity: 0.8;
   }
 }
 
-// Значения из макета: Involve 42px
+// Значения из макета: Involve 42px по центру столбца
 
 .chart-compare__value {
   position: absolute;
-  top: 35px;
+  top: 50%;
   left: 50%;
 
   color: var(--dark-blue);
@@ -123,59 +120,55 @@ defineProps<{
   font-size: 42px;
 
   font-family: v.$font-involve;
-  line-height: 1.1;
+  line-height: 1;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 
-  transform: translateX(-50%);
-
-  @include a.mobile {
-    top: 20px;
-
-    font-size: 28px;
-  }
+  transform: translate(-50%, -50%);
 }
 
-// Тёмная плашка с хвостиком над правым столбцом
+// Тёмная плашка с хвостиком по центру над правым столбцом
 
 .chart-compare__badge {
   position: absolute;
-  top: -91px;
-  left: 98px;
+  right: 0;
+  bottom: calc(100% + 19px);
+  left: 0;
 
-  padding: 14px 15px;
+  width: max-content;
+  margin: 0 auto;
+  padding: 14.5px 18px;
 
   color: var(--white);
-
   white-space: nowrap;
+  text-align: center;
 
   background-color: var(--dark-blue);
   border-radius: 8px;
 
-  @include t.lead-s-medium;
+  @include t.h5;
 
   @include a.mobile {
-    top: -70px;
-    left: 40px;
+    bottom: calc(100% + 17px);
 
-    padding: 10px 12px;
+    min-width: 100%;
+    padding: 11px 12px;
 
-    @include t.body-s-medium;
+    @include t.h6;
   }
 
   &::after {
     position: absolute;
-    bottom: -11px;
-    left: 79px;
+    top: 100%;
+    left: 50%;
 
     border-color: var(--dark-blue) transparent transparent;
     border-style: solid;
-    border-width: 12px 17px 0;
+    border-width: 11.5px 18px 0;
+
+    transform: translateX(-50%);
 
     content: '';
-
-    @include a.mobile {
-      left: 46px;
-    }
   }
 }
 
@@ -189,10 +182,6 @@ defineProps<{
   color: var(--dark-blue-80);
   text-align: center;
 
-  @include t.body-s-medium;
-
-  @include a.mobile {
-    @include t.body-xs-medium;
-  }
+  @include t.caption-m-medium;
 }
 </style>

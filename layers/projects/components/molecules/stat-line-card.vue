@@ -6,8 +6,8 @@ const { value } = defineProps<{
   value: string;
   /** Цвет графика */
   color: string;
-  /** Позиция маркера на кривой по макету */
-  dotX?: number;
+  /** Форма кривой из макета: «ступенька» вниз или спад с подъёмом */
+  variant?: 'step' | 'dip';
 }>();
 
 const valueRef = useTemplateRef<HTMLElement>('valueRef');
@@ -39,7 +39,7 @@ useCountUp(valueRef, () => value);
     <projects-molecules-chart-line
       class="stat-line-card__chart"
       :color="color"
-      :dot-x="dotX"
+      :variant="variant"
     />
   </article>
 </template>
@@ -56,15 +56,17 @@ useCountUp(valueRef, () => value);
   justify-content: space-between;
   min-height: 226px;
   padding: 40px;
+  overflow: hidden;
 
   background-color: var(--white);
   border-radius: 16px;
 
   @include a.mobile {
     flex-direction: column;
+    gap: 0;
     align-items: stretch;
     min-height: 0;
-    padding: 20px;
+    padding: 24px;
   }
 }
 
@@ -75,25 +77,31 @@ useCountUp(valueRef, () => value);
   max-width: 245px;
 
   @include a.mobile {
-    gap: 16px;
+    position: relative;
+    z-index: 1;
+
     max-width: none;
   }
 }
 
 .stat-line-card__text {
   color: var(--dark-blue);
+  text-wrap: balance;
 
-  @include t.lead-s-medium;
+  @include t.lead-m-medium;
 
   @include a.mobile {
-    @include t.body-s-medium;
+    @include t.lead-s-medium;
   }
 }
+
+// Высота строки — по стрелке, как в макете: интерлиньяж цифры её не раздувает
 
 .stat-line-card__row {
   display: flex;
   gap: 16px;
   align-items: center;
+  height: 40px;
 }
 
 .stat-line-card__icon {
@@ -101,11 +109,6 @@ useCountUp(valueRef, () => value);
   height: 40px;
 
   color: var(--dark-blue);
-
-  @include a.mobile {
-    width: 24px;
-    height: 24px;
-  }
 }
 
 // Значение из макета: Involve 42px, миксина такого размера нет
@@ -118,17 +121,18 @@ useCountUp(valueRef, () => value);
   font-family: v.$font-involve;
   line-height: 1.1;
   letter-spacing: -0.01em;
-
-  @include a.mobile {
-    font-size: 32px;
-  }
 }
 
 .stat-line-card__chart {
+  flex: none;
   width: 294px;
 
   @include a.mobile {
-    width: 100%;
+    // График во всю ширину карточки, до краёв и дна. Отступ сверху
+    // кейс может поджать: у части макетов кривая заходит под подпись
+
+    width: calc(100% + 48px);
+    margin: var(--stat-line-chart-offset, 1.25rem) -24px -24px; // 20px, в rem: pxtorem не заходит в var()
   }
 }
 </style>

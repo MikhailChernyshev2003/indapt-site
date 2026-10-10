@@ -3,7 +3,9 @@ import { gsap } from 'gsap';
 
 const {
   columnHeight = 380,
+  mobileColumnHeight,
   barHeight = 311,
+  trackOpacity = 0.3,
   fadeTo = 0,
 } = defineProps<{
   /** Описание показателя */
@@ -14,32 +16,36 @@ const {
   value: string;
   /** Цвет колонки-градусника */
   color: string;
-  /** Высота колонки и её верхнего сегмента по макету, px */
+  /** Высота колонки и её нижнего насыщенного сегмента по макету, px */
   columnHeight?: number;
+  /** Высота колонки на мобильном, если в макете она другая */
+  mobileColumnHeight?: number;
   barHeight?: number;
-  /** Прозрачность нижнего края градиента колонки */
+  /** Прозрачность бледной подложки колонки сверху и снизу */
+  trackOpacity?: number;
   fadeTo?: number;
 }>();
 
 const toRem = (px: number) => `${px / 16}rem`;
 
-const columnRef = useTemplateRef<HTMLElement>('columnRef');
+const barRef = useTemplateRef<HTMLElement>('barRef');
 
 let tween: gsap.core.Tween | null = null;
 
+// Насыщенный сегмент вырастает со дна бледной колонки
 useGsap(() => {
-  const column = columnRef.value;
+  const bar = barRef.value;
 
-  if (!column) return;
+  if (!bar) return;
 
-  tween = gsap.from(column, {
+  tween = gsap.from(bar, {
     scaleY: 0,
     transformOrigin: 'bottom',
     duration: 1,
     ease: 'power2.out',
     scrollTrigger: {
-      trigger: column,
-      start: 'top 88%',
+      trigger: bar,
+      start: 'top 95%',
     },
   });
 });
@@ -56,27 +62,36 @@ const hexAlpha = (alpha: number) =>
 
 <template>
   <!-- Крупная карточка результата: текст, большая цифра
-       и колонка-градусник акцентного цвета -->
-  <article class="stat-big-card">
+       и колонка-градусник: бледная подложка и насыщенный сегмент снизу -->
+  <article
+    class="stat-big-card"
+    :style="{
+      '--stat-column-height': toRem(columnHeight),
+      '--stat-column-height-mobile': toRem(mobileColumnHeight ?? columnHeight),
+    }"
+  >
     <div class="stat-big-card__lead">
       <p class="stat-big-card__text" v-html="text" />
-      <projects-molecules-stat-value :preposition="preposition" :value="value" />
+      <projects-molecules-stat-value
+        class="stat-big-card__value"
+        :preposition="preposition"
+        :value="value"
+      />
     </div>
     <div class="stat-big-card__column-wrap">
       <slot name="decor" />
       <div
-        ref="columnRef"
         class="stat-big-card__column"
         :style="{
-          height: toRem(columnHeight),
-          background: `linear-gradient(180deg, ${color} 0%, ${color}${hexAlpha(fadeTo)} 100%)`,
+          background: `linear-gradient(180deg, ${color}${hexAlpha(trackOpacity)} 0%, ${color}${hexAlpha(fadeTo)} 100%)`,
         }"
       >
         <div
+          ref="barRef"
           class="stat-big-card__bar"
           :style="{
             height: toRem(barHeight),
-            background: `linear-gradient(180deg, ${color} 0%, ${color}00 100%)`,
+            background: `linear-gradient(180deg, ${color} 0%, ${color}00 100%), ${color}1a`,
           }"
         />
       </div>
@@ -102,27 +117,39 @@ const hexAlpha = (alpha: number) =>
   border-radius: 16px;
 
   @include a.mobile {
-    gap: 16px;
-    padding: 20px;
+    // На мобильном всё в столбик: текст, колонка на всю ширину, значение
+
+    flex-direction: column;
+    padding: 24px;
   }
 }
 
 .stat-big-card__lead {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 16px;
   justify-content: space-between;
+  min-width: 0;
+
+  @include a.mobile {
+    display: contents;
+  }
 }
 
 .stat-big-card__text {
-  max-width: 340px;
-
   color: var(--dark-blue);
 
-  @include t.lead-s-medium;
+  @include t.lead-m-medium;
 
   @include a.mobile {
-    @include t.body-s-medium;
+    @include t.lead-s-medium;
+  }
+}
+
+.stat-big-card__value {
+  @include a.mobile {
+    order: 2;
   }
 }
 
@@ -132,23 +159,31 @@ const hexAlpha = (alpha: number) =>
   display: flex;
   flex: none;
   align-items: flex-end;
+
+  @include a.mobile {
+    order: 1;
+  }
 }
 
 .stat-big-card__column {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   width: 216px;
+  height: var(--stat-column-height);
+  overflow: hidden;
 
   border-radius: 8px;
 
   @include a.mobile {
-    width: 96px;
+    width: 100%;
+    height: var(--stat-column-height-mobile);
   }
 }
 
 .stat-big-card__bar {
-  border-radius: 8px;
+  flex: none;
 
-  opacity: 0.9;
+  border-radius: 8px;
 }
 </style>

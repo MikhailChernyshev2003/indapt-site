@@ -1,22 +1,31 @@
 <script setup lang="ts">
-import type { FigurePlacements, RingColors } from '@l-services/types';
+import { RING_SHAPES } from '@l-services/configs';
+import type { FigurePlacements } from '@l-services/types';
 import { FOOTER_SOCIAL_URLS_RU } from '~/shared/constants/footer-social';
 
 const { t } = useI18n();
 
-/** Цвета колец: у этого паттерна в макете исходный синий градиент символа */
-const PATTERN_COLORS: RingColors = ['#0d3ff4', '#2ff0fe'];
+/**
+ * Кольца — тот же шестиугольник, что в паттернах услуг, но у экземпляра
+ * «паттерн 3» в баннере свой градиент (синий слева, бирюза справа)
+ * и плотность колец 10%, ядро 8%
+ */
+const RINGS = RING_SHAPES.hexagon;
+const RING_OPACITY = 0.1;
+const CORE_OPACITY = 0.08;
 
 /**
  * Паттерн в баннере: экземпляр «паттерн 3» относительно карточки
- * (десктоп 7563:19524, планшет и мобильный — из соответствующих фреймов
- * листинга). Ядро у правого края, кольца режет карточка
+ * (десктоп 9112:8937, планшет 9112:9358, мобильный 9112:9692).
+ * Ядро у правого края, кольца режет карточка
  */
 const PATTERN: FigurePlacements = {
-  desktop: { x: 2226, y: 659, width: 1640, rotate: 172 },
-  tablet: { x: 1404, y: 597, width: 1149, rotate: 172 },
-  mobile: { x: 1025, y: 515, width: 887, rotate: 172 },
+  desktop: { x: 2226, y: 659, width: 1640, rotate: 172.2 },
+  tablet: { x: 1404, y: 597, width: 1149, rotate: 172.2 },
+  mobile: { x: 1025, y: 515, width: 887, rotate: 172.2 },
 };
+
+const gradientId = `cta-banner-rings-${useId()}`;
 </script>
 
 <template>
@@ -25,7 +34,35 @@ const PATTERN: FigurePlacements = {
   <section class="cta-banner">
     <div class="cta-banner__card">
       <services-molecules-figure class="cta-banner__decor" :placement="PATTERN">
-        <services-molecules-ring-pattern shape="hexagon" :colors="PATTERN_COLORS" />
+        <svg
+          class="cta-banner__pattern"
+          :viewBox="`0 0 ${RINGS.viewBox[0]} ${RINGS.viewBox[1]}`"
+          fill="none"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient
+              :id="gradientId"
+              x1="0.864"
+              y1="0.468"
+              x2="0.215"
+              y2="0.705"
+            >
+              <stop offset="0" stop-color="#0d3ff4" />
+              <stop offset="1" stop-color="#2ff0fe" />
+            </linearGradient>
+          </defs>
+          <path
+            v-for="(ring, idx) in RINGS.rings"
+            :key="ring.path"
+            data-ring
+            :d="ring.path"
+            :transform="`translate(${ring.x} ${ring.y})`"
+            :fill="`url(#${gradientId})`"
+            :fill-opacity="idx === RINGS.rings.length - 1 ? CORE_OPACITY : RING_OPACITY"
+          />
+        </svg>
       </services-molecules-figure>
       <div class="cta-banner__content">
         <div class="cta-banner__head">
@@ -55,10 +92,12 @@ const PATTERN: FigurePlacements = {
   @include s.base-container;
 }
 
+// Высоту карточки задаёт контент: 258px на десктопе, 320px на планшете
+// и 240px на мобильном, как в макете
+
 .cta-banner__card {
   position: relative;
 
-  min-height: 258px;
   padding: 46px;
   overflow: hidden;
 
@@ -66,7 +105,7 @@ const PATTERN: FigurePlacements = {
   border-radius: 16px;
 
   @include a.mobile {
-    padding: 24px 20px;
+    padding: 24px;
   }
 }
 
@@ -74,6 +113,12 @@ const PATTERN: FigurePlacements = {
 
 .cta-banner__decor {
   z-index: 0;
+}
+
+.cta-banner__pattern {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .cta-banner__content {
@@ -85,40 +130,55 @@ const PATTERN: FigurePlacements = {
   align-items: flex-start;
 }
 
+// На планшете колонка узкая: заголовок и текст в две строки
+
 .cta-banner__head {
   display: flex;
   flex-direction: column;
   gap: 12px;
   max-width: 663px;
+
+  @include a.tablet {
+    max-width: 312px;
+  }
+
+  @include a.mobile {
+    max-width: none;
+  }
 }
 
 .cta-banner__title {
   color: var(--dark-blue);
 
-  @include t.h5;
+  @include t.h2;
+
+  @include a.tablet {
+    @include t.h3;
+  }
 
   @include a.mobile {
-    @include t.lead-m-medium;
+    @include t.h5;
   }
 }
 
 .cta-banner__text {
   color: var(--dark-blue);
 
-  @include t.body-l-medium;
+  @include t.lead-s-medium;
 
   @include a.mobile {
     @include t.body-s-medium;
   }
 }
 
-// Кнопка из макета: обводка, блюр-подложка и точка после текста
+// Кнопка из макета: обводка, блюр-подложка и точка после текста.
+// Рамка в макете внутри размеров, поэтому паддинги на 1px меньше
 
 .cta-banner__button {
   display: inline-flex;
   gap: 10px;
   align-items: center;
-  padding: 14px 28px 16px;
+  padding: 13px 27px 15px;
 
   color: var(--dark-blue);
 
@@ -129,6 +189,10 @@ const PATTERN: FigurePlacements = {
 
   @include t.caption-l-semi;
   @include s.default-transition(background-color);
+
+  @include a.mobile {
+    @include t.button-s-semi;
+  }
 
   @include s.hover {
     background-color: var(--white-60);

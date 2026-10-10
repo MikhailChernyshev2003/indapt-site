@@ -26,7 +26,10 @@ defineProps<{
 
   @include a.tablet {
     flex-direction: column;
-    gap: 24px;
+  }
+
+  @include a.mobile {
+    gap: 28px;
   }
 }
 
@@ -40,6 +43,10 @@ defineProps<{
 
   @include a.tablet {
     width: auto;
+  }
+
+  @include a.mobile {
+    @include t.body-s-medium;
   }
 }
 
@@ -58,7 +65,7 @@ defineProps<{
   }
 
   @include a.mobile {
-    gap: 24px;
+    gap: 20px;
   }
 }
 </style>

@@ -20,14 +20,18 @@ export interface ProjectCaseItem {
   logo: string;
   /** Размер логотипа в карточке разводящей по макету, px */
   logoSize: [number, number];
+  /**
+   * Размеры логотипа в карточке разводящей на планшете и мобильном:
+   * в макете подобраны вручную, а не общим масштабом
+   */
+  logoSizeTablet: [number, number];
+  logoSizeMobile: [number, number];
   /** Размер логотипа в мини-карточке «Другие кейсы» по макету, px */
   logoSizeSmall: [number, number];
   /** Акцентный цвет кейса: жалюзи и градиенты */
   accent: string;
   /** Фон карточки кейса в слайдере «Другие кейсы» */
   cardBg: string;
-  /** Градиент рамки логотипа в мини-карточке */
-  logoStroke: [string, string];
   /** Цвет колец сцены технологий */
   techColor: string;
   /** Цвет жалюзи и градиента шапки кейса */

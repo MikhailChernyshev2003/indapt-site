@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PROJECT_TECH, getProjectCase } from '@l-projects/configs';
-import Infra from '@l-projects/assets/images/infra/bmw.svg?url';
+import Infra from '@l-projects/assets/images/infra/bmw.webp';
+import InfraMobile from '@l-projects/assets/images/infra/bmw-mobile.webp';
 
 const SLUG = 'bmw';
 const I18N_KEY = `projects.${SLUG}`;
@@ -14,8 +15,13 @@ useSeoMeta({
   title: () => `${t(`${I18N_KEY}.title`)}`,
 });
 
-/** Строки результатов слева: ключи локали в порядке макета */
-const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
+/** Строки результатов слева: ключи локали в порядке макета.
+ * Стрелки по смыслу: снижение издержек — синяя вниз, рост — зелёная вверх */
+const ROW_RESULTS: { key: string; trend: 'down' | 'up'; color: string; wide?: boolean }[] = [
+  { key: 'result_1', trend: 'down', color: '#1764f6' },
+  { key: 'result_3', trend: 'up', color: '#71f21a' },
+  { key: 'result_4', trend: 'up', color: '#71f21a', wide: true },
+];
 </script>
 
 <template>
@@ -23,7 +29,7 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
     class="case-bmw"
     :case-item="caseItem"
     :hero-logo="[182, 181]"
-    :infra="Infra"
+    :infra="{ src: Infra, mobile: InfraMobile, tabletPosition: '14%' }"
     :bubbles="tech.bubbles"
     :rings="tech.rings"
   >
@@ -31,10 +37,13 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
       <div class="case-bmw__results">
         <div class="case-bmw__rows">
           <projects-molecules-stat-row
-            v-for="key in ROW_RESULTS"
-            :key="key"
-            :text="t(`${I18N_KEY}.content.results.${key}.text`)"
-            :value="t(`${I18N_KEY}.content.results.${key}.value`)"
+            v-for="row in ROW_RESULTS"
+            :key="row.key"
+            :text="t(`${I18N_KEY}.content.results.${row.key}.text`)"
+            :value="t(`${I18N_KEY}.content.results.${row.key}.value`)"
+            :trend="row.trend"
+            :color="row.color"
+            :wide="row.wide"
           />
         </div>
         <projects-molecules-stat-big-card
@@ -44,6 +53,7 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
           :value="t(`${I18N_KEY}.content.results.result_2.value`)"
           color="#1764f6"
           :column-height="386"
+          :mobile-column-height="315"
           :bar-height="75"
         />
       </div>
@@ -87,7 +97,10 @@ const ROW_RESULTS = ['result_1', 'result_3', 'result_4'];
   flex: 1 1 549px;
 
   @include a.tablet {
+    // На планшете и мобильном большая карточка идёт первой
+
     flex: none;
+    order: -1;
   }
 }
 </style>

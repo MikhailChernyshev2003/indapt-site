@@ -31,35 +31,34 @@ useCountUp(numberRef, () => value);
   color: var(--dark-blue);
 }
 
-.stat-value__preposition {
-  margin-top: 10px;
+// Как в макете: предлог стоит вровень с верхом цифр, а под цифрами
+// остаётся 10px до низа блока — лишний интерлиньяж срезан отступами
 
+.stat-value__preposition {
   color: var(--dark-blue-60);
 
-  @include t.h5;
+  @include t.h3;
 
   @include a.mobile {
-    margin-top: 4px;
-
-    @include t.lead-m-medium;
+    @include t.h5;
   }
 }
 
-// Крупная цифра из макета: 100px, в миксинах такого нет
+// Крупная цифра из макета: 100px (на мобильном 80px), в миксинах такого нет
 
 .stat-value__number {
+  margin: -11px 0 -14px;
+
   font-weight: 500;
   font-size: 100px;
   font-family: v.$font-involve;
   line-height: 1.1;
   letter-spacing: -0.01em;
 
-  @include a.tablet {
-    font-size: 80px;
-  }
-
   @include a.mobile {
-    font-size: 56px;
+    margin: -9px 0;
+
+    font-size: 80px;
   }
 }
 </style>

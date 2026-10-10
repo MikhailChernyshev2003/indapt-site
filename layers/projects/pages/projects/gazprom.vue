@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PROJECT_TECH, getProjectCase } from '@l-projects/configs';
-import Infra from '@l-projects/assets/images/infra/gazprom.svg?url';
+import Infra from '@l-projects/assets/images/infra/gazprom.webp';
+import InfraMobile from '@l-projects/assets/images/infra/gazprom-mobile.webp';
 
 const SLUG = 'gazprom';
 const I18N_KEY = `projects.${SLUG}`;
@@ -14,11 +15,11 @@ useSeoMeta({
   title: () => `${t(`${I18N_KEY}.title`)}`,
 });
 
-/** Карточки с линейными графиками: ключ и маркер на кривой из макета */
+/** Карточки с линейными графиками: ключ и форма кривой из макета */
 const LINE_RESULTS = [
-  { key: 'result_1', dotX: 198 },
-  { key: 'result_3', dotX: 224 },
-];
+  { key: 'result_1', variant: 'dip' },
+  { key: 'result_3', variant: 'step' },
+] as const;
 
 // Высоты столбцов правой карточки из макета
 const COLUMNS = [60, 80, 70, 120, 130, 140, 150, 170, 200];
@@ -29,7 +30,7 @@ const COLUMNS = [60, 80, 70, 120, 130, 140, 150, 170, 200];
     class="case-gazprom"
     :case-item="caseItem"
     :hero-logo="[115, 193]"
-    :infra="Infra"
+    :infra="{ src: Infra, mobile: InfraMobile, tabletPosition: '44%' }"
     :bubbles="tech.bubbles"
     :rings="tech.rings"
   >
@@ -42,7 +43,7 @@ const COLUMNS = [60, 80, 70, 120, 130, 140, 150, 170, 200];
             :text="t(`${I18N_KEY}.content.results.${line.key}.text`)"
             :value="t(`${I18N_KEY}.content.results.${line.key}.value`)"
             color="#0095ef"
-            :dot-x="line.dotX"
+            :variant="line.variant"
           />
         </div>
         <article class="case-gazprom__columns-card">
@@ -95,8 +96,9 @@ const COLUMNS = [60, 80, 70, 120, 130, 140, 150, 170, 200];
   display: flex;
   flex: 1 1 660px;
   flex-direction: column;
-  gap: 24px;
+  gap: 66px;
   justify-content: space-between;
+  min-height: 460px;
   padding: 40px;
   overflow: hidden;
 
@@ -104,23 +106,26 @@ const COLUMNS = [60, 80, 70, 120, 130, 140, 150, 170, 200];
   border-radius: 16px;
 
   @include a.tablet {
+    // На планшете и мобильном карточка со столбиками идёт первой
+
     flex: none;
+    order: -1;
   }
 
   @include a.mobile {
-    padding: 20px;
+    gap: 40px;
+    min-height: 0;
+    padding: 24px;
   }
 }
 
 .case-gazprom__columns-text {
-  max-width: 480px;
-
   color: var(--dark-blue);
 
-  @include t.lead-s-medium;
+  @include t.lead-l-medium-120;
 
   @include a.mobile {
-    @include t.body-s-medium;
+    @include t.lead-s-medium;
   }
 }
 </style>
