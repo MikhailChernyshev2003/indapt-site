@@ -111,6 +111,12 @@ onMounted(() => {
 });
 
 useEventListener(decorationRef, 'transitionend', endDecorationAnimate);
+
+// Размеры табов тянутся за шириной экрана (rem от vw): после ресайза
+// или поворота подчёркивание пересчитываем, иначе оно уезжает с активного таба
+useResizeObserver(containerRef, () => {
+  updateDecorationPosition();
+});
 </script>
 
 <template>

@@ -77,7 +77,13 @@ const {
     @include t.body-m-medium;
   }
 
+  // По макету иконка 20×20 и стоит по верху строки, а не по центру
+
   &-arrow-top {
+    flex-shrink: 0;
+    align-self: flex-start;
+    width: 20px;
+    height: 20px;
     margin-inline-start: auto;
   }
 }

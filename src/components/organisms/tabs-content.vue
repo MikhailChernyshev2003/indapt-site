@@ -46,7 +46,7 @@ const setActiveTab = async (index: number) => {
         <button
           class="tabs-content__tab-button"
           type="button"
-          @mouseenter="setActiveTab(idx)"
+          @mouseenter="isDesktop && setActiveTab(idx)"
           @click="setActiveTab(idx)"
         >
           {{ tab.label }}
