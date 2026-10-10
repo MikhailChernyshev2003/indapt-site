@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useAdaptiveGsap } from '@l-expertise/composables/useAdaptiveGsap';
+import { useRealPointerMove } from '@l-expertise/composables/useRealPointerMove';
 
 import kv1 from '@l-expertise/assets/images/tabs/transport/kv-1.png?url';
 import kv1webp from '@l-expertise/assets/images/tabs/transport/kv-1.webp?url';
@@ -10,17 +12,21 @@ import kv2webp from '@l-expertise/assets/images/tabs/transport/kv-2.webp?url';
 import kv3 from '@l-expertise/assets/images/tabs/transport/kv-3.png?url';
 import kv3webp from '@l-expertise/assets/images/tabs/transport/kv-3.webp?url';
 
-const { isDesktop, isMobile } = useDevice();
+const { isDesktop } = useDevice();
+
+// Длительность раскрытия пункта — синхронизирована с transition в стилях ниже
+const ACCORDION_MS = 500;
 
 const activeTab = shallowRef<number>(0);
 const prevActiveTab = usePrevious(activeTab, activeTab.value);
 
 const imagesRef = ref<{ target: HTMLElement }[]>();
 const imagesContainerRef = useTemplateRef('imagesContainerRef');
+const itemsRef = ref<HTMLElement[]>([]);
 
 const { t } = useI18n();
 
-useGsap({
+useAdaptiveGsap({
   desktop: () => {
     if (!imagesRef.value || !imagesContainerRef.value) return;
 
@@ -48,6 +54,7 @@ interface Tab {
   image: {
     src: string;
     webp: string;
+    ratio: string;
   };
 }
 
@@ -58,6 +65,7 @@ const tabs: ComputedRef<Tab[]> = computed(() => [
     image: {
       src: kv1,
       webp: kv1webp,
+      ratio: '860 / 644',
     },
   },
   {
@@ -66,6 +74,7 @@ const tabs: ComputedRef<Tab[]> = computed(() => [
     image: {
       src: kv2,
       webp: kv2webp,
+      ratio: '906 / 726',
     },
   },
   {
@@ -74,17 +83,132 @@ const tabs: ComputedRef<Tab[]> = computed(() => [
     image: {
       src: kv3,
       webp: kv3webp,
+      ratio: '880 / 720',
     },
   },
 ]);
 
-watch(activeTab, () => {
-  ScrollTrigger.refresh();
+// Раньше пункт выбирался по mouseover: он прилетает и когда курсор стоит, а пункты сами проезжают под ним
+// (скролл колесом, сворачивание соседнего пункта) — пункты переключались сами, и 2-й «проскакивал» к 3-му.
+const isRealPointerMove = useRealPointerMove();
 
-  setTimeout(() => {
-    const tab = document.querySelector('.transport__tab_active')!;
-    tab.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 200);
+let anchorFrameId = 0;
+let stopAnchoring: VoidFunction | null = null;
+let refreshTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+const getStickyBottom = (): number => {
+  const tabs = document.querySelector('.expertise__tabs');
+  return tabs ? Math.max(0, tabs.getBoundingClientRect().bottom) : 0;
+};
+
+// Тач: когда сворачивается пункт выше выбранного, список уезжает вверх из-под пальца (Safari не умеет scroll anchoring).
+// Пока идёт анимация, держим заголовок выбранного пункта на месте, а в конце, если раскрытый пункт не влез,
+// аккуратно докручиваем ровно настолько, чтобы он стал виден. Любое касание или колесо прерывает докрутку.
+const keepItemInView = (item: HTMLElement) => {
+  stopAnchoring?.();
+
+  const root = document.documentElement;
+  const startTop = item.getBoundingClientRect().top;
+  const finishAt = performance.now() + ACCORDION_MS + 50;
+  let interrupted = false;
+
+  const interrupt = () => {
+    interrupted = true;
+  };
+
+  const cleanup = () => {
+    cancelAnimationFrame(anchorFrameId);
+    root.style.removeProperty('overflow-anchor');
+    window.removeEventListener('touchstart', interrupt);
+    window.removeEventListener('wheel', interrupt);
+    stopAnchoring = null;
+  };
+
+  stopAnchoring = cleanup;
+
+  root.style.setProperty('overflow-anchor', 'none');
+  window.addEventListener('touchstart', interrupt, { passive: true });
+  window.addEventListener('wheel', interrupt, { passive: true });
+
+  const step = () => {
+    if (interrupted) {
+      cleanup();
+      return;
+    }
+
+    const rect = item.getBoundingClientRect();
+
+    if (performance.now() < finishAt) {
+      const shift = rect.top - startTop;
+
+      if (Math.abs(shift) >= 1) {
+        window.scrollBy(0, shift);
+      }
+
+      anchorFrameId = requestAnimationFrame(step);
+      return;
+    }
+
+    cleanup();
+
+    const overflow = rect.bottom + 16 - window.innerHeight;
+    const room = rect.top - getStickyBottom() - 16;
+    const delta = Math.min(overflow, room);
+
+    if (delta > 1) {
+      window.scrollBy({ top: delta, behavior: 'smooth' });
+    }
+  };
+
+  anchorFrameId = requestAnimationFrame(step);
+};
+
+const selectTab = (idx: number, keepInView = false) => {
+  if (idx === activeTab.value) return;
+
+  const item = itemsRef.value[idx];
+  if (keepInView && item) {
+    keepItemInView(item);
+  }
+
+  activeTab.value = idx;
+};
+
+const onItemPointerMove = (event: PointerEvent, idx: number) => {
+  if (!isDesktop.value || !isRealPointerMove(event)) return;
+
+  selectTab(idx);
+};
+
+// Тап (в том числе на планшете с десктопной шириной) выбирает пункт и держит его на месте; клик мышью — просто выбирает
+let lastPointerType = 'mouse';
+
+const onItemPointerDown = (event: PointerEvent) => {
+  lastPointerType = event.pointerType;
+};
+
+const onItemClick = (idx: number) => {
+  selectTab(idx, lastPointerType !== 'mouse');
+};
+
+// Высота списка меняется — триггеры ниже по странице пересчитываем один раз, когда анимация закончилась
+watch(activeTab, () => {
+  if (refreshTimeoutId !== null) {
+    clearTimeout(refreshTimeoutId);
+  }
+
+  refreshTimeoutId = setTimeout(() => {
+    refreshTimeoutId = null;
+    ScrollTrigger.refresh();
+  }, ACCORDION_MS + 50);
+});
+
+onBeforeUnmount(() => {
+  stopAnchoring?.();
+
+  if (refreshTimeoutId !== null) {
+    clearTimeout(refreshTimeoutId);
+  }
 });
 </script>
 
@@ -98,30 +222,31 @@ watch(activeTab, () => {
         class="transport__images"
         :class="`transport__images_active-${activeTab}`"
       >
-        <template v-if="!isMobile">
-          <template v-for="(tab, idx) in tabs" :key="idx">
-            <transition :name="prevActiveTab > activeTab ? 'swap' : 'swap-inverse'" mode="out-in">
-              <div v-show="activeTab === idx" class="transport__images-item">
-                <atoms-picture
-                  ref="imagesRef"
-                  class="transport__images-item-image"
-                  :src="tab.image.src"
-                  :webp="tab.image.webp"
-                />
-              </div>
-            </transition>
-          </template>
+        <!-- Колонка скрывается на мобильном стилями: JS-брейкпоинт (<576) и CSS (≤576) расходятся на 576px -->
+        <template v-for="(tab, idx) in tabs" :key="idx">
+          <transition :name="prevActiveTab > activeTab ? 'swap' : 'swap-inverse'" mode="out-in">
+            <div v-show="activeTab === idx" class="transport__images-item">
+              <atoms-picture
+                ref="imagesRef"
+                class="transport__images-item-image"
+                :src="tab.image.src"
+                :webp="tab.image.webp"
+              />
+            </div>
+          </transition>
         </template>
       </div>
 
       <div class="transport__content">
         <div
           v-for="(tab, idx) in tabs"
+          ref="itemsRef"
           :key="tab.label"
           class="transport__tab"
           :class="{ transport__tab_active: idx === activeTab }"
-          @click="!isDesktop && (activeTab = idx)"
-          @mouseover="isDesktop && (activeTab = idx)"
+          @click="onItemClick(idx)"
+          @pointerdown="onItemPointerDown"
+          @pointermove="onItemPointerMove($event, idx)"
         >
           <div class="transport__tab-header">
             <span>({{ String(idx+1).padStart(2, '0') }})</span>
@@ -133,20 +258,17 @@ watch(activeTab, () => {
               <h4 aria-hidden="true" class="transport__tab-label">{{ tab.label }}</h4>
               <hr />
               <p class="transport__tab-text">{{ tab.text }}</p>
+
+              <!-- Картинка мобильной версии внутри сворачиваемого блока: раньше её показывал v-show,
+                   и высота пункта менялась скачком поверх плавного раскрытия -->
+              <div class="transport__tab-image" :style="{ aspectRatio: tab.image.ratio }">
+                <atoms-picture
+                  :src="tab.image.src"
+                  :webp="tab.image.webp"
+                />
+              </div>
             </div>
           </div>
-
-          <template
-            v-if="isMobile"
-          >
-            <div v-show="activeTab === idx" class="transport__images-item">
-              <atoms-picture
-                class="transport__images-item-image"
-                :src="tab.image.src"
-                :webp="tab.image.webp"
-              />
-            </div>
-          </template>
         </div>
       </div>
     </div>
@@ -156,6 +278,10 @@ watch(activeTab, () => {
 <style scoped lang="scss">
 @use "@styles/typography" as t;
 @use "@styles/adaptive" as a;
+@use "@styles/variables" as v;
+
+// Соседние пункты сдвигаются из-за изменения высоты — ease-in-out без резкого рывка в начале
+$accordion-easing: cubic-bezier(0.4, 0, 0.2, 1);
 
 .transport__text {
   padding: 40px;
@@ -224,17 +350,6 @@ watch(activeTab, () => {
 
     filter: drop-shadow(0 0 20px white);
 
-    @include a.mobile {
-      position: relative;
-
-      width: 237px;
-      margin: 20px auto 0;
-
-      background: url("@l-expertise/assets/images/tabs/transport/stars.svg") repeat top;
-      background-position: center;
-      background-size: 180px;
-    }
-
     img {
       width: 100%;
     }
@@ -248,13 +363,6 @@ watch(activeTab, () => {
       @include a.tablet {
         left: unset;
       }
-
-     @include a.mobile {
-       top: 50px;
-       left: calc(50% - 10px);
-
-       transform: translateX(-50%);
-     }
     }
 
     &:nth-child(3) {
@@ -344,8 +452,11 @@ watch(activeTab, () => {
           transform: translateY(8px);
           opacity: 0;
 
+          // На мобильном заголовок остаётся на месте и под ним раскрывается текст. Раньше он пропадал
+          // через display: none, а такой же заголовок проявлялся ниже — высота пункта менялась скачком
           @include a.mobile {
-           display: none;
+            transform: none;
+            opacity: 1;
           }
         }
       }
@@ -356,8 +467,19 @@ watch(activeTab, () => {
 
         opacity: 1;
 
+        // Раскрытие: сначала высота, следом мягко проявляется текст
+
+        transition:
+          grid-template-rows 0.5s $accordion-easing,
+          margin-top 0.5s $accordion-easing,
+          opacity 0.4s ease 0.12s;
+
         @include a.mobile {
-          margin-top: 18px;
+          margin-top: 0;
+        }
+
+        &-inner {
+          transform: none;
         }
       }
     }
@@ -407,6 +529,20 @@ watch(activeTab, () => {
     }
   }
 
+  // Место под картинку зарезервировано через aspect-ratio — ленивая загрузка не меняет высоту пункта
+
+  &-image {
+    display: none;
+
+    @include a.mobile {
+      display: block;
+      width: 237px;
+      margin: 20px auto 0;
+
+      background: url("@l-expertise/assets/images/tabs/transport/stars.svg") repeat center / 180px;
+    }
+  }
+
   &-text {
     color: var(--dark-blue-80);
 
@@ -425,14 +561,30 @@ watch(activeTab, () => {
 
     opacity: 0;
 
-    transition: 0.3s ease;
-    transition-property: margin-top, grid-template-rows, opacity;
+    // Сворачивание: текст гаснет быстрее, чем схлопывается высота, — без «обрезанных» строк
+
+    transition:
+      grid-template-rows 0.45s $accordion-easing,
+      margin-top 0.45s $accordion-easing,
+      opacity 0.2s ease;
 
     &-inner {
       position: relative;
 
       min-height: 0;
       overflow: hidden;
+
+      transform: translateY(12px);
+
+      transition: transform 0.5s v.$easing;
+
+      // На мобильном заголовок не дублируется — остаётся тот, что в шапке пункта
+
+      > .transport__tab-label {
+        @include a.mobile {
+          display: none;
+        }
+      }
 
       hr {
         width: 100%;

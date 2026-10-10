@@ -46,28 +46,34 @@ const localeTabs = computed(() => {
   return expertiseTabsEng;
 });
 
-const initStickyObserver = () => {
-  const header: HTMLDivElement | null = document.querySelector('.header');
+let stickyHeader: HTMLDivElement | null = null;
 
-  const setHeaderBlur = (sticky: boolean) => {
-    isSticky.value = sticky;
-    if (!header) return;
-    header.style.backdropFilter = sticky ? 'blur(0px)' : 'blur(20px)';
-    header.style.setProperty('-webkit-backdrop-filter', sticky ? 'blur(0px)' : 'blur(20px)');
-  };
-
-  const onScroll = () => {
-    const heroHeight = getHeroHeight();
-    if (!heroHeight) return;
-    setHeaderBlur(window.scrollY >= heroHeight);
-  };
-
-  window.addEventListener('scroll', onScroll);
-
-  onBeforeUnmount(() => {
-    window.removeEventListener('scroll', onScroll);
-  });
+const setHeaderBlur = (sticky: boolean) => {
+  isSticky.value = sticky;
+  if (!stickyHeader) return;
+  stickyHeader.style.backdropFilter = sticky ? 'blur(0px)' : 'blur(20px)';
+  stickyHeader.style.setProperty('-webkit-backdrop-filter', sticky ? 'blur(0px)' : 'blur(20px)');
 };
+
+// Размытие шапки снимаем, только когда под ней целиком лежит прилипшая панель вкладок (у неё своё размытие).
+// На мобильном панель прилипает ниже верха экрана — там шапка остаётся размытой
+const onStickyScroll = () => {
+  const heroHeight = getHeroHeight();
+  if (!heroHeight) return;
+  const tabsTop = tabsRef.value?.getBoundingClientRect().top ?? 1;
+  setHeaderBlur(window.scrollY >= heroHeight && tabsTop <= 0);
+};
+
+// Подписка в setup, а не из nextTick: хук, зарегистрированный вне setup, не срабатывал, и слушатель скролла
+// оставался после ухода со страницы
+const initStickyObserver = () => {
+  stickyHeader = document.querySelector('.header');
+  window.addEventListener('scroll', onStickyScroll, { passive: true });
+};
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onStickyScroll);
+});
 
 const activeCase = computed(() => {
   return expertiseCases.find(el => el.tab === displayedTab.value);
@@ -84,12 +90,16 @@ const smoothScrollTo = (targetTop: number): Promise<void> => {
       return;
     }
 
-    const durationMs = Math.max(350, Math.min(900, absDistance * 0.45));
+    const durationMs = Math.max(450, Math.min(1000, absDistance * 0.5));
     const startedAt = performance.now();
 
     const tick = (timestamp: number) => {
-      const progress = Math.min(1, (timestamp - startedAt) / durationMs);
-      const easedProgress = 1 - (1 - progress) ** 3;
+      // Метка кадра бывает чуть раньше startedAt — без нижней границы первый кадр дёргал страницу в обратную сторону
+      const progress = Math.min(1, Math.max(0, (timestamp - startedAt) / durationMs));
+      // ease-in-out: у прежнего ease-out скорость максимальна уже в первом кадре (~100px за кадр) — рывок при клике по вкладке
+      const easedProgress = progress < 0.5
+        ? 4 * progress ** 3
+        : 1 - (-2 * progress + 2) ** 3 / 2;
       const nextTop = startTop + distance * easedProgress;
 
       window.scrollTo({ top: nextTop, behavior: 'auto' });
@@ -225,9 +235,12 @@ onUnmounted(() => {
   }
 }
 
+// Прилипшая панель: подписи вкладок начинаются сразу под шапкой (88px, на мобильном 72px) — иначе они
+// ложились на нижнюю линию шапки, а на мобильном тап по вкладке попадал в шапку и не переключал её
+
 .expertise__tabs {
   position: sticky;
-  top: -54px;
+  top: -32px;
   left: 0;
   z-index: 10;
 
@@ -253,7 +266,7 @@ onUnmounted(() => {
   }
 
   @include a.mobile {
-    top: 0;
+    top: 24px;
 
     margin-top: 0;
     padding-top: 48px;

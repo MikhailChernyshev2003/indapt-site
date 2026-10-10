@@ -7,6 +7,8 @@ import kv2 from '@l-expertise/assets/images/tabs/fintech/kv2.jpg';
 import kv2webp from '@l-expertise/assets/images/tabs/fintech/kv2.webp';
 import kv3 from '@l-expertise/assets/images/tabs/fintech/kv3.jpg';
 import kv3webp from '@l-expertise/assets/images/tabs/fintech/kv3.webp';
+import { useAdaptiveGsap } from '@l-expertise/composables/useAdaptiveGsap';
+import { useRealPointerMove } from '@l-expertise/composables/useRealPointerMove';
 
 const { t, locale } = useI18n();
 
@@ -44,8 +46,22 @@ const blocks = computed(() => [
   },
 ]);
 
-const handlerSelected = (value: number): void => {
+const { isDesktop } = useDevice();
+const isRealPointerMove = useRealPointerMove();
+
+// Карточки раскрываются только на десктопе: наведением мыши или тапом (планшет с десктопной шириной)
+const selectBlock = (value: number): void => {
+  if (!isDesktop.value) return;
+
   activeBlock.value = value;
+};
+
+// Только от настоящего движения мыши: mouseenter прилетал и при скролле колесом, когда карточка
+// сама проезжала под курсором, — раскладка менялась без участия пользователя
+const handlerSelected = (event: PointerEvent, value: number): void => {
+  if (!isRealPointerMove(event)) return;
+
+  selectBlock(value);
 };
 
 const animationTablet = () => {
@@ -142,7 +158,7 @@ const animationMobile = () => {
   );
 };
 
-useGsap({
+useAdaptiveGsap({
   desktop: () => undefined,
   tablet: animationTablet,
   mobile: animationMobile,
@@ -157,12 +173,21 @@ useGsap({
         :key="`${locale}-${idx}`"
         class="fintech__block"
         :aria-selected="activeBlock === idx"
-        @mouseenter="handlerSelected(idx)"
+        @pointermove="handlerSelected($event, idx)"
+        @click="selectBlock(idx)"
       >
         <atoms-picture
           class="fintech__block-image"
           :src="block.image"
           :webp="block.webp"
+        />
+
+        <!-- Подпись свёрнутой карточки (десктоп). Отдельный элемент фиксированной ширины: раньше заголовок
+             менял размер шрифта и переносился заново на каждом кадре, пока карточка меняла ширину -->
+        <div
+          class="fintech__block-preview"
+          aria-hidden="true"
+          v-html="block.label"
         />
 
         <div class="fintech__block-content">
@@ -215,6 +240,11 @@ useGsap({
 
   height: 585px;
   overflow: hidden;
+
+  // Отсчёт для cqw: текст раскрытой карточки берёт ширину от ряда, а не от анимируемой карточки
+  @include a.desktop-only {
+    container-type: inline-size;
+  }
 
   @include a.tablet {
     display: flex;
@@ -301,6 +331,34 @@ useGsap({
     pointer-events: none;
   }
 
+  &-preview {
+    display: none;
+
+    @include a.desktop-only {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+
+      display: block;
+      width: 200px;
+      padding: 28px;
+
+      background: linear-gradient(90deg, #0c1d4f 0%, #c6d5f8 100%) content-box;
+      background-clip: text;
+      opacity: 0.6;
+      -webkit-text-fill-color: transparent;
+
+      // Сворачивание: подпись проявляется сразу после того, как погас текст раскрытой карточки
+
+      transition: opacity 0.35s ease 0.15s;
+
+      pointer-events: none;
+
+      @include t.lead-s-semi;
+    }
+  }
+
   &:nth-child(1) {
     .fintech__block-image {
       top: 69%;
@@ -337,6 +395,16 @@ useGsap({
 
     .fintech__block-initial {
       width: 230px;
+    }
+
+    .fintech__block-preview {
+      width: 230px;
+    }
+
+    .fintech__block-content {
+      @include a.desktop-only {
+        width: 68cqw;
+      }
     }
 
     .fintech__block-image {
@@ -398,20 +466,20 @@ useGsap({
     width: 65.8%;
     height: 585px;
 
+    .fintech__block-preview {
+      opacity: 0;
+
+      transition: opacity 0.15s ease;
+    }
+
     .fintech__block-content {
       pointer-events: auto;
 
-      h3 {
-        background: linear-gradient(90deg, #0c1d4f 0%, #0c1d4f 100%);
-        background-clip: text;
+      // Текст проявляется, пока карточка «открывает» его по ширине
+      @include a.desktop-only {
         opacity: 1;
-        -webkit-text-fill-color: transparent;
 
-        @include t.h3;
-
-        @include a.mobile {
-          @include t.h5;
-        }
+        transition: opacity 0.4s ease 0.15s;
       }
 
       p {
@@ -437,6 +505,12 @@ useGsap({
     object-fit: cover;
 
     transform: translate(-50%, -20%);
+
+    // Позиция картинки зависит от состояния карточки — двигаем её вместе с шириной, а не скачком
+    @include a.desktop-only {
+      transition: 0.5s ease;
+      transition-property: top, left;
+    }
 
     @include a.tablet {
       max-width: 670px;
@@ -471,6 +545,16 @@ useGsap({
 
     pointer-events: none;
 
+    // Десктоп: ширина раскрытой карточки (65.8% / 68% ряда) — текст свёрстан один раз и не переносится заново,
+    // пока карточка анимирует ширину, лишнее обрезает overflow карточки. У свёрнутой карточки вместо него подпись
+    @include a.desktop-only {
+      width: 65.8cqw;
+
+      opacity: 0;
+
+      transition: opacity 0.15s ease;
+    }
+
     @include a.mobile {
       padding: 20px;
 
@@ -480,24 +564,9 @@ useGsap({
     h3 {
       margin-bottom: 16px;
 
-      background: linear-gradient(90deg, #0c1d4f 0%, #c6d5f8 100%);
-      background-clip: text;
-      opacity: 0.6;
-      -webkit-text-fill-color: transparent;
+      color: var(--dark-blue);
 
-      transition: 0.3s ease;
-      transition-property: font-size, background, opacity;
-
-      @include t.lead-s-semi;
-
-      @include a.tablet {
-        background: unset;
-        background-clip: none;
-        opacity: 1;
-        -webkit-text-fill-color: unset;
-
-        @include t.h3;
-      }
+      @include t.h3;
 
       @include a.mobile {
         @include t.h5;

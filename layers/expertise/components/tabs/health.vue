@@ -5,6 +5,8 @@ import kv2 from '@l-expertise/assets/images/tabs/health/kv2.png';
 import kv2webp from '@l-expertise/assets/images/tabs/health/kv2.webp';
 import kv3 from '@l-expertise/assets/images/tabs/health/kv3.png';
 import kv3webp from '@l-expertise/assets/images/tabs/health/kv3.webp';
+import { useAdaptiveGsap } from '@l-expertise/composables/useAdaptiveGsap';
+import { useRealPointerMove } from '@l-expertise/composables/useRealPointerMove';
 
 const { isDesktop } = useDevice();
 const { t } = useI18n();
@@ -33,8 +35,31 @@ const healthContent = computed(() => [
   },
 ]);
 
-const handleItemHover = (index: number): void => {
-  if (!isDesktop.value) return;
+const isRealPointerMove = useRealPointerMove();
+
+// Заголовок меняет кегль скачком при смене состояния карточки — проявляем его заново уже в новом размере,
+// чтобы не было видно, как он перескакивает. Анимация без конечного кадра доходит до opacity из CSS
+const fadeInTitle = (item?: HTMLElement) => {
+  item?.querySelector('.health__item-title')?.animate(
+    [{ opacity: 0, offset: 0 }],
+    { duration: 400, easing: 'ease-out' },
+  );
+};
+
+// mouseenter прилетал и при скролле колесом, когда карточка сама проезжала под курсором, — карточки
+// переключались без участия пользователя. Реагируем только на настоящее движение мыши
+const handleItemHover = (event: PointerEvent, index: number): void => {
+  if (!isRealPointerMove(event)) return;
+
+  selectItem(index);
+};
+
+// Тап на планшете с десктопной шириной: наведения там нет
+const selectItem = (index: number): void => {
+  if (!isDesktop.value || index === activeBlock.value) return;
+
+  fadeInTitle(healthItems.value[activeBlock.value]);
+  fadeInTitle(healthItems.value[index]);
 
   activeBlock.value = index;
   updateItemClasses(index);
@@ -82,11 +107,12 @@ const animationTablet = () => {
     duration: 10,
   });
 
+  // Текст гаснет/проявляется плавно на отрезке скролла, а не мгновенно (было duration 0.2 из 10)
   tl.to(
     '.health__item:nth-child(1) .health__item-text',
     {
       opacity: 0,
-      duration: 0.2,
+      duration: 3,
     },
     '<',
   );
@@ -169,7 +195,7 @@ const animationTablet = () => {
     '.health__item:nth-child(2) .health__item-text',
     {
       opacity: 0,
-      duration: 0.2,
+      duration: 3,
     },
     '<',
   );
@@ -239,11 +265,24 @@ const animationTablet = () => {
     '.health__item:nth-child(3) .health__item-text',
     {
       opacity: 1,
-      duration: 0.2,
-      delay: 7,
+      duration: 3,
+      delay: 6,
     },
     '<',
   );
+
+  // Ширина текста меняется один раз — на середине изменения карточки, а не на каждом кадре:
+  // пока скролл тянет или сжимает карточку, строки не перескакивают (лишнее обрезает overflow карточки)
+  const content = (n: number) => `.health__item:nth-child(${n}) .health__item-content`;
+
+  gsap.set([content(1), content(2), content(3)], {
+    width: (_: number, el: HTMLElement) => el.offsetWidth,
+  });
+
+  tl.set(content(1), { width: '21rem' }, 5);
+  tl.set(content(2), { width: '100cqw' }, 5);
+  tl.set(content(2), { width: '21rem' }, 15);
+  tl.set(content(3), { width: '100cqw' }, 15);
 };
 
 const animationMobile = () => {
@@ -280,7 +319,7 @@ const animationMobile = () => {
   }, '<');
 };
 
-useGsap({
+useAdaptiveGsap({
   desktop: () => undefined,
   tablet: animationTablet,
   mobile: animationMobile,
@@ -299,7 +338,8 @@ useGsap({
           ref="healthItems"
           class="health__item"
           :aria-selected="activeBlock === index"
-          @mouseenter="handleItemHover(index)"
+          @pointermove="handleItemHover($event, index)"
+          @click="selectItem(index)"
         >
           <div class="health__item-content">
             <div class="health__item-header">
@@ -329,9 +369,6 @@ useGsap({
 @use "@styles/variables" as v;
 
 .health {
-  &__wrapper {
-  }
-
   &__text {
     padding: 40px;
 
@@ -364,6 +401,10 @@ useGsap({
       display: block;
       height: 800px;
       overflow: visible;
+
+      // Отсчёт для cqw в планшетной анимации: ширина текста раскрытой карточки = ширина списка
+
+      container-type: inline-size;
     }
 
     @include a.mobile {
@@ -385,7 +426,10 @@ useGsap({
     border: 1px solid var(--dark-blue-5);
     border-radius: 16px;
 
-    transition: all 0.5s;
+    // Без z-index: при transition: all он менялся ступеньками посреди анимации и карточки «перещёлкивались»
+
+    transition: 0.5s ease;
+    transition-property: top, left, width, height;
 
     @include a.tablet {
       transition: none;
@@ -394,6 +438,11 @@ useGsap({
     &[aria-selected="true"] {
       .health__item-text {
         opacity: 1;
+
+        // Текст проявляется, когда карточка уже почти раскрылась
+        @include a.desktop-only {
+          transition: opacity 0.35s ease 0.25s;
+        }
       }
     }
 
@@ -407,6 +456,15 @@ useGsap({
 
       @include a.mobile {
         height: 550px;
+      }
+
+      // Десктоп: ширина текста = итоговая ширина карточки в текущем состоянии и меняется сразу, без анимации.
+      // Пока карточка тянется или сжимается, текст не переносится заново на каждом кадре (лишнее обрезает overflow)
+
+      .health__item-content {
+        @include a.desktop-only {
+          width: 668px;
+        }
       }
 
       .health__item-image {
@@ -439,6 +497,12 @@ useGsap({
 
         width: 334px;
         height: 334px;
+
+        .health__item-content {
+          @include a.desktop-only {
+            width: 334px;
+          }
+        }
 
         .health__item-title {
           font-size: 24px;
@@ -486,6 +550,10 @@ useGsap({
 
       .health__item-content {
         opacity: 0.6;
+
+        @include a.desktop-only {
+          width: 428px;
+        }
       }
 
       .health__item-title {
@@ -534,6 +602,10 @@ useGsap({
 
         .health__item-content {
           opacity: 1;
+
+          @include a.desktop-only {
+            width: 668px;
+          }
         }
 
         .health__item-image {
@@ -595,6 +667,10 @@ useGsap({
 
       .health__item-content {
         opacity: 0.3;
+
+        @include a.desktop-only {
+          width: 334px;
+        }
       }
 
       .health__item-title {
@@ -644,6 +720,10 @@ useGsap({
 
         .health__item-content {
           opacity: 1;
+
+          @include a.desktop-only {
+            width: 668px;
+          }
         }
 
         .health__item-title {
@@ -750,7 +830,14 @@ useGsap({
 
       opacity: 0;
 
-      transition: 0.3s opacity;
+      // Сворачивание: текст гаснет раньше, чем карточка заметно сожмётся
+
+      transition: opacity 0.15s ease;
+
+      // Текст виден только у раскрытой карточки — свёрстан сразу под её ширину и не переносится при сворачивании
+      @include a.desktop-only {
+        width: 612px;
+      }
 
       @include t.body-m-medium;
 
