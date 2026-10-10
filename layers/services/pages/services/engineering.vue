@@ -63,6 +63,7 @@ const alignmentItems = computed(() =>
         :title="t(`${I18N_KEY}.technicalSpecificationAlignment.title`)"
         :desc="t(`${I18N_KEY}.technicalSpecificationAlignment.desc`)"
         size="h2"
+        :desc-max-width="677"
       />
       <services-sections-numbered-lines
         class="service-page__block-body"
@@ -87,6 +88,7 @@ const alignmentItems = computed(() =>
   --service-accent: var(--services-black);
   --service-hero-from: #b7b7b7;
   --service-hero-to: #fcfcfc;
+  --service-hero-stop: 63%;
   --service-row-hover: #ecedee;
   --service-tile-bg: #eff2fa;
   --architecture-card-bg: #f2f2f3;
@@ -95,7 +97,15 @@ const alignmentItems = computed(() =>
   // Иллюстрация в макете крупнее эталонной и уходит за правый край
   --hero-image-width: 510px;
   --hero-image-right: 60px;
-  --hero-image-bottom: 0px;
+
+  // Низ картинки продлён на 5px для мобильного макета, на десктопе он под краем героя
+  --hero-image-bottom: -5px;
+  --hero-image-left-tablet: 29px;
+  --hero-image-top-tablet: -47px;
+  --hero-image-width-tablet: 510px;
+  --hero-image-left-mobile: -19px;
+  --hero-image-top-mobile: -11px;
+  --hero-image-width-mobile: 444px;
 
   padding-bottom: 112px;
 
@@ -111,7 +121,7 @@ const alignmentItems = computed(() =>
   }
 
   @include a.mobile {
-    padding-bottom: 80px;
+    padding-bottom: 100px;
   }
 }
 
@@ -134,10 +144,20 @@ const alignmentItems = computed(() =>
     margin-top: 40px;
   }
 
-  // Второй блок в макете отбит от карточек архитектуры сильнее первого
+  // Под карточками архитектуры секция держит запас высоты под раскрытую
+  // карточку (см. architecture-cards), поэтому отступ — как в макете
+  // от раскрытого состояния. Текст пунктов по макету в узкой колонке
 
   &_lines {
-    margin-top: 130px;
+    --lines-text-max-width: 547px;
+
+    @include a.mobile {
+      margin-top: 32px;
+
+      .service-page__block-body {
+        margin-top: 40px;
+      }
+    }
   }
 
   // Контейнер задают сами секции, поэтому здесь он нужен только заголовку

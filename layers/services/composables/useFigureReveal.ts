@@ -35,7 +35,6 @@ export const useFigureReveal = (
     const outerRings = [...el.querySelectorAll('[data-ring]')].slice(0, -1);
 
     gsap.set(el, { scale: START_SCALE, opacity: 0 });
-    gsap.set(outerRings, { opacity: 0 });
 
     timeline = gsap.timeline({
       scrollTrigger: {
@@ -46,8 +45,14 @@ export const useFigureReveal = (
       },
     })
       .to(el, { opacity: 1, duration: 1 }, 0)
-      .to(el, { scale: 1, duration: 4, ease: 'none' }, 0)
-      .to(outerRings, { opacity: 1, duration: 1.2, stagger: { each: 0.45, from: 'end' } }, 0.4);
+      .to(el, { scale: 1, duration: 4, ease: 'none' }, 0);
+
+    // У фигуры-картинки и у паттерна из одного кольца включать по очереди
+    // нечего: пустой список GSAP считает ненайденной целью и пишет в консоль
+    if (outerRings.length) {
+      gsap.set(outerRings, { opacity: 0 });
+      timeline.to(outerRings, { opacity: 1, duration: 1.2, stagger: { each: 0.45, from: 'end' } }, 0.4);
+    }
   });
 
   onBeforeUnmount(() => {

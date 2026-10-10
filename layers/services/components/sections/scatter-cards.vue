@@ -213,6 +213,10 @@ const cardStyle = (idx: number) => {
 .scatter-cards__text {
   margin-top: 16px;
 
+  // По макету описание приглушено относительно заголовка
+
+  color: var(--dark-blue-80);
+
   @include t.body-m-medium;
 
   @include a.mobile {

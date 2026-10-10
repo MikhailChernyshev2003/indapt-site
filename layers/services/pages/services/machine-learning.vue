@@ -74,6 +74,7 @@ const solutionItems = computed(() =>
       <services-sections-numbered-lines
         class="service-page__block-body"
         :items="solutionItems"
+        :tablet-columns="2"
         text-size="lead"
       />
     </section>
@@ -98,7 +99,15 @@ const solutionItems = computed(() =>
   --service-tile-bg: #eeedf5;
   --hero-image-width: 714px;
   --hero-image-right: 60px;
-  --hero-image-bottom: 0px;
+
+  // Низ картинки продлён на 3px для мобильного макета, на десктопе он под краем героя
+  --hero-image-bottom: -3px;
+  --hero-image-left-tablet: -105px;
+  --hero-image-top-tablet: -53px;
+  --hero-image-width-tablet: 714px;
+  --hero-image-left-mobile: -187px;
+  --hero-image-top-mobile: -38px;
+  --hero-image-width-mobile: 678px;
 
   // Карточки по макету: тёмно-красная заливка на 3% и радиус 16px
   --bento-card-bg: rgb(104 0 3 / 3%);
@@ -141,11 +150,32 @@ const solutionItems = computed(() =>
     margin-top: 40px;
   }
 
+  // Пункты «Ключевых решений» по макету: текст в две строки с теми же
+  // переносами, что в макете (ширина с запасом между самой длинной первой
+  // строкой и строкой с лишним словом), ряды разнесены на 60px,
+  // от заголовка на десктопе всего 40px
+
   &_wide {
+    --lines-text-max-width: 460px;
+    --lines-row-gap: 60px;
+    --lines-row-gap-tablet: 60px;
+
     margin-top: 104px;
 
     @include a.tablet {
       margin-top: 80px;
+    }
+
+    .service-page__block-body {
+      margin-top: 40px;
+
+      @include a.tablet {
+        margin-top: 60px;
+      }
+
+      @include a.mobile {
+        margin-top: 32px;
+      }
     }
   }
 
@@ -154,7 +184,7 @@ const solutionItems = computed(() =>
   }
 
   &-body {
-    margin-top: 52px;
+    margin-top: 60px;
 
     @include a.mobile {
       margin-top: 32px;

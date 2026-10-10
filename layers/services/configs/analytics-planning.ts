@@ -36,8 +36,12 @@ export const ANALYTICS_PLANNING_GROUPS: ServiceDescGroup[] = [
   },
 ];
 
-/** Цвета колец паттерна: оверрайд экземпляров «паттерн» в макете */
-export const ANALYTICS_PLANNING_RING_COLORS: RingColors = ['#f77e01', '#ffbb33'];
+/**
+ * Цвета колец паттерна: оверрайд экземпляров «паттерн» в макете.
+ * Порядок обратный символу: в макете насыщенный оранжевый внизу, к верху
+ * фигуры цвет светлеет до жёлтого
+ */
+export const ANALYTICS_PLANNING_RING_COLORS: RingColors = ['#ffbb33', '#f77e01'];
 
 /**
  * Скопления колец в полосе: экземпляры «паттерн 4/5» во фрейме img

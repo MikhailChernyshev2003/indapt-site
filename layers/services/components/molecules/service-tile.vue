@@ -81,6 +81,10 @@ const label = computed(() => t(`services.services.${service.labelKey}`));
   color: inherit;
 
   @include t.lead-m-medium;
+
+  @include a.mobile {
+    @include t.lead-s-medium;
+  }
 }
 
 .service-tile__arrow {

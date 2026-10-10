@@ -26,7 +26,10 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 <template>
   <section
     class="numbered-lines"
-    :class="{ 'numbered-lines_reveal': revealOnHover }"
+    :class="{
+      'numbered-lines_reveal': revealOnHover,
+      'numbered-lines_lead': textSize === 'lead',
+    }"
     :style="{ '--lines-columns': columns, '--lines-columns-tablet': tabletColumns }"
   >
     <div
@@ -56,19 +59,26 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 @use "@styles/shared" as s;
 @use "@styles/typography" as t;
 
+// Значения по умолчанию внутри var() записаны в rem: postcss-pxtorem
+// не заходит внутрь var(). В скобках размер по макету. Через переменные
+// страница подстраивает блок под свой макет: ширину текста, шаг рядов,
+// высоту пункта и цвет разделителя
+
 .numbered-lines {
   display: grid;
   grid-template-columns: repeat(var(--lines-columns, 2), 1fr);
-  gap: 40px 16px;
+  gap: var(--lines-row-gap, 2.5rem) 16px; // 40px
 
   @include s.base-container;
 
   @include a.tablet {
     grid-template-columns: repeat(var(--lines-columns-tablet, 1), 1fr);
+    row-gap: var(--lines-row-gap-tablet, 3.25rem); // 52px
   }
 
   @include a.mobile {
     grid-template-columns: 1fr;
+    row-gap: var(--lines-row-gap-mobile, 2.5rem); // 40px
   }
 
   &_reveal {
@@ -121,26 +131,38 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
   }
 }
 
+.numbered-lines__item {
+  min-height: var(--lines-item-min-height, auto);
+}
+
 .numbered-lines__number {
   display: block;
 
-  color: var(--dark-blue-50);
+  color: var(--dark-blue-60);
 
   @include t.caption-m-medium;
 
   @include a.mobile {
     @include t.caption-xs-medium;
+
+    & {
+      font-size: var(--lines-number-size-mobile, 0.875rem); // 14px
+    }
   }
 }
 
 .numbered-lines__line {
   height: 1px;
-  margin: 16px 0 20px;
+  margin: 16px 0;
 
-  background-color: var(--dark-blue-20);
+  background-color: var(--lines-line-color, var(--dark-blue-20));
+
+  // Крупный текст без подписи на мобильном стоит к линии плотнее
 
   @include a.mobile {
-    margin-bottom: 16px;
+    .numbered-lines_lead & {
+      margin: 12px 0;
+    }
   }
 }
 
@@ -150,25 +172,42 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
   color: var(--dark-blue);
 
   @include t.body-l-medium;
+
+  @include a.mobile {
+    @include t.body-m-medium;
+  }
 }
 
+// Описание под подписью по макету приглушено до 60%, крупный текст без
+// подписи остаётся основного цвета
+
 .numbered-lines__text {
-  color: var(--dark-blue);
+  max-width: var(--lines-text-max-width, none);
+
+  color: var(--dark-blue-60);
 
   @include t.body-m-medium;
 
+  @include a.mobile {
+    max-width: none;
+
+    @include t.body-s-medium;
+  }
+
   &_lead {
+    color: var(--dark-blue);
+
     @include t.lead-m-medium;
+
+    @include a.mobile {
+      @include t.body-m-medium;
+    }
   }
 }
 
 // Подписи может не быть — тогда текст отбивает от линии её собственный отступ
 
 .numbered-lines__label + .numbered-lines__text {
-  margin-top: 16px;
-
-  @include a.mobile {
-    margin-top: 12px;
-  }
+  margin-top: 12px;
 }
 </style>

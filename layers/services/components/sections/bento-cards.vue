@@ -156,9 +156,8 @@ const rows = computed(() => {
   transition: flex-basis 0.5s v.$easing, background-color 0.5s, border-color 0.5s;
 
   @include a.tablet {
-    // Высота по содержимому, поэтому распорку заменяет фиксированный отступ
-
-    gap: 40px;
+    // Высота по содержимому, поэтому распорку заменяют отступы
+    // заголовка и текста (см. ниже)
 
     transition: none;
 
@@ -168,7 +167,6 @@ const rows = computed(() => {
   }
 
   @include a.mobile {
-    gap: 24px;
     padding: 16px;
 
     &:not(:first-child) {
@@ -223,6 +221,13 @@ const rows = computed(() => {
     position: absolute;
     top: 0;
     left: 0;
+
+    // Номер на планшете и мобильном спрятан, и метка должна сама держать
+    // высоту строки — иначе заголовок прилипает к ней
+
+    @include a.tablet {
+      position: static;
+    }
   }
 
   &_hidden {
@@ -244,7 +249,13 @@ const rows = computed(() => {
   transition: transform 0.5s v.$easing;
 
   @include a.tablet {
+    margin-top: 40px;
+
     transition: none;
+  }
+
+  @include a.mobile {
+    margin-top: 24px;
   }
 }
 

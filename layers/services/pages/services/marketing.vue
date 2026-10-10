@@ -96,6 +96,7 @@ const featurePaths = {
           trigger-closest=".sticky-kv"
         >
           <img
+            class="service-page__kv-flower"
             src="/images/services/marketing/flower.webp"
             alt=""
             loading="lazy"
@@ -112,6 +113,7 @@ const featurePaths = {
         :i18n-key="I18N_KEY"
         :groups="MARKETING_FEATURES"
         :paths="featurePaths"
+        reveal-on-hover
       />
     </services-molecules-sticky-kv>
 
@@ -124,7 +126,7 @@ const featurePaths = {
         :desc-max-width="429"
       />
       <services-sections-numbered-lines
-        class="service-page__block-body"
+        class="service-page__block-body service-page__lines"
         :items="createItems"
         reveal-on-hover
       />
@@ -151,6 +153,12 @@ const featurePaths = {
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0px;
+  --hero-image-left-tablet: 71px;
+  --hero-image-top-tablet: -26px;
+  --hero-image-width-tablet: 510px;
+  --hero-image-left-mobile: -69px;
+  --hero-image-top-mobile: -6px;
+  --hero-image-width-mobile: 440px;
 
   padding-bottom: 112px;
 
@@ -173,6 +181,13 @@ const featurePaths = {
   @include a.mobile {
     padding-bottom: 80px;
   }
+}
+
+// Рамка цветка в макете шире растра (1036×886 против 1421×1259): макет
+// заполняет её с обрезкой, а растянутая картинка сплющивалась на 4%
+
+.service-page__kv-flower {
+  object-fit: cover;
 }
 
 // Засвет из макета гасит нижний край цветка: размытый эллипс цвета фона
@@ -199,8 +214,10 @@ const featurePaths = {
 }
 
 .service-page__methods {
-  // Самая длинная подводка вкладок занимает три строки
-  --method-tabs-text-min-height: 92px;
+  // Резерв панели под самую длинную подводку (три строки, 92px),
+  // отступ 64px и картинку 652×300
+  --method-tabs-panel-min-height: 456px;
+  --method-tabs-image-position: right;
 
   margin-top: 80px;
 
@@ -210,18 +227,37 @@ const featurePaths = {
 }
 
 .service-page__features {
-  margin-top: 102px;
+  // Абзац группы по макету уже колонки: на десктопе переносится по 763px
+  --desc-services-desc-max-width: 763px;
+
+  // По макету от картинки вкладки до заголовка SMM 104px: их даёт резерв
+  // панели вкладок (61px) и верхний отступ группы (40px). На планшете
+  // и мобильном от последней вкладки до (01) — 80px
 
   @include a.tablet {
-    margin-top: 0;
+    --desc-services-desc-max-width: none;
+
+    margin-top: 40px;
+  }
+
+  @include a.mobile {
+    --desc-services-aside-mobile: 52px;
+
+    margin-top: 64px;
   }
 }
 
 .service-page__block {
-  margin-top: 37px;
+  // От разделителя под последней группой до заголовка по макету
+
+  margin-top: 80px;
+
+  @include a.tablet {
+    margin-top: 60px;
+  }
 
   @include a.mobile {
-    margin-top: 40px;
+    margin-top: 32px;
   }
 
   &-head {
@@ -249,11 +285,25 @@ const featurePaths = {
   margin-top: 200px;
 
   @include a.tablet {
-    margin-top: 96px;
+    margin-top: 160px;
   }
 
   @include a.mobile {
     margin-top: 80px;
+  }
+}
+
+.service-page__lines {
+  // На планшете и мобильном пункты в макете разделены тёмной линией,
+  // а на планшете ещё и одной высоты — шаг рядов 209px
+
+  @include a.tablet {
+    --lines-line-color: var(--dark-blue);
+    --lines-item-min-height: 157px;
+  }
+
+  @include a.mobile {
+    --lines-item-min-height: auto;
   }
 }
 </style>

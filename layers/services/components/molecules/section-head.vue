@@ -83,7 +83,7 @@ const maxWidths = computed(() => ({
   max-width: var(--section-head-desc-max-width, none);
   margin-top: 16px;
 
-  color: var(--dark-blue);
+  color: var(--dark-blue-80);
 
   @include t.body-m-medium;
 

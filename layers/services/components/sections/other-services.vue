@@ -78,7 +78,8 @@ const items = computed(() =>
   }
 
   @include a.mobile {
-    margin-top: 24px;
+    gap: 8px;
+    margin-top: 32px;
     margin-right: -20px;
     margin-left: -20px;
     padding-right: 20px;
@@ -88,8 +89,12 @@ const items = computed(() =>
 
 .other-services__item {
   @include a.tablet {
-    flex: 0 0 318px;
+    flex: 0 0 316px;
   }
 
+  // На мобильном карточка во всю ширину контента, следующая видна краем
+  @include a.mobile {
+    flex-basis: 335px;
+  }
 }
 </style>

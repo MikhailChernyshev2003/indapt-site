@@ -26,6 +26,26 @@ let stopWaiting: (() => void) | null = null;
 const pick = (kind: string) =>
   [...(rootRef.value?.querySelectorAll<HTMLElement>(`[data-reveal="${kind}"]`) ?? [])];
 
+// Не в каждом блоке есть все виды текста (у вводного блока нет абзацев,
+// у заголовка секции — подводки). Пустой список GSAP считает ненайденной
+// целью и пишет предупреждение в консоль, поэтому такие шаги пропускаем
+const setKind = (kind: string, vars: gsap.TweenVars) => {
+  const targets = pick(kind);
+
+  if (targets.length) gsap.set(targets, vars);
+};
+
+const toKind = (
+  timeline: gsap.core.Timeline,
+  kind: string,
+  vars: gsap.TweenVars,
+  position: number,
+) => {
+  const targets = pick(kind);
+
+  if (targets.length) timeline.to(targets, vars, position);
+};
+
 // Проигрывается один раз, когда блок входит в экран. Для блоков, видимых сразу
 // после загрузки, это момент, когда уходит прелоадер: под ним текст всё равно
 // не виден, а появление должен увидеть пользователь
@@ -40,24 +60,25 @@ const play = () => {
       start: 'top bottom-=10%',
       once: true,
     },
-  })
-    .to(pick('title'), { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0)
-    .to(pick('text'), { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0.1)
-    .to(pick('paragraph'), {
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      ease: 'power2.out',
-      stagger: 0.15,
-    }, 0.3);
+  });
+
+  toKind(timeline, 'title', { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0);
+  toKind(timeline, 'text', { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0.1);
+  toKind(timeline, 'paragraph', {
+    opacity: 1,
+    y: 0,
+    duration: 0.8,
+    ease: 'power2.out',
+    stagger: 0.15,
+  }, 0.3);
 };
 
 useGsap(() => {
   if (!rootRef.value) return;
 
-  gsap.set(pick('title'), { opacity: DIMMED.title });
-  gsap.set(pick('text'), { opacity: DIMMED.text });
-  gsap.set(pick('paragraph'), { opacity: 0, y: PARAGRAPH_SHIFT });
+  setKind('title', { opacity: DIMMED.title });
+  setKind('text', { opacity: DIMMED.text });
+  setKind('paragraph', { opacity: 0, y: PARAGRAPH_SHIFT });
 
   if (!isAppLoading.value) {
     play();

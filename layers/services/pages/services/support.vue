@@ -94,6 +94,12 @@ const cardItems = computed(() =>
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0px;
+  --hero-image-left-tablet: 102px;
+  --hero-image-top-tablet: 15px;
+  --hero-image-width-tablet: 510px;
+  --hero-image-left-mobile: -42px;
+  --hero-image-top-mobile: 22px;
+  --hero-image-width-mobile: 445px;
 
   padding-bottom: 112px;
 
@@ -117,6 +123,11 @@ const cardItems = computed(() =>
   margin-top: 104px;
 
   @include a.tablet {
+    // Круги декора срезаются по нижней границе первого экрана — она выше
+    // секции ровно на этот отступ
+
+    --intro-decor-overlap: 64px;
+
     margin-top: 64px;
   }
 
@@ -133,7 +144,7 @@ const cardItems = computed(() =>
   }
 
   @include a.mobile {
-    margin-top: 53px;
+    margin-top: 79px;
   }
 
   &-head {
@@ -154,7 +165,7 @@ const cardItems = computed(() =>
 }
 
 .service-page__expertise {
-  margin-top: 190px;
+  margin-top: 210px;
 
   @include a.tablet {
     margin-top: 159px;

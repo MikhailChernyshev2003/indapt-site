@@ -86,6 +86,12 @@ const methodTabs = computed(() =>
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0px;
+  --hero-image-left-tablet: 56px;
+  --hero-image-top-tablet: -34px;
+  --hero-image-width-tablet: 510px;
+  --hero-image-left-mobile: -18px;
+  --hero-image-top-mobile: 12px;
+  --hero-image-width-mobile: 415px;
   --pattern-band-bg: #f9f3ff;
 
   padding-bottom: 112px;
@@ -133,18 +139,28 @@ const methodTabs = computed(() =>
 }
 
 .service-page__features {
+  // Первый пункт в макете выделен: текст до правого края сетки
+  // и отбит от заголовка сильнее остальных
+
+  --feature-lead-width: 875px;
+  --feature-lead-gap: 32px;
+  --feature-text-gap-mobile: 8px;
+
   margin-top: 16px;
 }
 
+// По макету от последней строки списка до заголовка 104px, на планшете
+// и мобильном 80px; часть из них даёт нижнее поле пункта списка
+
 .service-page__methods {
-  margin-top: 152px;
+  margin-top: 52px;
 
   @include a.tablet {
-    margin-top: 133px;
+    margin-top: 28px;
   }
 
   @include a.mobile {
-    margin-top: 112px;
+    margin-top: 56px;
   }
 }
 

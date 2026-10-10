@@ -1,7 +1,10 @@
 import type { FigurePlacements, ScatterCardPositions } from '@l-services/types';
 
-/** Теги услуги в порядке вывода, ключи из services.development.tags */
-export const DEVELOPMENT_TAGS = ['tag_1', 'tag_2', 'tag_3', 'tag_4'];
+/**
+ * Теги услуги в порядке вывода, ключи из services.development.tags.
+ * По макету «Нагрузочное тестирование» идёт перед «DevOps Services»
+ */
+export const DEVELOPMENT_TAGS = ['tag_1', 'tag_2', 'tag_4', 'tag_3'];
 
 /** Карточки, разложенные внахлёст поверх декоративной фигуры */
 export const DEVELOPMENT_CARDS = ['block_1', 'block_2', 'block_3'];

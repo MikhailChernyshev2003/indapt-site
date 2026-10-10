@@ -45,22 +45,28 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 
 // Значения по умолчанию внутри var() записаны в rem: postcss-pxtorem
 // не заходит внутрь var(), поэтому px там остался бы жёстким, тогда как
-// соседний desc-services.vue с теми же 40/56/28px тянется от html
+// соседний desc-services.vue с похожими отступами тянется от html
 // font-size. В скобках размер по макету
 
 .feature-list__item {
   display: grid;
 
-  // Сетка макета: 12 колонок по 88px с жёлобом 24px. Номер занимает первые
-  // четыре вместе с жёлобом, текст — следующие семь, последняя остаётся
-  // пустой. Из-за неё строки переносятся так же, как в макете
+  // Колонки макета: текст начинается в 445px от края контейнера и занимает
+  // 763px, справа остаётся пустое место. По этой ширине строки переносятся
+  // так же, как в макете
 
-  grid-template-columns: 448px 760px;
+  grid-template-columns: 445px 763px;
   padding-top: var(--feature-row-padding-top, 2.5rem); // 40px
-  padding-bottom: var(--feature-row-padding-bottom, 1.75rem); // 28px
+
+  // По макету текст отбит от разделителя на 52px с обеих сторон
+
+  padding-bottom: var(--feature-row-padding-bottom, 3.25rem); // 52px
+
+  // На планшете текст по макету начинается в 118px от края — колонка
+  // 570px, по ней переносятся заголовки
 
   @include a.tablet {
-    grid-template-columns: 116px 1fr;
+    grid-template-columns: 118px 1fr;
   }
 
   @include a.mobile {
@@ -72,18 +78,44 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
   // Сверху у блока разделитель, поэтому по макету поле больше, чем у первого
 
   &:not(:first-child) {
-    padding-top: var(--feature-row-padding-top-next, 3.5rem); // 56px
+    padding-top: var(--feature-row-padding-top-next, 3.25rem); // 52px
 
     border-top: 1px solid var(--dark-blue-20);
 
     @include a.mobile {
-      padding-top: 40px;
+      padding-top: 24px;
+    }
+  }
+
+  // Первый блок страница может выделить: в макете дизайна его текст шире
+  // колонки (до правого края сетки) и сильнее отбит от заголовка
+
+  &:first-child {
+    @include a.desktop-only {
+      grid-template-columns: 445px var(--feature-lead-width, 47.6875rem); // 763px
+    }
+
+    .feature-list__text {
+      margin-top: var(--feature-lead-gap, 1rem); // 16px
+
+      @include a.mobile {
+        margin-top: var(--feature-text-gap-mobile, 0.75rem); // 12px
+      }
     }
   }
 }
 
+// На мобильном колонка текста в макете чуть уже доступной ширины —
+// от этого зависят переносы заголовков
+
+.feature-list__content {
+  @include a.mobile {
+    max-width: 277px;
+  }
+}
+
 .feature-list__number {
-  color: var(--dark-blue-50);
+  color: var(--dark-blue-60);
 
   @include t.caption-m-medium;
 
@@ -105,12 +137,14 @@ const itemNumber = (idx: number) => `(${String(idx + 1).padStart(2, '0')})`;
 .feature-list__text {
   margin-top: 16px;
 
-  color: var(--dark-blue);
+  // Описание по макету приглушено относительно заголовка
+
+  color: var(--dark-blue-80);
 
   @include t.body-m-medium;
 
   @include a.mobile {
-    margin-top: 12px;
+    margin-top: var(--feature-text-gap-mobile, 0.75rem); // 12px
 
     @include t.body-s-medium;
   }

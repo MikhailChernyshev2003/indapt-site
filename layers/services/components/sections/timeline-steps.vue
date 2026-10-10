@@ -23,6 +23,8 @@ useGsap(() => {
 
   if (!els?.length) return;
 
+  const lastIdx = els.length - 1;
+
   els.forEach((el, idx) => {
     triggers.push(ScrollTrigger.create({
       trigger: el,
@@ -30,6 +32,18 @@ useGsap(() => {
       end: 'bottom center',
       onToggle: (self) => {
         if (self.isActive) activeIdx.value = idx;
+      },
+      // Страница может открыться уже ниже блока или посреди него (возврат
+      // «назад», перезагрузка, рывок скролла): переключения тогда не было,
+      // и снизу был виден первый номер вместо последнего. При рывке через
+      // весь шаг срабатывает только onLeave, при пересчёте — onRefresh
+      onLeave: idx === lastIdx
+        ? () => {
+            activeIdx.value = idx;
+          }
+        : undefined,
+      onRefresh: (self) => {
+        if (self.isActive || (idx === lastIdx && self.progress === 1)) activeIdx.value = idx;
       },
     }));
   });
@@ -54,7 +68,16 @@ onBeforeUnmount(() => {
           class="timeline-steps__pin"
           :class="{ 'timeline-steps__pin_active': idx === activeIdx }"
         >
-          {{ itemNumber(idx) }}
+          <!-- Скруглённый треугольник остриём вниз — контур из макета -->
+          <svg
+            class="timeline-steps__pin-shape"
+            viewBox="0 0 48.52 42.64"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M17.43 38.8L1.18 12.17C-2.07 6.84 1.77 0 8.01 0H40.51C46.76 0 50.59 6.84 47.34 12.17L31.09 38.8C27.97 43.92 20.55 43.92 17.43 38.8Z" />
+          </svg>
+          <span class="timeline-steps__pin-number">{{ itemNumber(idx) }}</span>
         </span>
         <div class="timeline-steps__line" />
       </div>
@@ -107,28 +130,52 @@ onBeforeUnmount(() => {
   width: 49px;
   margin-left: 3px;
   padding-block: 6px;
+
+  // На мобильном метка по макету вровень с верхом заголовка
+
+  @include a.mobile {
+    padding-top: 0;
+  }
 }
 
 .timeline-steps__pin {
+  position: relative;
+
   display: flex;
   flex-shrink: 0;
-  align-items: center;
   justify-content: center;
   width: 100%;
   height: 43px;
 
+  // Номер стоит в широкой верхней части треугольника
+
+  padding-top: 6px;
+
   color: var(--timeline-pin-number, var(--dark-blue-60));
 
-  background-color: var(--timeline-pin-bg, #c9dbfd);
-  border-radius: var(--timeline-pin-radius, 0.875rem); // 14px
-
-  @include t.caption-s-medium;
+  @include t.body-s-medium-135;
 
   &_active {
     color: var(--white);
-
-    background-color: var(--timeline-pin-active-bg, #3e5eff);
   }
+}
+
+.timeline-steps__pin-shape {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  fill: var(--timeline-pin-bg, #c9dbfd);
+
+  .timeline-steps__pin_active & {
+    fill: var(--timeline-pin-active-bg, #3e5eff);
+  }
+}
+
+.timeline-steps__pin-number {
+  position: relative;
 }
 
 // Линия занимает остаток колонки, а колонка тянется на всю высоту ряда —

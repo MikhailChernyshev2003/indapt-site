@@ -63,6 +63,16 @@ const { title, text, label = '(info)' } = defineProps<{
     position: absolute;
     top: var(--intro-decor-top, -13.625rem); // -218px
     right: var(--intro-decor-right, -8.5rem); // -136px
+
+    // По макету круги уходят под первый экран: верх срезан ровно по его
+    // нижней границе. Секция ниже экрана на свой отступ, его страница
+    // передаёт в --intro-decor-overlap; по бокам и снизу фигуру не режем
+
+    clip-path: inset(
+      calc(var(--intro-decor-top, -13.625rem) * -1 - var(--intro-decor-overlap, 0rem))
+      -100vw
+      -100vw
+    );
   }
 
   @include a.mobile {
@@ -72,6 +82,8 @@ const { title, text, label = '(info)' } = defineProps<{
     right: var(--intro-decor-right-mobile, -7.125rem); // -114px
 
     width: var(--intro-decor-size-mobile, 17.375rem); // 278px
+
+    clip-path: none;
   }
 
   // Картинка в слоте растягивается по контейнеру декора
@@ -118,6 +130,14 @@ const { title, text, label = '(info)' } = defineProps<{
 
     @include t.body-s-medium-135;
   }
+
+  // Перенос в локали — десктопный: на узких экранах макет набран без него
+
+  :deep(br) {
+    @include a.tablet {
+      display: none;
+    }
+  }
 }
 
 // Метка стоит внутри первой строки абзаца, а не отдельной колонкой,
@@ -126,7 +146,7 @@ const { title, text, label = '(info)' } = defineProps<{
 .intro-block__label {
   margin-right: 32px;
 
-  color: var(--dark-blue-50);
+  color: var(--dark-blue);
 
   @include t.caption-m-medium;
 

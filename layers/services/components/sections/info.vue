@@ -37,8 +37,10 @@ const { t } = useI18n();
 
   @include s.base-container;
 
+  // Текст по макету начинается в 118px от края контейнера
+
   @include a.tablet {
-    grid-template-columns: 116px 1fr;
+    grid-template-columns: 118px 1fr;
   }
 
   @include a.mobile {
@@ -47,7 +49,7 @@ const { t } = useI18n();
 }
 
 .service-info__label {
-  color: var(--dark-blue-50);
+  color: var(--dark-blue);
 
   @include t.caption-m-medium;
 
@@ -68,10 +70,19 @@ const { t } = useI18n();
   }
 
   &:not(:first-child) {
-    margin-top: var(--info-paragraph-gap, 12px);
+    margin-top: var(--info-paragraph-gap, 0.75rem); // 12px, в rem: pxtorem не заходит в var()
 
     @include a.mobile {
       margin-top: 8px;
+    }
+  }
+
+  // Переносы в локали расставлены под десктопную ширину строки. На узких
+  // экранах макет набран без них — текст течёт сам, иначе строки рвутся
+
+  :deep(br) {
+    @include a.tablet {
+      display: none;
     }
   }
 }

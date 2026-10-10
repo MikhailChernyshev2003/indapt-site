@@ -82,7 +82,7 @@ const renderTabs = computed(() => tabs.map(({ label, text, image, imageTablet, i
   max-width: var(--method-tabs-intro-max-width, 40.75rem); // 652px
   margin-top: 16px;
 
-  color: var(--dark-blue);
+  color: var(--dark-blue-80);
 }
 
 .method-tabs__paragraph {
@@ -109,22 +109,28 @@ const renderTabs = computed(() => tabs.map(({ label, text, image, imageTablet, i
   }
 
   // Подводки вкладок разной длины: без резерва панель меняет высоту при
-  // переключении и сдвигает блок под собой. Держим место под самую высокую.
-  // Только на десктопе — на планшете и мобильном вкладки раскрыты все сразу
+  // переключении и сдвигает блок под собой. Место под самую высокую держит
+  // вся панель, а не текст: по макету картинка стоит сразу под подводкой,
+  // и резерв над ней опускал бы её. Только на десктопе — на планшете
+  // и мобильном вкладки раскрыты все сразу
 
-  :deep(.tabs-content__content_desktop .tabs-content__text) {
+  :deep(.tabs-content__content_desktop) {
     @include a.desktop-only {
-      min-height: var(--method-tabs-text-min-height, 0);
+      min-height: var(--method-tabs-panel-min-height, 0);
     }
   }
 
   // По макету картинка отбита от текста на 40px, в tabs-content — 38px.
   // Мобильное значение возвращаем явно: ширины мобильного попадают
-  // и в tablet, а :deep поднимает специфичность выше исходного правила
+  // и в tablet, а :deep поднимает специфичность выше исходного правила.
+  // Привязку кадра задаёт страница: у «Маркетинга» иллюстрация лежит
+  // в правой части картинки и по макету прижата к правому краю
 
   :deep(.tabs-content__image) {
     @include a.tablet {
       margin-top: 40px;
+
+      object-position: var(--method-tabs-image-position, center);
     }
 
     @include a.mobile {

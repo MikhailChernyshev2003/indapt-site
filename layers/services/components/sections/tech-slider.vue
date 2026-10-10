@@ -18,11 +18,26 @@ const { title, desc, slides } = defineProps<{
 // здесь не подходит: swiper не совмещает его с slidesOffsetBefore/After —
 // лента теряет выравнивание по контейнеру и стартует не с первого слайда.
 // rewind даёт тот же бесшовный проход по кругу, сохраняя смещения
-const OFFSETS = {
-  mobile: 20,
-  tablet: 40,
-  desktop: 60,
-};
+const headRef = useTemplateRef<HTMLElement>('headRef');
+
+// Swiper считает смещения и зазоры в px, а вёрстка тянется от html font-size:
+// с постоянными 60/40/20px лента на ширинах между макетными съезжала
+// с колонки заголовка (на 1920 — на 20px, на 1024 — на 17px). Смещение
+// берём у паддинга контейнера заголовка — функцию swiper зовёт на каждом
+// пересчёте, в том числе на ресайзе. Зазор — в процентах: swiper берёт их
+// от ширины ленты за вычетом смещений, то есть от колонки контейнера,
+// а она растёт вместе с rem
+const containerOffset = () =>
+  (headRef.value ? Number.parseFloat(getComputedStyle(headRef.value).paddingLeft) : 0);
+
+/** Зазор макета в процентах колонки контейнера макета (335, 688 или 1320) */
+const gap = (px: number, columnWidth: number) => `${(px / columnWidth) * 100}%`;
+
+const slideParams = (spaceBetween: string) => ({
+  spaceBetween,
+  slidesOffsetBefore: containerOffset,
+  slidesOffsetAfter: containerOffset,
+});
 
 // Кнопки перелистывания свои, swiper находит их по классу
 const NAV_DIRECTIONS = ['prev', 'next'] as const;
@@ -33,26 +48,18 @@ const navigation = {
 };
 
 // Swiper не наследует параметры соседних брейкпоинтов: он берёт только
-// подошедший и накладывает его на исходные параметры. Всё, что не повторено
-// в брейкпоинте, откатывается к значению с самого компонента, поэтому
-// spaceBetween продублирован и в десктопном
+// подошедший и накладывает его на исходные параметры. Поэтому полный набор
+// повторён в каждом, и мобильные значения тоже заданы брейкпоинтом — от нуля
 const breakpoints = {
-  [BREAKPOINTS.TABLET]: {
-    spaceBetween: 16,
-    slidesOffsetBefore: OFFSETS.tablet,
-    slidesOffsetAfter: OFFSETS.tablet,
-  },
-  [BREAKPOINTS.DESKTOP]: {
-    spaceBetween: 16,
-    slidesOffsetBefore: OFFSETS.desktop,
-    slidesOffsetAfter: OFFSETS.desktop,
-  },
+  [BREAKPOINTS.MOBILE]: slideParams(gap(8, 335)),
+  [BREAKPOINTS.TABLET]: slideParams(gap(16, 688)),
+  [BREAKPOINTS.DESKTOP]: slideParams(gap(16, 1320)),
 };
 </script>
 
 <template>
   <section class="tech-slider">
-    <div class="tech-slider__head">
+    <div ref="headRef" class="tech-slider__head">
       <services-molecules-section-head
         :title="title"
         :desc="desc"
@@ -90,9 +97,6 @@ const breakpoints = {
         class="tech-slider__slider"
         :slides-per-view="'auto'"
         :rewind="true"
-        :space-between="8"
-        :slides-offset-before="OFFSETS.mobile"
-        :slides-offset-after="OFFSETS.mobile"
         :navigation="navigation"
         :breakpoints="breakpoints"
       >
@@ -125,16 +129,16 @@ const breakpoints = {
 @use "@styles/shared" as s;
 @use "@styles/typography" as t;
 
-// В макете лента лежит на белой полосе во всю ширину экрана: сверху она
-// начинается вровень с заголовком, снизу под подписями слайдов остаётся поле
+// На десктопе в макете лента лежит на белой полосе во всю ширину экрана:
+// сверху она начинается вровень с заголовком, снизу под подписями слайдов
+// остаётся поле. На планшете и мобильном полосы нет — блок лежит на фоне
+// страницы, и отступ до следующей секции задаёт сама страница
 
 .tech-slider {
-  padding-bottom: var(--tech-slider-padding-bottom, 6.8125rem); // 109px
+  @include a.desktop-only {
+    padding-bottom: var(--tech-slider-padding-bottom, 6.8125rem); // 109px
 
-  background: var(--tech-slider-bg, var(--white));
-
-  @include a.mobile {
-    padding-bottom: var(--tech-slider-padding-bottom-mobile, 3.5rem); // 56px
+    background: var(--tech-slider-bg, var(--white));
   }
 }
 
@@ -193,11 +197,15 @@ const breakpoints = {
 }
 
 .tech-slider__slider {
-  // Ряд по макету держит высоту раскрытой карточки (405px), чтобы блок
-  // под лентой не прыгал, пока картинка растёт
-
-  min-height: var(--tech-slider-row-height, 25.3125rem); // 405px
   margin-top: 52px;
+
+  // Ряд по макету держит высоту раскрытой карточки (405px), чтобы блок
+  // под лентой не прыгал, пока картинка растёт. Растёт она только
+  // от наведения, то есть на десктопе
+
+  @include a.desktop-only {
+    min-height: var(--tech-slider-row-height, 25.3125rem); // 405px
+  }
 
   @include a.mobile {
     margin-top: 32px;

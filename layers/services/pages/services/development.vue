@@ -6,15 +6,12 @@ import {
   DEVELOPMENT_STEPS,
   DEVELOPMENT_STEPS_FIGURE,
   DEVELOPMENT_TAGS,
-  SERVICES,
 } from '@l-services/configs';
 
 const I18N_KEY = 'services.development';
 const SLUG = 'development';
 
 const { t } = useI18n();
-
-const service = SERVICES.find(item => item.slug === SLUG)!;
 
 useSeoMeta({
   title: t(`${I18N_KEY}.title`),
@@ -40,7 +37,7 @@ const stepItems = computed(() =>
     <services-sections-hero
       :i18n-key="I18N_KEY"
       :tags="DEVELOPMENT_TAGS"
-      :image="service.image"
+      :image="'/images/services/development/hero.webp'"
     />
 
     <section class="service-page__block">
@@ -106,6 +103,7 @@ const stepItems = computed(() =>
   --service-accent: #1764f6;
   --service-hero-from: #c0d5fd;
   --service-hero-to: #dae6fe;
+  --service-hero-stop: 80%;
   --service-row-hover: #dfeafe;
   --service-tile-bg: #eaf1fe;
   --scatter-bg: rgb(23 100 246 / 5%);
@@ -115,9 +113,17 @@ const stepItems = computed(() =>
   --timeline-pin-bg: #c9dbfd;
   --timeline-pin-number: #586995;
   --timeline-line: #dfeafe;
-  --hero-image-width: 680px;
-  --hero-image-right: 59px;
-  --hero-image-bottom: -40px;
+  --hero-image-width: 516px;
+  --hero-image-right: 57px;
+
+  // Низ картинки продлён на 11px для мобильного макета, на десктопе он под краем героя
+  --hero-image-bottom: -11px;
+  --hero-image-left-tablet: 138px;
+  --hero-image-top-tablet: 0px;
+  --hero-image-width-tablet: 438px;
+  --hero-image-left-mobile: 13px;
+  --hero-image-top-mobile: 0px;
+  --hero-image-width-mobile: 425px;
 
   padding-bottom: 112px;
 
@@ -151,7 +157,7 @@ const stepItems = computed(() =>
   &_steps {
     position: relative;
 
-    margin-top: 81px;
+    margin-top: 107px;
 
     @include a.tablet {
       margin-top: 120px;
@@ -164,10 +170,10 @@ const stepItems = computed(() =>
     // Ленту шагов заголовок отбивает сильнее, чем карточки
 
     .service-page__block-body {
-      margin-top: 79px;
+      margin-top: 66px;
 
       @include a.mobile {
-        margin-top: 32px;
+        margin-top: 38px;
       }
     }
 

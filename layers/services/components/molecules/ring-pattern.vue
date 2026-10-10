@@ -45,7 +45,7 @@ const uid = useId();
       :d="ring.path"
       :transform="`translate(${ring.x} ${ring.y})`"
       :fill="`url(#ring-pattern-${uid})`"
-      :fill-opacity="data.opacity"
+      :fill-opacity="ring.opacity ?? data.opacity"
     />
   </svg>
 </template>

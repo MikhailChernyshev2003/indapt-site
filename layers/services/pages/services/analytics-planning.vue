@@ -75,11 +75,23 @@ useSeoMeta({
   --service-accent: var(--services-orange);
   --service-hero-from: #fddebe;
   --service-hero-to: #fef2e6;
+  --service-hero-stop: 63%;
   --service-row-hover: #feebd7;
   --pattern-band-bg: #feefdf;
   --hero-image-width: 516px;
   --hero-image-right: 54px;
-  --hero-image-bottom: 0px;
+
+  // Низ картинки продлён на 6px для мобильного макета, на десктопе он под краем героя
+  --hero-image-bottom: -6px;
+  --hero-image-left-tablet: 91px;
+  --hero-image-top-tablet: -28px;
+  --hero-image-width-tablet: 516px;
+  --hero-image-left-mobile: -47px;
+  --hero-image-top-mobile: 0px;
+  --hero-image-width-mobile: 431px;
+
+  // Три тега в макете стоят одним рядом шире обычной колонки
+  --hero-content-width: 880px;
 
   // По макету от нижнего края карточек до футера 112px
 
@@ -102,7 +114,7 @@ useSeoMeta({
   }
 
   @include a.mobile {
-    padding-bottom: 80px;
+    padding-bottom: 100px;
   }
 }
 
@@ -143,7 +155,7 @@ useSeoMeta({
   margin-top: 152px;
 
   @include a.tablet {
-    margin-top: 96px;
+    margin-top: 132px;
   }
 
   @include a.mobile {
@@ -155,7 +167,7 @@ useSeoMeta({
   margin-top: 200px;
 
   @include a.tablet {
-    margin-top: 120px;
+    margin-top: 160px;
   }
 
   @include a.mobile {

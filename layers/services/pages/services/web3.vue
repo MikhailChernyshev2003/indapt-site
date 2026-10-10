@@ -80,7 +80,8 @@ const techSlides = computed(() =>
 
     <section class="service-page__block">
       <!-- Паттерн из макета лежит за пунктами и уходит за края блока,
-           поверх него — белые засветы. Всё это режется границами блока -->
+           поверх него — белые засветы. Режется по бокам экрана и снизу
+           по началу «Наших технологий», сверху не режется -->
       <div class="service-page__block-bg">
         <services-molecules-figure :placement="WEB3_CREATE_PATTERN">
           <services-molecules-ring-pattern
@@ -102,9 +103,10 @@ const techSlides = computed(() =>
         :title="t(`${I18N_KEY}.create.title`)"
         :desc="t(`${I18N_KEY}.create.text`)"
         size="h2"
+        :desc-max-width="536"
       />
       <services-sections-numbered-lines
-        class="service-page__block-body"
+        class="service-page__block-body service-page__lines"
         :items="createItems"
         :columns="3"
         :tablet-columns="2"
@@ -135,11 +137,22 @@ const techSlides = computed(() =>
   --service-accent: #42a400;
   --service-hero-from: #c9f6ab;
   --service-hero-to: #ecfde2;
+  --service-hero-stop: 79%;
   --service-row-hover: #eafee1;
   --hero-image-width: 510px;
   --hero-image-right: 60px;
   --hero-image-bottom: 0px;
+  --hero-image-left-tablet: 102px;
+  --hero-image-top-tablet: -22px;
+  --hero-image-width-tablet: 484px;
+  --hero-image-left-mobile: 1px;
+  --hero-image-top-mobile: 9px;
+  --hero-image-width-mobile: 420px;
   --pattern-band-bg: #f5fff0;
+
+  // Отступ от «Что мы создаём» до «Наших технологий»: до него же
+  // по макету тянется паттерн блока
+  --create-to-slider: 105px;
 
   padding-bottom: 112px;
 
@@ -159,13 +172,18 @@ const techSlides = computed(() =>
   }
 }
 
+// По макету паттерн режет фрейм страницы, который кончается там, где
+// начинается «Наши технологии», а сверху угол шестиугольника выходит
+// над заголовком. Поэтому вместо overflow — clip-path с выносом вверх
+// и вниз на отступ до слайдера: координаты фигур остаются от блока
+
 .service-page__block-bg {
   position: absolute;
   inset: 0;
 
   z-index: 0;
 
-  overflow: hidden;
+  clip-path: inset(-300px 0 calc(-1 * var(--create-to-slider)) 0);
 }
 
 // Засветы из макета: белые эллипсы с сильным размытием
@@ -205,6 +223,7 @@ const techSlides = computed(() =>
 .service-page__features {
   // Блоки этой услуги в макете разведены сильнее
   --feature-row-padding-bottom: 48px;
+  --feature-text-gap-mobile: 16px;
 
   margin-top: 16px;
 }
@@ -234,7 +253,7 @@ const techSlides = computed(() =>
 }
 
 .service-page__slider {
-  margin-top: 105px;
+  margin-top: var(--create-to-slider);
 }
 
 .service-page__expertise {
@@ -258,6 +277,20 @@ const techSlides = computed(() =>
 
   @include a.mobile {
     margin-top: 80px;
+  }
+}
+
+.service-page__lines {
+  // На планшете и мобильном линии в макете светлее, ряды на планшете
+  // разведены сильнее, а номер на мобильном крупнее общего
+
+  @include a.tablet {
+    --lines-line-color: var(--dark-blue-30);
+    --lines-row-gap-tablet: 60px;
+  }
+
+  @include a.mobile {
+    --lines-number-size-mobile: 16px;
   }
 }
 </style>

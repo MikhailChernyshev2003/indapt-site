@@ -414,6 +414,10 @@ $card-motion: 0.4s v.$easing;
 
       opacity: 1;
     }
+
+    .architecture-cards__number {
+      color: var(--dark-blue-40);
+    }
   }
 }
 
@@ -426,19 +430,23 @@ $card-motion: 0.4s v.$easing;
   // Место под ромб держим всегда: пока отступ появлялся вместе с раскрытием,
   // менялась ширина заголовка, а с ней и переносы строк
 
+  // По макету заголовок раскрытой карточки стоит в 192px от края контента
+
   @include a.desktop-only {
-    padding-left: var(--architecture-mark-space, 7.875rem); // 110 + 16
+    padding-left: var(--architecture-mark-space, 12rem); // 192px
   }
 }
 
-// Ромб лежит поверх, вне потока: его размер не попадает в высоту карточки
+// Ромб лежит поверх, вне потока: его размер не попадает в высоту карточки.
+// У картинки прозрачные поля, поэтому она шире видимого ромба и заходит
+// в поле карточки — видимая часть по макету начинается в 22px от её края
 
 .architecture-cards__mark {
   position: absolute;
   top: 50%;
-  left: 0;
+  left: -30px;
 
-  width: var(--architecture-mark-size, 6.875rem); // 110px
+  width: var(--architecture-mark-size, 8.5625rem); // 137px
 
   transform: translateY(-50%) scale(0.6);
 
@@ -453,7 +461,7 @@ $card-motion: 0.4s v.$easing;
 
 .architecture-cards__mark-image {
   display: block;
-  width: var(--architecture-mark-size, 6.875rem); // 110px
+  width: var(--architecture-mark-size, 8.5625rem); // 137px
   height: auto;
 }
 
@@ -466,13 +474,22 @@ $card-motion: 0.4s v.$easing;
   // в раскладке и не влияет на переносы строк
 
   @include a.desktop-only {
-    transform: translateX(calc(var(--architecture-mark-space, 7.875rem) * -1));
+    transform: translateX(calc(var(--architecture-mark-space, 12rem) * -1));
 
     transition: transform $card-motion;
   }
 
   @include a.mobile {
     @include t.body-l-medium;
+  }
+
+  // Переносы в локали — десктопные: в узкой колонке макета заголовок
+  // в две строки, на планшете и мобильном он течёт сам
+
+  :deep(br) {
+    @include a.tablet {
+      display: none;
+    }
   }
 }
 
@@ -488,7 +505,11 @@ $card-motion: 0.4s v.$easing;
 .architecture-cards__number {
   display: block;
 
-  color: var(--dark-blue-50);
+  // По макету номер свёрнутой карточки едва виден, у раскрытой ярче
+
+  color: var(--dark-blue-20);
+
+  transition: color $card-motion;
 
   @include t.caption-m-medium;
 
@@ -500,7 +521,7 @@ $card-motion: 0.4s v.$easing;
 .architecture-cards__text {
   margin-top: 12px;
 
-  color: var(--dark-blue);
+  color: var(--dark-blue-80);
 
   @include t.body-m-medium;
 
