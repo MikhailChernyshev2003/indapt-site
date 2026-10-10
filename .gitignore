@@ -23,3 +23,5 @@ builds/*
 
 # Figma export staging
 figma-export/
+.claude/
+figma-audit/
