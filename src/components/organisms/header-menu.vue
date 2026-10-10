@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
 import CloseIcon from 'assets/icons/close-icon.svg';
-import { getProjectHref, PROJECT_CASES } from '@l-projects/configs';
 import {
   EXPERTISE_NAV_HREFS,
   EXPERTISE_NAV_I18N_KEYS,
@@ -36,11 +35,6 @@ const NAVIGATION: ComputedRef<NavigationItem[]> = computed(() => [
   {
     to: '/projects',
     name: t('header.projects'),
-    // Подменю из реестра кейсов: тот же порядок и названия, что на разводящей
-    sublinks: PROJECT_CASES.map(item => ({
-      to: getProjectHref(item.slug),
-      name: t(`projects.${item.i18nKey}.title`),
-    })),
   },
   {
     to: '/work',

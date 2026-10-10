@@ -119,6 +119,12 @@ onMounted(() => {
 @use "@/assets/styles/typography" as t;
 @use "@/assets/styles/shared" as s;
 
+// По макету шапка 88px (на мобильном 72px), элементы по центру,
+// линия-разделитель лежит внутри высоты — поэтому снизу на 1px меньше.
+// Подложка прозрачная, и только нижняя треть шапки плавно подсвечивается
+// sea-blue до ~9% у линии — одинаково по всей ширине
+// (прежний rgb(var(--sea-blue-20), 0.4) с hex-переменной был невалиден)
+
 .header {
   position: fixed;
   top: 0;
@@ -127,14 +133,14 @@ onMounted(() => {
   z-index: 10;
 
   width: 100vw;
+  padding: 28px 0 27px;
 
-  padding: 20px 0 12px;
-
-  background: rgb(var(--sea-blue-20), 0.4);
+  background: linear-gradient(180deg, var(--sea-blue-0) 62%, color-mix(in srgb, var(--sea-blue) 9%, transparent) 100%);
+  border-bottom: 1px solid rgb(51 135 255 / 20%);
   backdrop-filter: blur(20px);
 
   @include a.mobile {
-    padding: 14px 0 8px;
+    padding: 20px 0 19px;
   }
 
   &_gradient {
@@ -147,9 +153,14 @@ onMounted(() => {
     justify-content: space-between;
   }
 
+  // flex: inline-svg внутри блочной ссылки добавлял снизу место
+  // под descender, и логотип стоял выше центра шапки
+
   &__logo-link {
     position: relative;
     z-index: 1;
+
+    display: flex;
   }
 
   &__logo {
@@ -213,13 +224,18 @@ onMounted(() => {
     }
   }
 
-  &__client {
-    .button__dot {
-      margin-top: 2px;
-    }
+  // По макету точка в шапке крупнее, чем у кнопки по умолчанию;
+  // .header в селекторе — чтобы перебить scoped-стили кнопки
 
+  &__client {
     @include a.tablet {
       display: none !important;
+    }
+
+    .header & .button__dot {
+      width: 9px;
+      height: 9px;
+      margin-inline-end: 8px;
     }
   }
 
