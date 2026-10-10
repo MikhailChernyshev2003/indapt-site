@@ -505,7 +505,7 @@ Moscow International Business Center “Moscow City”, Federation Tower East`,
         recommendationSystems: 'Recommendation Systems',
         dataAnalyticsBI: 'Data Analytics & BI',
       },
-      info: 'We create solutions in machine learning and data analytics, transforming business processes through intelligent algorithms.<br/>Complex tasks that once required significant effort are now executed quickly and efficiently through automation.',
+      info: 'Mature processes, engineering culture and well-thought-out solutions across the entire cycle: from data to production and further improvement.<br /> We support projects at every stage and ensure predictable implementation.',
       solvingBusinessChallengesAI: {
         title: 'Solving Business Processes with AI',
         fullCycleMLDevelopment: {
@@ -1158,7 +1158,7 @@ Moscow International Business Center “Moscow City”, Federation Tower East`,
         hero: {
           title: 'BMW',
           tags: {
-            tag_1: 'Retail & Trade',
+            tag_1: 'Fintech',
           },
         },
         issue: {
