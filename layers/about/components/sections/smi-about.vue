@@ -19,27 +19,28 @@ const mediaRu = import.meta.glob<string>('../../assets/images/media/ru/*.{svg,pn
 const mediaEn = import.meta.glob<string>('../../assets/images/media/en/*.{svg,png}', { eager: true, query: '?url', import: 'default' });
 
 // h — высота логотипа в px: подобрана по пропорциям файла так, чтобы у всех была примерно одинаковая
-// площадь, — иначе широкие надписи («Российская газета») перевешивают квадратные знаки (ТАСС)
+// площадь, — иначе широкие надписи («Российская газета») перевешивают квадратные знаки (ТАСС).
+// Файлы обрезаны точно по рисунку, без полей: тогда равный gap в ленте даёт равные промежутки на глаз
 type Media = { file: string; name: string; h: number };
 const MEDIA_RU: Media[] = [
   { file: 'forbes', name: 'Forbes', h: 34 },
   { file: 'rbc', name: 'РБК', h: 35 },
   { file: 'kommersant', name: 'Коммерсантъ', h: 25 },
-  { file: 'vedomosti', name: 'Ведомости', h: 30 },
+  { file: 'vedomosti', name: 'Ведомости', h: 29 },
   { file: 'tass', name: 'ТАСС', h: 44 },
-  { file: 'interfax', name: 'Интерфакс', h: 38 },
+  { file: 'interfax', name: 'Интерфакс', h: 37 },
   { file: 'izvestia', name: 'Известия', h: 37 },
   { file: 'rg', name: 'Российская газета', h: 22 },
   { file: 'lenta', name: 'Lenta.ru', h: 28 },
-  { file: 'rambler', name: 'Рамблер', h: 33 },
+  { file: 'rambler', name: 'Рамблер', h: 31 },
   { file: 'secret-firmy', name: 'Секрет фирмы', h: 44 },
   { file: 'expert', name: 'Эксперт', h: 25 },
-  { file: 'inc', name: 'Inc.', h: 40 },
+  { file: 'inc', name: 'Inc.', h: 35 },
   { file: 'vc', name: 'vc.ru', h: 44 },
   { file: 'sostav', name: 'Sostav', h: 35 },
   { file: 'skillbox-media', name: 'Skillbox Media', h: 23 },
   { file: 'netology-media', name: 'Медиа Нетологии', h: 33 },
-  { file: 'hi-tech-mail', name: 'Hi-Tech Mail', h: 39 },
+  { file: 'hi-tech-mail', name: 'Hi-Tech Mail', h: 33 },
 ];
 
 const MEDIA_EN: Media[] = [
@@ -56,7 +57,8 @@ const MEDIA_EN: Media[] = [
   { file: 'tech-in-asia', name: 'Tech in Asia', h: 28 },
   { file: 'the-national', name: 'The National', h: 44 },
   { file: 'arab-news', name: 'Arab News', h: 26 },
-  { file: 'wamda', name: 'Wamda', h: 33 },
+  { file: 'wamda', name: 'Wamda', h: 32 },
+  { file: 'african-business', name: 'African Business', h: 44 },
   { file: 'techcabal', name: 'TechCabal', h: 32 },
   { file: 'itweb-africa', name: 'ITWeb Africa', h: 44 },
   { file: 'fintech-news-network', name: 'Fintech News Network', h: 44 },
@@ -91,14 +93,6 @@ const media = computed(() => {
             v-html="t('aboutPage.smi.lead')"
           />
         </div>
-        <div v-if="!isMobile" class="smi-about__nav">
-          <button class="smi-about__nav-button smi-about__nav-button_prev">
-            <NavButton class="smi-about__nav-button-icon" />
-          </button>
-          <button class="smi-about__nav-button smi-about__nav-button_next">
-            <NavButton class="smi-about__nav-button-icon" />
-          </button>
-        </div>
       </services-molecules-text-reveal>
 
       <!-- Лента изданий: список повторён дважды, чтобы бесшовно прокручиваться по кругу -->
@@ -114,6 +108,18 @@ const media = computed(() => {
             :style="{ '--logo-h': `${item.h / 16}rem` }"
             loading="lazy"
           />
+        </div>
+      </div>
+
+      <!-- Стрелки — у карточек статей, которые они листают -->
+      <div v-if="!isMobile" class="smi-about__cards-head">
+        <div class="smi-about__nav">
+          <button class="smi-about__nav-button smi-about__nav-button_prev">
+            <NavButton class="smi-about__nav-button-icon" />
+          </button>
+          <button class="smi-about__nav-button smi-about__nav-button_next">
+            <NavButton class="smi-about__nav-button-icon" />
+          </button>
         </div>
       </div>
       <client-only>
@@ -187,10 +193,6 @@ const media = computed(() => {
   }
 
   &__header {
-    display: flex;
-    gap: 40px;
-    align-items: flex-end;
-    justify-content: space-between;
     padding: 0 60px;
 
     @include a.tablet {
@@ -215,16 +217,21 @@ const media = computed(() => {
     }
   }
 
-  // Лента логотипов: как строки «Нам доверяют» — бесконечная прокрутка, пауза при наведении.
-  // Логотипы в оттенках серого, цвет — при наведении на конкретное издание
+  // Лента логотипов: как строки «Нам доверяют» — бесконечная прокрутка, пауза при наведении,
+  // логотипы в цвете. Отступы блока крупнее обычных 52px макета: между подводкой, лентой
+  // и карточками три разных по характеру слоя, и при 52px они слипались
 
   &__media {
     width: 100%;
-    margin-top: 52px;
+    margin-top: 72px;
     overflow: hidden;
 
+    @include a.tablet {
+      margin-top: 64px;
+    }
+
     @include a.mobile {
-      margin-top: 32px;
+      margin-top: 40px;
     }
 
     @include s.hover {
@@ -237,18 +244,18 @@ const media = computed(() => {
   &__media-track {
     display: flex;
     flex-wrap: nowrap;
-    gap: 80px;
+    gap: 64px;
     align-items: center;
     width: max-content;
-    padding-left: 80px;
+    padding-left: 64px;
 
     animation: smi-marquee 60s linear infinite;
 
     will-change: transform;
 
     @include a.mobile {
-      gap: 48px;
-      padding-left: 48px;
+      gap: 40px;
+      padding-left: 40px;
 
       animation-duration: 45s;
     }
@@ -263,18 +270,8 @@ const media = computed(() => {
     width: auto;
     height: var(--logo-h, 34px);
 
-    filter: grayscale(1);
-    opacity: 0.75;
-
-    transition: filter 0.3s, opacity 0.3s;
-
     @include a.mobile {
       height: calc(var(--logo-h, 34px) * 0.78);
-    }
-
-    @include s.hover {
-      filter: none;
-      opacity: 1;
     }
   }
 
@@ -285,6 +282,20 @@ const media = computed(() => {
 
     100% {
       transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  // Ряд со стрелками над карточками статей
+
+  &__cards-head {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 72px;
+    padding: 0 60px;
+
+    @include a.tablet {
+      margin-top: 64px;
+      padding: 0 40px;
     }
   }
 
@@ -351,10 +362,10 @@ const media = computed(() => {
   }
 
   &__slider {
-    padding-top: 52px;
+    padding-top: 24px;
 
     @include a.mobile {
-      padding-top: 32px;
+      padding-top: 40px;
     }
   }
 

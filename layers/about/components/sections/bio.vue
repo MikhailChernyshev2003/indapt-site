@@ -69,7 +69,8 @@ const list = computed(() => [
       {
         title: t('aboutPage.bio.druzin.bio.title'),
         text: [
-          t('aboutPage.bio.druzin.bio.text'),
+          t('aboutPage.bio.druzin.bio.text1'),
+          t('aboutPage.bio.druzin.bio.text2'),
         ],
       },
       {

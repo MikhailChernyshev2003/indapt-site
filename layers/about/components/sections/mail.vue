@@ -45,14 +45,21 @@ const openPresentationForm = () => {
   position: relative;
   z-index: 1;
 
-  padding: 46px;
+  // Отступы крупнее, чем у баннера «Работа с нами» в макете (46 / 12 / 24):
+  // текст презентации длиннее и в два предложения — с прежними отступами блок выглядел слипшимся
+
+  padding: 56px;
   overflow: hidden;
 
   background: #DFE8FF;
   border-radius: 16px;
 
+  @include a.tablet {
+    padding: 48px 40px;
+  }
+
   @include a.mobile {
-    padding: 24px;
+    padding: 28px 24px;
   }
 
   &__wrapper {
@@ -77,7 +84,7 @@ const openPresentationForm = () => {
   }
 
   &__text {
-    margin-top: 12px;
+    margin-top: 16px;
 
     @include t.lead-s-medium;
 
@@ -87,9 +94,10 @@ const openPresentationForm = () => {
   }
 
   &__button {
-    margin-top: 24px;
+    margin-top: 36px;
 
     @include a.mobile {
+      margin-top: 28px;
       padding: 24px 28px !important;
     }
   }
