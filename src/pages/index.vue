@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useDebounceFn } from '@vueuse/core';
 import {
@@ -72,6 +73,57 @@ const reinitAnimations = (): void => {
     // Сразу ставим таймлайн в позицию скролла, без секундной перемотки scrub
     ScrollTrigger.update();
     getTimeline()?.scrollTrigger?.getTween()?.progress(1);
+  });
+};
+
+// Кнопка «наверх» в конце главной: экран плавно уходит в белый, под ним страница
+// сбрасывается и запускается заново с первого экрана — с интро и появлением сферы
+const DIP_IN_S = 0.8;
+const DIP_HOLD_S = 0.3;
+const DIP_OUT_S = 1;
+
+const dipRef = ref<HTMLElement | null>(null);
+let isRestarting = false;
+
+const restartFromTop = (): void => {
+  const hero = heroBackground.value;
+  if (isRestarting || !isCameraReady.value || !hero?.cameraRef || !hero?.sphereRef) return;
+  isRestarting = true;
+
+  gsap.to(dipRef.value, {
+    autoAlpha: 1,
+    duration: DIP_IN_S,
+    ease: 'power2.inOut',
+    onComplete: () => {
+      cleanupMainPageAnimations({
+        camera: hero.cameraRef,
+        sphere: hero.sphereRef,
+        resetStyles: true,
+      });
+      hero.hideParticles();
+      // Камера в конце страницы развёрнута и сдвинута, а интро задаёт ей только y и z
+      gsap.set(hero.cameraRef.position, { x: 0 });
+      gsap.set(hero.cameraRef.rotation, { x: 0, y: 0, z: 0 });
+      // Как при первой загрузке: обёртка с кнопкой «наверх» проявится вместе со сборкой таймлайна
+      gsap.set('.main__scroll-top', { clearProps: 'opacity' });
+      document.body.classList.remove('after-init');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      nextTick(() => {
+        ScrollTrigger.refresh();
+        startAnimations(false);
+
+        gsap.to(dipRef.value, {
+          autoAlpha: 0,
+          duration: DIP_OUT_S,
+          delay: DIP_HOLD_S,
+          ease: 'power2.inOut',
+          onComplete: () => {
+            isRestarting = false;
+          },
+        });
+      });
+    },
   });
 };
 
@@ -165,8 +217,7 @@ onBeforeRouteLeave(() => {
     />
     <wrappers-scroll-to-top
       class="main__scroll-top"
-      target-selector=".digital-info__title"
-      :target-top="1600"
+      :action="restartFromTop"
     >
       <!-- Main content -->
       <div class="main__wrapper">
@@ -181,6 +232,12 @@ onBeforeRouteLeave(() => {
         <molecules-decor-shape class="development-experts__shape development-experts__shape_move" />
       </div>
     </wrappers-scroll-to-top>
+
+    <div
+      ref="dipRef"
+      class="main__dip"
+      aria-hidden="true"
+    />
   </div>
 </template>
 
@@ -256,6 +313,19 @@ onBeforeRouteLeave(() => {
 
   &__scroll-top {
     opacity: 0;
+  }
+
+  // Белый экран перехода кнопки «наверх» — поверх шапки и всей страницы
+
+  &__dip {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    visibility: hidden;
+    opacity: 0;
+
+    background: var(--white);
   }
 }
 </style>

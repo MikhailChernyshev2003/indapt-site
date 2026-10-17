@@ -253,6 +253,64 @@ const services = computed(() => [
 @use "@/assets/styles/variables" as v;
 @use "@/assets/styles/typography" as t;
 @use "@/assets/styles/shared" as s;
+@use "sass:math";
+
+// Планшетная и мобильная раскладки растут вместе с шириной (корневой шрифт
+// в vw), поэтому в альбомной ориентации и низких окнах карточки уходили
+// за нижний край. При широком соотношении сторон отступы, заголовок и
+// карточка считаются от высоты экрана (svh — не прыгает от адресной строки).
+// Пороги — соотношение, при котором обычная раскладка ещё влезает по высоте:
+// планшет ≈ 0.9, мобильная ≈ 0.75. Портретные телефоны и планшеты не задеты.
+// Сдвиг ленты под ужатые карточки считается в adaptiveAnim (page-main.js)
+@mixin fit-height($header, $card, $title-max, $title-min, $decor-top, $decor-left, $decor-size, $img, $card-title, $shape) {
+  --ds-gap: clamp(8px, 3svh, 32px);
+  --ds-title: clamp(#{$title-min}, 7svh, #{$title-max});
+  --ds-card: min(#{$card}, 100svh - #{$header} - 3 * var(--ds-gap) - 1.1 * var(--ds-title));
+
+  .digital-services__head {
+    padding-top: calc(#{$header} + var(--ds-gap));
+    padding-bottom: 0;
+  }
+
+  .digital-services__title {
+    font-size: var(--ds-title);
+  }
+
+  .digital-services__list {
+    margin-top: var(--ds-gap);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .digital-services__shape {
+    width: min(#{$shape}, 22svh);
+  }
+
+  .digital-services__list .service-card {
+    // Внутренности карточки — пропорционально её стороне
+
+    width: var(--ds-card);
+    height: var(--ds-card);
+
+    &__decor {
+      top: calc(var(--ds-card) * #{math.div($decor-top, $card)});
+      left: calc(var(--ds-card) * #{math.div($decor-left, $card)});
+
+      width: calc(var(--ds-card) * #{math.div($decor-size, $card)});
+      height: calc(var(--ds-card) * #{math.div($decor-size, $card)});
+    }
+
+    &__img {
+      height: calc(var(--ds-card) * #{math.div($img, $card)});
+    }
+
+    &__title {
+      max-width: calc(var(--ds-card) * #{math.div(262px, $card)});
+
+      font-size: calc(var(--ds-card) * #{math.div($card-title, $card)});
+    }
+  }
+}
 
 .digital-services {
   width: 100%;
@@ -429,6 +487,15 @@ const services = computed(() => [
         transform: scale(1);
       }
     }
+  }
+
+  // Альбомная ориентация и низкие окна — см. fit-height выше
+  @media screen and (max-width: #{v.$viewport-width-lg}) and (min-aspect-ratio: 9 / 10) {
+    @include fit-height(72px, 454px, 56px, 24px, -35px, -24px, 520px, 264px, 32px, 142px);
+  }
+
+  @media screen and (max-width: #{v.$viewport-width-sm}) and (min-aspect-ratio: 3 / 4) {
+    @include fit-height(52px, 290px, 30px, 20px, -12px, -8px, 310px, 164px, 20px, 100px);
   }
 }
 </style>

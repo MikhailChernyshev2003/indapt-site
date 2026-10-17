@@ -555,7 +555,7 @@ export const desktopAnim = (hero, camera, sphere, options = {}) => {
     tl.set(
       '.anim__header',
       {
-        backdropFilter: 'blur(0px)',
+        '--header-blur': '0px',
         delay: 1.5,
       },
       '<',
@@ -733,7 +733,7 @@ export const desktopAnim = (hero, camera, sphere, options = {}) => {
       sphereOpacity: 0,
     });
     tl.set('.anim__header', {
-      backdropFilter: 'blur(5px)',
+      '--header-blur': '5px',
     });
 
     tl.to(
@@ -1655,8 +1655,29 @@ export const adaptiveAnim = (
       digitalServicesRef.handlerChangeShape('hexagon');
     }
 
+    // В альбомной ориентации карточки ужаты по высоте экрана (digital-services.vue),
+    // и сдвиг в процентах увёл бы последнюю за левый край. Для ужатых считаем
+    // сдвиг по факту: последняя карточка целиком в кадре на пике своей подсветки
+    // (59 из 60 единиц ленты). Обычные размеры оставляем как были
+    const servicesList = document.querySelector('.digital-services__list');
+    const lastServiceCard = servicesList?.lastElementChild;
+    const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const naturalCardSize = ((isMobile ? 290 : 454) * rootFontSize) / 16;
+    const cardSizeRatio = lastServiceCard ? lastServiceCard.offsetWidth / naturalCardSize : 1;
+    const isServiceCardShrunk = cardSizeRatio < 0.99;
+    const serviceCardScale = isServiceCardShrunk ? cardSizeRatio : 1;
+    let servicesListShift = isMobile ? '-580%' : '-410%';
+
+    if (isServiceCardShrunk) {
+      const listPaddingRight = parseFloat(getComputedStyle(servicesList).paddingRight);
+      const overflow = lastServiceCard.offsetLeft + lastServiceCard.offsetWidth
+        + listPaddingRight - servicesList.clientWidth;
+
+      servicesListShift = -Math.max(0, overflow) * 60 / 59;
+    }
+
     tl.to('.digital-services__list', {
-      x: isMobile ? '-580%' : '-410%',
+      x: servicesListShift,
       duration: 60,
       delay: 5,
       ease: 'linear',
@@ -1715,7 +1736,7 @@ export const adaptiveAnim = (
     tl.to(
       '.digital-services__list-item .service-card__title',
       {
-        y: isMobile ? -60 : -80,
+        y: (isMobile ? -60 : -80) * serviceCardScale,
         color: 'var(--hover-color)',
         stagger: 8,
         duration: 8,

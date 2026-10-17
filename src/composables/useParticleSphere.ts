@@ -221,18 +221,25 @@ export const useParticleSphere = () => {
 
   const minMax = (val, min, max) => Math.min(max, Math.max(min, val));
 
+  // Наклон сферы по вертикали на 17°: цвет частицы считается от её положения, повёрнутого вокруг
+  // горизонтальной оси камеры, — так тёмно-синие частицы стягиваются ближе к макушке сферы.
+  // Ось берётся от камеры, чтобы при облёте сферы сзади наклон смотрелся так же
+  const COLOR_TILT = 17 * Math.PI / 180;
+  const colorTiltAxis = new Vector3();
+
   const updateColors = (camera) => {
     if (!mesh) return;
     let counter = 0;
 
     const distanceFromCameraToCenter = camera.position.clone().distanceTo(sphereIntersectionHelper.position);
+    colorTiltAxis.set(1, 0, 0).applyQuaternion(camera.quaternion);
 
     for (const i in particles) {
       const particle = particles[i];
       if (!particle.colored) continue;
 
       // Инициализируем цветовую схему один раз для частицы
-      const position = particle.getRealPos().clone().sub(sphereIntersectionHelper.position);
+      const position = particle.getRealPos().clone().sub(sphereIntersectionHelper.position).applyAxisAngle(colorTiltAxis, COLOR_TILT);
       const { x, y, z } = position;
       const color = new Color();
 
@@ -336,6 +343,15 @@ export const useParticleSphere = () => {
         );
       }
     }
+  };
+
+  // Прячем все частицы — интро главной (playInitAnimation) снова проявит их волнами
+  const hideParticles = () => {
+    particles.forEach((particle) => {
+      gsap.killTweensOf(particle.scale);
+      particle.scale.set(0, 0, 0);
+      particle.colored = false;
+    });
   };
 
   let desktopMode = false;
@@ -527,6 +543,7 @@ export const useParticleSphere = () => {
     cleanup,
     setVisibleParticles,
     playInitAnimation,
+    hideParticles,
     initAnimation,
     get animation() {
       return animation;

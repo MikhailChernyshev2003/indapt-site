@@ -3,12 +3,20 @@ const route = useRoute();
 const props = withDefaults(defineProps<{
   targetSelector?: string | null;
   targetTop?: number | null;
+  // Своё действие вместо прокрутки (главная перезапускается с первого экрана)
+  action?: (() => void) | null;
 }>(), {
   targetSelector: null,
   targetTop: null,
+  action: null,
 });
 
 const scrollToTop = () => {
+  if (props.action) {
+    props.action();
+    return;
+  }
+
   if (typeof props.targetTop === 'number') {
     window.scrollTo({
       top: props.targetTop,

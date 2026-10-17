@@ -100,6 +100,7 @@ defineExpose({
   threeComponent,
   getDistanceToFitSphere,
   playInitAnimation: (duration: number) => particleSphere?.playInitAnimation(duration),
+  hideParticles: () => particleSphere?.hideParticles(),
   setVisibleParticles: (count: number) => particleSphere?.setVisibleParticles(count),
   showGrid: showGridHelper,
   get sphereOpacity() {
