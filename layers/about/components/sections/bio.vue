@@ -4,7 +4,17 @@ import BitkinActive from '@l-about/assets/images/bitkin-active.png';
 import DruzinInactive from '@l-about/assets/images/druzin-inactive.png';
 import DruzinActive from '@l-about/assets/images/druzin-active.png';
 
-const { isDesktop } = useDevice();
+import ChevronIcon from '@/assets/icons/chevron-down.svg';
+
+const { isDesktop, isMobile } = useDevice();
+
+// На телефоне по макету биографии — аккордеон: раскрыт один из основателей (по умолчанию Антон),
+// у второго видны только фото, имя, должность и вкладки
+const openIdx = ref(0);
+
+const togglePerson = (idx: number) => {
+  openIdx.value = openIdx.value === idx ? -1 : idx;
+};
 
 const { t, locale } = useI18n();
 
@@ -101,6 +111,7 @@ const handlerTab = (tab: any, type: string, idx: number) => {
 const handlerMobileTab = (tab: any, type: string, idx: number) => {
   if (!isDesktop.value) {
     mobileActiveTypes.value[idx] = type;
+    openIdx.value = idx;
   }
   else {
     handlerTab(tab, type, idx);
@@ -144,7 +155,20 @@ watch(locale, () => {
                 />
               </div>
               <div class="bio__person-info">
-                <p class="bio__person-name">{{ item.name }}</p>
+                <div class="bio__person-name-row">
+                  <p class="bio__person-name">{{ item.name }}</p>
+                  <button
+                    v-if="isMobile"
+                    type="button"
+                    class="bio__person-toggle"
+                    :class="{ 'bio__person-toggle_open': openIdx === idx }"
+                    :aria-expanded="openIdx === idx"
+                    :aria-label="item.name"
+                    @click="togglePerson(idx)"
+                  >
+                    <ChevronIcon class="bio__person-toggle-icon" />
+                  </button>
+                </div>
                 <svg
                   class="bio__person-divider"
                   viewBox="0 0 430 2"
@@ -200,40 +224,48 @@ watch(locale, () => {
               </div>
             </div>
 
-            <div v-if="!isDesktop" class="bio__right">
-              <div>
-                <template v-if="mobileActiveTypes[idx] === 'bio'">
-                  <div
-                    v-for="(bioItem, bioIdx) in item.bio"
-                    :key="bioIdx"
-                    class="bio__right-block"
-                  >
-                    <p class="bio__right-title" v-html="bioItem.title" />
-                    <p
-                      v-for="text in bioItem.text"
-                      :key="text"
-                      class="bio__right-text"
-                      v-html="text"
-                    />
+            <div
+              v-if="!isDesktop"
+              class="bio__collapse"
+              :class="{ bio__collapse_open: !isMobile || openIdx === idx }"
+            >
+              <div class="bio__collapse-inner">
+                <div class="bio__right">
+                  <div>
+                    <template v-if="mobileActiveTypes[idx] === 'bio'">
+                      <div
+                        v-for="(bioItem, bioIdx) in item.bio"
+                        :key="bioIdx"
+                        class="bio__right-block"
+                      >
+                        <p class="bio__right-title" v-html="bioItem.title" />
+                        <p
+                          v-for="text in bioItem.text"
+                          :key="text"
+                          class="bio__right-text"
+                          v-html="text"
+                        />
+                      </div>
+                    </template>
+                    <template v-else>
+                      <p class="bio__right-title" v-html="item.edu.title" />
+                      <div
+                        v-for="(eduItem, eduIdx) in item.edu.list"
+                        :key="eduIdx"
+                        class="bio__right-education"
+                      >
+                        <p
+                          class="bio__right-education-text"
+                          v-html="eduItem.text"
+                        />
+                        <p
+                          class="bio__right-education-subtext"
+                          v-html="eduItem.subText"
+                        />
+                      </div>
+                    </template>
                   </div>
-                </template>
-                <template v-else>
-                  <p class="bio__right-title" v-html="item.edu.title" />
-                  <div
-                    v-for="(eduItem, eduIdx) in item.edu.list"
-                    :key="eduIdx"
-                    class="bio__right-education"
-                  >
-                    <p
-                      class="bio__right-education-text"
-                      v-html="eduItem.text"
-                    />
-                    <p
-                      class="bio__right-education-subtext"
-                      v-html="eduItem.subText"
-                    />
-                  </div>
-                </template>
+                </div>
               </div>
             </div>
           </div>
@@ -364,8 +396,8 @@ watch(locale, () => {
       height: 190px;
 
       @include a.mobile {
-        width: 160px;
-        height: 160px;
+        width: 110px;
+        height: 110px;
       }
 
       &-img {
@@ -409,6 +441,46 @@ watch(locale, () => {
 
     &-name {
       @include t.h5;
+    }
+
+    &-name-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    // Кнопка аккордеона на телефоне — круг со стрелкой, как в макете
+    &-toggle {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+
+      background: rgb(255 255 255 / 70%);
+      border-radius: 50%;
+
+      // Стрелка — линия: svgo при импорте убирает обводку, возвращаем её стилями
+      &-icon {
+        width: 24px;
+        height: 24px;
+
+        transition: transform 0.3s;
+
+        :deep(path) {
+          fill: none;
+          stroke: var(--dark-blue);
+          stroke-width: 2;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+      }
+
+      &_open .bio__person-toggle-icon {
+        transform: rotate(180deg);
+      }
     }
 
     &-position {
@@ -485,6 +557,23 @@ watch(locale, () => {
 
         content: "";
       }
+    }
+  }
+
+  // Плавное раскрытие карточки на телефоне (на планшете она всегда открыта)
+  &__collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+
+    transition: grid-template-rows 0.4s ease;
+
+    &_open {
+      grid-template-rows: 1fr;
+    }
+
+    &-inner {
+      min-height: 0;
+      overflow: hidden;
     }
   }
 
