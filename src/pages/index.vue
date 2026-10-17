@@ -186,8 +186,39 @@ const startAnimationsWhenVisible = (): void => {
   document.addEventListener('visibilitychange', pendingVisibleStart);
 };
 
+// Полное интро (≈4 с) играет только при первом заходе на сайт — там оно идёт под прелоадером.
+// При возврате на главную внутри сайта (клик по логотипу и т. п.) прокрутка до конца интро
+// не работала: страница несколько секунд была высотой в один экран. Поэтому при повторном
+// заходе таймлайн прокрутки собирается сразу, а страница и сфера проявляются плавно поверх него
+// Переход внутри сайта: у роутера есть предыдущая страница (при первой загрузке back = null)
+const router = useRouter();
+const isInSiteNavigation = (): boolean => Boolean(router.options.history.state?.back);
+
+const quickStart = (): void => {
+  const hero = heroBackground.value;
+  if (!hero?.cameraRef || !hero?.sphereRef) return;
+
+  startAnimations(true);
+  hero.playInitAnimation(1);
+  gsap.fromTo('.main__wrapper', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8, ease: 'sine.out' });
+
+  // Прокрутка включается классом after-init (без него body зафиксирован). Лейаут главной снимает
+  // этот класс при своём монтировании, которое при переходе внутри сайта бывает уже после нас,
+  // поэтому ставим его ещё раз после отрисовки и пересчитываем триггеры
+  requestAnimationFrame(() => {
+    document.body.classList.add('after-init');
+    ScrollTrigger.refresh();
+  });
+};
+
 const handleCameraReady = (): void => {
   isCameraReady.value = true;
+
+  if (isInSiteNavigation()) {
+    quickStart();
+    return;
+  }
+
   setPendingCameraReady(startAnimationsWhenVisible);
 };
 

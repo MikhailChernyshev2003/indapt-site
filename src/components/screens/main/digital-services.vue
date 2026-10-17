@@ -489,6 +489,24 @@ const services = computed(() => [
     }
   }
 
+  // Телефоны и планшеты в портретной ориентации: экран выше макета (640px), и под кругами
+  // оставалась большая пустота. Блок «заголовок + лента» ставим по центру области под шапкой
+  @media screen and (max-width: #{v.$viewport-width-lg}) and (max-aspect-ratio: 9 / 10) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 72px;
+
+    @include a.mobile {
+      padding-top: 52px;
+    }
+
+    .digital-services__head {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+  }
+
   // Альбомная ориентация и низкие окна — см. fit-height выше
   @media screen and (max-width: #{v.$viewport-width-lg}) and (min-aspect-ratio: 9 / 10) {
     @include fit-height(72px, 454px, 56px, 24px, -35px, -24px, 520px, 264px, 32px, 142px);

@@ -206,6 +206,17 @@ export const desktopAnim = (hero, camera, sphere, options = {}) => {
     sphereRadius * 1.2,
   );
 
+  // Во второй сцене сфера подогнана почти под всю высоту экрана, и её верх уходил под сжатую шапку.
+  // Поднимаем камеру на половину высоты шапки — сфера встаёт по центру видимой области под шапкой.
+  // Шапка 70px по макету, но px на сайте масштабируются вместе с корневым шрифтом (postcss-pxtorem)
+  const HEADER_COMPACT_PX = 70;
+  const getSphereShiftY = () => {
+    const rootScale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
+    const vFOV = MathUtils.degToRad(camera.fov);
+    const frustumHeight = 2 * fittedDistance.value.distance * Math.tan(vFOV / 2);
+    return ((HEADER_COMPACT_PX * rootScale) / 2 / window.innerHeight) * frustumHeight;
+  };
+
   const getLeftEdgeX = () => {
     const distance = Math.abs(camera.position.z - fittedDistance.value.distance);
     const vFOV = MathUtils.degToRad(camera.fov);
@@ -536,7 +547,7 @@ export const desktopAnim = (hero, camera, sphere, options = {}) => {
     tl.to(
       camera.position,
       {
-        y: 0,
+        y: getSphereShiftY(),
         z: fittedDistance.value.distance,
         duration: 5,
       },
@@ -1646,29 +1657,28 @@ export const adaptiveAnim = (
       digitalServicesRef.handlerChangeShape('hexagon');
     }
 
-    // В альбомной ориентации карточки ужаты по высоте экрана (digital-services.vue),
-    // и сдвиг в процентах увёл бы последнюю за левый край. Для ужатых считаем
-    // сдвиг по факту: последняя карточка целиком в кадре на пике своей подсветки
-    // (59 из 60 единиц ленты). Обычные размеры оставляем как были
+    // Лента едет от карточки к карточке: на пике подсветки активная карточка стоит у левого поля,
+    // как в макете (справа виден край следующей). Раньше лента ехала равномерно на -580% / -410%,
+    // и подсвеченная карточка оказывалась то за левым краем, то посреди экрана — картинки обрезались.
+    // Позиции берём по факту, поэтому это работает и для ужатых карточек в альбомной ориентации
     const servicesList = document.querySelector('.digital-services__list');
-    const lastServiceCard = servicesList?.lastElementChild;
+    const serviceCards = servicesList ? [...servicesList.children] : [];
+    const lastServiceCard = serviceCards[serviceCards.length - 1];
     const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
     const naturalCardSize = ((isMobile ? 290 : 454) * rootFontSize) / 16;
     const cardSizeRatio = lastServiceCard ? lastServiceCard.offsetWidth / naturalCardSize : 1;
-    const isServiceCardShrunk = cardSizeRatio < 0.99;
-    const serviceCardScale = isServiceCardShrunk ? cardSizeRatio : 1;
-    let servicesListShift = isMobile ? '-580%' : '-410%';
+    const serviceCardScale = cardSizeRatio < 0.99 ? cardSizeRatio : 1;
+    const listPaddingLeft = servicesList ? parseFloat(getComputedStyle(servicesList).paddingLeft) : 0;
+    const listPaddingRight = servicesList ? parseFloat(getComputedStyle(servicesList).paddingRight) : 0;
+    const maxListShift = lastServiceCard
+      ? Math.max(0, lastServiceCard.offsetLeft + lastServiceCard.offsetWidth + listPaddingRight - servicesList.clientWidth)
+      : 0;
+    const serviceCardShifts = serviceCards.map(card => -Math.min(card.offsetLeft - listPaddingLeft, maxListShift));
+    const servicesProgress = { value: 0 };
 
-    if (isServiceCardShrunk) {
-      const listPaddingRight = parseFloat(getComputedStyle(servicesList).paddingRight);
-      const overflow = lastServiceCard.offsetLeft + lastServiceCard.offsetWidth
-        + listPaddingRight - servicesList.clientWidth;
-
-      servicesListShift = -Math.max(0, overflow) * 60 / 59;
-    }
-
-    tl.to('.digital-services__list', {
-      x: servicesListShift,
+    // Прогресс ленты (смена фигуры фона); сам сдвиг ленты — отдельными шагами ниже
+    tl.to(servicesProgress, {
+      value: 1,
       duration: 60,
       delay: 5,
       ease: 'linear',
@@ -1704,6 +1714,8 @@ export const adaptiveAnim = (
       },
       '<-=5',
     );
+    // Карточка i полностью подсвечена в момент serviceHoverStart + 8 * (i + 1)
+    const serviceHoverStart = tl.recent().startTime();
     tl.to(
       '.digital-services__list-item .service-card__decor',
       {
@@ -1899,6 +1911,18 @@ export const adaptiveAnim = (
       },
     }, isMobile ? '<' : '<+=3');
     scrollSectionThrough('.main__vacancies', sectionFit.vacancies);
+
+    // Шаги ленты «Услуг» добавляем последними, по абсолютному времени: вставка в середину
+    // сбила бы позиции «<» у соседних анимаций. За 8 единиц до пика подсветки лента плавно
+    // подвозит карточку к левому полю
+    serviceCardShifts.forEach((x, i) => {
+      if (i === 0) return;
+      tl.to('.digital-services__list', {
+        x,
+        duration: 8,
+        ease: 'sine.inOut',
+      }, serviceHoverStart + 8 * i);
+    });
   };
 
   const schedulePageAnimations = () => {
