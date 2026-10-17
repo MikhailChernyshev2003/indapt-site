@@ -78,9 +78,13 @@ const reinitAnimations = (): void => {
 
 // Кнопка «наверх» в конце главной: экран плавно уходит в белый, под ним страница
 // сбрасывается и запускается заново с первого экрана — с интро и появлением сферы
-const DIP_IN_S = 0.8;
-const DIP_HOLD_S = 0.3;
-const DIP_OUT_S = 1;
+// Переход мягкий: страница не просто закрывается белым, а постепенно расплывается
+// и растворяется в нём (белая подложка и размытие под ней нарастают вместе),
+// а первый экран так же проступает из размытия
+const DIP_IN_S = 1.6;
+const DIP_HOLD_S = 0.4;
+const DIP_OUT_S = 1.8;
+const DIP_BLUR = '24px';
 
 const dipRef = ref<HTMLElement | null>(null);
 let isRestarting = false;
@@ -90,10 +94,12 @@ const restartFromTop = (): void => {
   if (isRestarting || !isCameraReady.value || !hero?.cameraRef || !hero?.sphereRef) return;
   isRestarting = true;
 
+  gsap.set(dipRef.value, { autoAlpha: 1, '--dip-alpha': 0, '--dip-blur': '0px' });
   gsap.to(dipRef.value, {
-    autoAlpha: 1,
+    '--dip-alpha': 1,
+    '--dip-blur': DIP_BLUR,
     duration: DIP_IN_S,
-    ease: 'power2.inOut',
+    ease: 'sine.inOut',
     onComplete: () => {
       cleanupMainPageAnimations({
         camera: hero.cameraRef,
@@ -114,11 +120,13 @@ const restartFromTop = (): void => {
         startAnimations(false);
 
         gsap.to(dipRef.value, {
-          autoAlpha: 0,
+          '--dip-alpha': 0,
+          '--dip-blur': '0px',
           duration: DIP_OUT_S,
           delay: DIP_HOLD_S,
-          ease: 'power2.inOut',
+          ease: 'sine.out',
           onComplete: () => {
+            gsap.set(dipRef.value, { autoAlpha: 0 });
             isRestarting = false;
           },
         });
@@ -233,11 +241,16 @@ onBeforeRouteLeave(() => {
       </div>
     </wrappers-scroll-to-top>
 
-    <div
-      ref="dipRef"
-      class="main__dip"
-      aria-hidden="true"
-    />
+    <!-- В body: внутри страницы слой не перекрывал бы футер (у .__main свой контекст наложения) -->
+    <client-only>
+      <teleport to="body">
+        <div
+          ref="dipRef"
+          class="main__dip"
+          aria-hidden="true"
+        />
+      </teleport>
+    </client-only>
   </div>
 </template>
 
@@ -325,7 +338,8 @@ onBeforeRouteLeave(() => {
     visibility: hidden;
     opacity: 0;
 
-    background: var(--white);
+    background: rgb(255 255 255 / var(--dip-alpha, 1));
+    backdrop-filter: blur(var(--dip-blur, 0px));
   }
 }
 </style>

@@ -552,14 +552,8 @@ export const desktopAnim = (hero, camera, sphere, options = {}) => {
       },
       'hero-leave-=1.45',
     ).addLabel('hero-button-leave');
-    tl.set(
-      '.anim__header',
-      {
-        '--header-blur': '0px',
-        delay: 1.5,
-      },
-      '<',
-    );
+    // Размытие шапки здесь больше не снимаем: по правкам на главной то же матовое стекло,
+    // что и на остальных страницах (--header-blur по умолчанию в header.vue)
 
     // поднятие текста вверх
     tl.to(
@@ -731,9 +725,6 @@ export const desktopAnim = (hero, camera, sphere, options = {}) => {
 
     tl.set(hero, {
       sphereOpacity: 0,
-    });
-    tl.set('.anim__header', {
-      '--header-blur': '5px',
     });
 
     tl.to(
