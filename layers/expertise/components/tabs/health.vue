@@ -285,7 +285,19 @@ const animationTablet = () => {
   tl.set(content(3), { width: '100cqw' }, 15);
 };
 
+// Мобильный: карточки сменяют друг друга, пока список стоит под панелью вкладок. Список держит CSS position: sticky
+// внутри высокой обёртки .health__scene, а не pin ScrollTrigger: JS-pin переключал список на position: fixed
+// с опозданием на кадр (и заранее — из-за anticipatePin), на быстром свайпе список отскакивал на десятки пикселей.
+// Sticky держит браузер, синхронно со скроллом. Здесь только прокрутка анимации карточек по скроллу
 const animationMobile = () => {
+  const scene = document.querySelector<HTMLElement>('.health__scene');
+  const list = document.querySelector<HTMLElement>('.health__list');
+  if (!scene || !list) return;
+
+  // Отступ прилипания и длина сцены берутся из CSS (top списка и высота обёртки) — числа живут в одном месте
+  const stickyTop = () => parseFloat(getComputedStyle(list).top) || 0;
+  const distance = () => scene.offsetHeight - list.offsetHeight;
+
   gsap.set('.health__item:nth-child(3)', {
     y: '33rem',
   });
@@ -295,12 +307,10 @@ const animationMobile = () => {
 
   const tl = gsap.timeline({
     scrollTrigger: {
-      trigger: '.health__list',
-      start: 'top-=118px top',
-      end: '+=1200px',
+      trigger: scene,
+      start: () => `top top+=${stickyTop()}`,
+      end: () => `+=${distance()}`,
       scrub: 1,
-      anticipatePin: 1,
-      pin: true,
     },
   });
 
@@ -331,32 +341,35 @@ useAdaptiveGsap({
     <div class="health__wrapper">
       <p class="health__text">{{ t('expertise.health.text') }}</p>
 
-      <div class="health__list">
-        <div
-          v-for="(item, index) in healthContent"
-          :key="index"
-          ref="healthItems"
-          class="health__item"
-          :aria-selected="activeBlock === index"
-          @pointermove="handleItemHover($event, index)"
-          @click="selectItem(index)"
-        >
-          <div class="health__item-content">
-            <div class="health__item-header">
-              <mark class="health__item-num">
-                ({{ String(index + 1).padStart(2, "0") }})
-              </mark>
-              <div class="health__item-line" />
+      <!-- Обёртка сцены: на мобильном задаёт длину прокрутки, пока список прилип; на остальных ширинах её нет (display: contents) -->
+      <div class="health__scene">
+        <div class="health__list">
+          <div
+            v-for="(item, index) in healthContent"
+            :key="index"
+            ref="healthItems"
+            class="health__item"
+            :aria-selected="activeBlock === index"
+            @pointermove="handleItemHover($event, index)"
+            @click="selectItem(index)"
+          >
+            <div class="health__item-content">
+              <div class="health__item-header">
+                <mark class="health__item-num">
+                  ({{ String(index + 1).padStart(2, "0") }})
+                </mark>
+                <div class="health__item-line" />
+              </div>
+              <h3 class="health__item-title" v-html="item.label" />
+              <p class="health__item-text" v-html="item.text" />
             </div>
-            <h3 class="health__item-title" v-html="item.label" />
-            <p class="health__item-text" v-html="item.text" />
-          </div>
 
-          <atoms-picture
-            class="health__item-image"
-            :src="item.image"
-            :webp="item.webp"
-          />
+            <atoms-picture
+              class="health__item-image"
+              :src="item.image"
+              :webp="item.webp"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -386,6 +399,19 @@ useAdaptiveGsap({
     }
   }
 
+  // Мобильный: высота = список (550px) + путь прокрутки сцены (1200px). Список прилипает в 118px от верха экрана —
+  // там же, где его закреплял прежний pin (start: 'top-=118px top'). Отступ над списком перенесён на обёртку,
+  // чтобы верх липкого списка совпадал с верхом сцены
+  &__scene {
+    display: contents;
+
+    @include a.mobile {
+      display: block;
+      height: calc(550px + 1200px);
+      margin-top: 8px;
+    }
+  }
+
   &__list {
     position: relative;
     z-index: 1;
@@ -408,8 +434,11 @@ useAdaptiveGsap({
     }
 
     @include a.mobile {
+      position: sticky;
+      top: 118px;
+
       height: 550px;
-      margin-top: 8px;
+      margin-top: 0;
       overflow: hidden;
     }
   }

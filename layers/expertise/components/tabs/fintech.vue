@@ -119,19 +119,30 @@ const animationTablet = () => {
   masterTL.add(blockAnimation(3, '36.5625rem', 1, 1, 8), '<');
 };
 
+// Мобильный: карточки сменяют друг друга, пока ряд стоит под панелью вкладок. Ряд держит CSS position: sticky
+// внутри высокой обёртки .fintech__scene, а не pin ScrollTrigger: JS-pin переключал ряд на position: fixed
+// с опозданием на кадр (и заранее — из-за anticipatePin), на быстром свайпе ряд отскакивал на десятки пикселей.
+// Sticky держит браузер, синхронно со скроллом. Здесь только прокрутка анимации карточек по скроллу
 const animationMobile = () => {
+  const scene = document.querySelector<HTMLElement>('.fintech__scene');
+  const blocks = document.querySelector<HTMLElement>('.fintech__blocks');
+  if (!scene || !blocks) return;
+
+  // Отступ прилипания и длина сцены берутся из CSS (top ряда и высота обёртки) — числа живут в одном месте
+  const stickyTop = () => parseFloat(getComputedStyle(blocks).top) || 0;
+  const distance = () => scene.offsetHeight - blocks.offsetHeight;
+
+  // Стартовое смещение снизу — высота экрана, замеренная один раз (раньше 100vh): не зависит от панели адреса
   gsap.set('.fintech__block:not(:first-child)', {
-    y: '100vh',
+    y: document.documentElement.clientHeight,
   });
 
   const tl = gsap.timeline({
     scrollTrigger: {
-      trigger: '.fintech__blocks',
-      start: 'top-=21% top',
-      end: '+=1200px',
+      trigger: scene,
+      start: () => `top top+=${stickyTop()}`,
+      end: () => `+=${distance()}`,
       scrub: 1,
-      anticipatePin: 1,
-      pin: true,
     },
   });
 
@@ -167,41 +178,44 @@ useAdaptiveGsap({
 
 <template>
   <div class="fintech">
-    <div class="fintech__blocks">
-      <div
-        v-for="(block, idx) in blocks"
-        :key="`${locale}-${idx}`"
-        class="fintech__block"
-        :aria-selected="activeBlock === idx"
-        @pointermove="handlerSelected($event, idx)"
-        @click="selectBlock(idx)"
-      >
-        <atoms-picture
-          class="fintech__block-image"
-          :src="block.image"
-          :webp="block.webp"
-        />
-
-        <!-- Подпись свёрнутой карточки (десктоп). Отдельный элемент фиксированной ширины: раньше заголовок
-             менял размер шрифта и переносился заново на каждом кадре, пока карточка меняла ширину -->
+    <!-- Обёртка сцены: на мобильном задаёт длину прокрутки, пока ряд карточек прилип; на остальных ширинах её нет (display: contents) -->
+    <div class="fintech__scene">
+      <div class="fintech__blocks">
         <div
-          class="fintech__block-preview"
-          aria-hidden="true"
-          v-html="block.label"
-        />
-
-        <div class="fintech__block-content">
-          <h3 v-html="block.label" />
-          <p
-            v-for="(text, key) in block.texts"
-            :key="key"
-            v-html="text"
+          v-for="(block, idx) in blocks"
+          :key="`${locale}-${idx}`"
+          class="fintech__block"
+          :aria-selected="activeBlock === idx"
+          @pointermove="handlerSelected($event, idx)"
+          @click="selectBlock(idx)"
+        >
+          <atoms-picture
+            class="fintech__block-image"
+            :src="block.image"
+            :webp="block.webp"
           />
+
+          <!-- Подпись свёрнутой карточки (десктоп). Отдельный элемент фиксированной ширины: раньше заголовок
+               менял размер шрифта и переносился заново на каждом кадре, пока карточка меняла ширину -->
+          <div
+            class="fintech__block-preview"
+            aria-hidden="true"
+            v-html="block.label"
+          />
+
+          <div class="fintech__block-content">
+            <h3 v-html="block.label" />
+            <p
+              v-for="(text, key) in block.texts"
+              :key="key"
+              v-html="text"
+            />
+          </div>
+
+          <mark class="fintech__block-num">({{ String(idx + 1).padStart(2, "0") }})</mark>
+
+          <div class="fintech__block-blur" />
         </div>
-
-        <mark class="fintech__block-num">({{ String(idx + 1).padStart(2, "0") }})</mark>
-
-        <div class="fintech__block-blur" />
       </div>
     </div>
 
@@ -232,6 +246,17 @@ useAdaptiveGsap({
   }
 }
 
+// Мобильный: высота = ряд (580px) + путь прокрутки сцены (1200px). Ряд прилипает на 21% своей высоты ниже верха
+// экрана — там же, где его закреплял прежний pin (start: 'top-=21% top')
+.fintech__scene {
+  display: contents;
+
+  @include a.mobile {
+    display: block;
+    height: calc(580px + 1200px);
+  }
+}
+
 .fintech__blocks {
   display: flex;
   gap: 8px;
@@ -253,7 +278,8 @@ useAdaptiveGsap({
   }
 
   @include a.mobile {
-    position: relative;
+    position: sticky;
+    top: 121.8px;
     z-index: 1;
 
     height: 580px;
