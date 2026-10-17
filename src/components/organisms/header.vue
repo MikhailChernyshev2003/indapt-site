@@ -4,7 +4,11 @@ const formHandler = useFormHandler();
 
 const { t } = useI18n();
 
-const { isFormOpen } = storeToRefs(formHandler);
+const { isFormOpen, isPresentationFormOpen } = storeToRefs(formHandler);
+
+// «Получить презентацию» — только в шапке страницы «О компании»
+const route = useRoute();
+const isAboutPage = computed(() => route.path.replace(/\/+$/, '') === '/about');
 
 const handlerBurgerOpen = () => {
   isBurgerOpen.value = !isBurgerOpen.value;
@@ -22,11 +26,18 @@ const handlerForm = () => {
   }
 };
 
+const handlerPresentationForm = () => {
+  const willOpen = !isPresentationFormOpen.value;
+  formHandler.handlerPresentationFormOpen(willOpen);
+  document.body.classList.toggle('lock', willOpen);
+};
+
 const logoAnim = () => {
   const tl = gsap.timeline({
     scrollTrigger: {
+      // Знак «in» вместо полного логотипа — вместе со сжатием шапки, с первых пикселей прокрутки
       trigger: 'body',
-      start: 'top+=300px top',
+      start: 'top top',
       end: '+=200px',
       scrub: 1,
     },
@@ -42,19 +53,36 @@ const logoAnim = () => {
     duration: 2,
     delay: 3,
   }, '<');
+  // По макету знак «in» в сжатой шапке ровно в высоту полного логотипа (30px, на мобильном 26px):
+  // буквы «in» занимают 237 из 292 единиц высоты svg, поэтому scale = 292 / 237,
+  // а yPercent возвращает центр знака на середину шапки
   tl.to('.header__logo', {
-    scale: 1.5,
+    scale: 292 / 237,
+    yPercent: 11.6,
     duration: 2,
   }, '<');
 };
 
+// «Стекло» и линия шапки появляются только с началом прокрутки, в самом верху страницы шапка прозрачная
+const isScrolled = ref(false);
+
+const onScroll = () => {
+  isScrolled.value = window.scrollY > 0;
+};
+
 onMounted(() => {
   logoAnim();
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll);
 });
 </script>
 
 <template>
-  <header class="header">
+  <header class="header" :class="{ header_scrolled: isScrolled }">
     <div class="container header__container">
       <nuxt-link href="/" class="header__logo-link">
         <!-- <atoms-logo class="header__logo header__logo_full" type-mobile="min" />
@@ -63,6 +91,14 @@ onMounted(() => {
       </nuxt-link>
 
       <div class="header__control">
+        <atoms-button-animated-dot
+          v-if="isAboutPage"
+          class="header__client header__presentation"
+          @click="handlerPresentationForm"
+        >
+          {{ t('header.presentation') }}
+        </atoms-button-animated-dot>
+
         <atoms-button-animated-dot
           class="header__client"
           @click="handlerForm"
@@ -109,6 +145,21 @@ onMounted(() => {
           </div>
         </teleport>
       </transition>
+      <transition name="fade" appear>
+        <teleport to="body">
+          <div
+            v-if="isPresentationFormOpen"
+            class="header__overlay-form"
+            @click="handlerPresentationForm"
+          >
+            <organisms-presentation-form
+              class="header__contact-form"
+              @click.stop
+              @close="handlerPresentationForm"
+            />
+          </div>
+        </teleport>
+      </transition>
     </client-only>
   </header>
 </template>
@@ -119,11 +170,14 @@ onMounted(() => {
 @use "@/assets/styles/typography" as t;
 @use "@/assets/styles/shared" as s;
 
-// По макету шапка 88px (на мобильном 72px), элементы по центру,
-// линия-разделитель лежит внутри высоты — поэтому снизу на 1px меньше.
-// Подложка прозрачная, и только нижняя треть шапки плавно подсвечивается
-// sea-blue до ~9% у линии — одинаково по всей ширине
-// (прежний rgb(var(--sea-blue-20), 0.4) с hex-переменной был невалиден)
+// По макету (О компании, 06.10) у шапки два состояния:
+// - вверху страницы — 88px (планшет 72px, телефон 52px), полный логотип, без подложки и линии;
+// - с началом прокрутки — 70px (телефон те же 52px), знак «in», «стекло» и линия снизу.
+// Элементы по центру, линия лежит внутри высоты.
+// Подложка — только нижняя треть шапки плавно подсвечивается sea-blue до ~9% у линии.
+// Размытие задаётся переменной --header-blur: главная и «Экспертиза» снимают его, когда под шапкой
+// своя размытая панель. Размытие живёт на ::before — так «стекло» плавно проявляется через opacity
+// (backdrop-filter на самой шапке сделал бы её backdrop root, и размытие ::before перестало бы работать)
 
 .header {
   position: fixed;
@@ -136,14 +190,49 @@ onMounted(() => {
   // прокрутки (Chrome с мышью или «показывать всегда»), и её размытие
   // рисовало там серую полосу-«тень» справа
 
-  padding: 28px 0 27px;
+  display: flex;
+  align-items: center;
+  height: 88px;
 
-  background: linear-gradient(180deg, var(--sea-blue-0) 62%, color-mix(in srgb, var(--sea-blue) 9%, transparent) 100%);
-  border-bottom: 1px solid rgb(51 135 255 / 20%);
-  backdrop-filter: blur(20px);
+  border-bottom: 1px solid transparent;
+
+  transition: height 0.4s ease, border-color 0.4s ease;
+
+  @include a.tablet {
+    height: 72px;
+  }
 
   @include a.mobile {
-    padding: 20px 0 19px;
+    height: 52px;
+  }
+
+  &::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+
+    background: linear-gradient(180deg, var(--sea-blue-0) 62%, color-mix(in srgb, var(--sea-blue) 9%, transparent) 100%);
+    opacity: 0;
+    backdrop-filter: blur(var(--header-blur, 30px));
+
+    transition: opacity 0.4s ease;
+
+    content: "";
+    pointer-events: none;
+  }
+
+  &_scrolled {
+    height: 70px;
+
+    border-bottom-color: rgb(51 135 255 / 20%);
+
+    @include a.mobile {
+      height: 52px;
+    }
+
+    &::before {
+      opacity: 1;
+    }
   }
 
   &_gradient {
@@ -152,6 +241,7 @@ onMounted(() => {
 
   &__container {
     display: flex;
+    flex-grow: 1;
     align-items: center;
     justify-content: space-between;
   }
@@ -171,6 +261,10 @@ onMounted(() => {
     height: 30px;
 
     transform-origin: left center;
+
+    @include a.mobile {
+      height: 26px;
+    }
 
     &_min {
       position: absolute;
@@ -233,6 +327,10 @@ onMounted(() => {
   &__client {
     @include a.tablet {
       display: none !important;
+    }
+
+    &.header__presentation {
+      margin-right: 40px;
     }
 
     .header & .button__dot {

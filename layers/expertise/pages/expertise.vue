@@ -51,8 +51,12 @@ let stickyHeader: HTMLDivElement | null = null;
 const setHeaderBlur = (sticky: boolean) => {
   isSticky.value = sticky;
   if (!stickyHeader) return;
-  stickyHeader.style.backdropFilter = sticky ? 'blur(0px)' : 'blur(20px)';
-  stickyHeader.style.setProperty('-webkit-backdrop-filter', sticky ? 'blur(0px)' : 'blur(20px)');
+  if (sticky) {
+    stickyHeader.style.setProperty('--header-blur', '0px');
+  }
+  else {
+    stickyHeader.style.removeProperty('--header-blur');
+  }
 };
 
 // Размытие шапки снимаем, только когда под ней целиком лежит прилипшая панель вкладок (у неё своё размытие).
@@ -151,10 +155,7 @@ onUnmounted(() => {
   }
 
   const header: HTMLDivElement | null = document.querySelector('.header');
-  if (header) {
-    header.style.backdropFilter = 'blur(20px)';
-    header.style.setProperty('-webkit-backdrop-filter', 'blur(20px)');
-  }
+  header?.style.removeProperty('--header-blur');
 });
 </script>
 
@@ -235,12 +236,12 @@ onUnmounted(() => {
   }
 }
 
-// Прилипшая панель: подписи вкладок начинаются сразу под шапкой (88px, на мобильном 72px) — иначе они
+// Прилипшая панель: подписи вкладок начинаются сразу под сжатой шапкой (70px, на мобильном 52px) — иначе они
 // ложились на нижнюю линию шапки, а на мобильном тап по вкладке попадал в шапку и не переключал её
 
 .expertise__tabs {
   position: sticky;
-  top: -32px;
+  top: -50px;
   left: 0;
   z-index: 10;
 
@@ -266,7 +267,7 @@ onUnmounted(() => {
   }
 
   @include a.mobile {
-    top: 24px;
+    top: 4px;
 
     margin-top: 0;
     padding-top: 48px;

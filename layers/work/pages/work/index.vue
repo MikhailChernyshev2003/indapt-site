@@ -49,12 +49,8 @@ watch(() => route.query.scrollToBlock, (newVal) => {
 
 onMounted(async () => {
   await nextTick();
-  const header = document.querySelector('.header');
-
-  if (!header) return;
-
-  header.style.backdropFilter = 'blur(20px)';
-  header.style.webkitBackdropFilter = 'blur(20px)';
+  // Размытие шапки по умолчанию: главная могла оставить его снятым (--header-blur: 0px)
+  document.querySelector<HTMLElement>('.header')?.style.removeProperty('--header-blur');
 });
 </script>
 

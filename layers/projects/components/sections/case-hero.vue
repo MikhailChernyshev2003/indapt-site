@@ -82,11 +82,11 @@ const BLINDS = {
   top: 95px;
 
   @include a.tablet {
-    top: 88px;
+    top: 72px;
   }
 
   @include a.mobile {
-    top: 72px;
+    top: 52px;
   }
 }
 
