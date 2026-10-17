@@ -5,8 +5,17 @@ export const useFormHandler = defineStore('FormHandler', () => {
     isFormOpen.value = value;
   };
 
+  // Форма «Получить презентацию» (О компании)
+  const isPresentationFormOpen = ref(false);
+
+  const handlerPresentationFormOpen = (value: boolean) => {
+    isPresentationFormOpen.value = value;
+  };
+
   return {
     isFormOpen,
     handlerFormOpen,
+    isPresentationFormOpen,
+    handlerPresentationFormOpen,
   };
 });

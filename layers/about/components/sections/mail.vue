@@ -6,6 +6,13 @@ import DecorMobile from '@/assets/images/subscribe/decor-mobile.png';
 const { isDesktop, isTablet } = useDevice();
 
 const { t } = useI18n();
+
+const formHandler = useFormHandler();
+
+const openPresentationForm = () => {
+  formHandler.handlerPresentationFormOpen(true);
+  document.body.classList.add('lock');
+};
 </script>
 
 <template>
@@ -16,7 +23,7 @@ const { t } = useI18n();
       <atoms-button
         class="mail__button"
         mode="secondary"
-        href="/work?scrollToBlock=work__vacancies"
+        @click="openPresentationForm"
       >
         {{ t('aboutPage.mail.button') }}
       </atoms-button>

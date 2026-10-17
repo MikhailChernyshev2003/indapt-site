@@ -6,6 +6,11 @@ interface ContactFormData {
   email: string;
 }
 
+interface PresentationFormData {
+  name: string;
+  email: string;
+}
+
 interface VacancyFormData {
   name: string;
   phone: string;
@@ -44,6 +49,31 @@ export const useFormApi = () => {
     }
   };
 
+  const sendPresentationForm = async (data: PresentationFormData) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('email', data.email);
+
+    try {
+      const response = await fetch('/api/mail/presentation.php', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error(text);
+      }
+
+      return { success: true, message: text };
+    }
+    catch (error) {
+      console.error('Ошибка отправки формы презентации:', error);
+      throw error;
+    }
+  };
+
   const sendVacancyForm = async (data: VacancyFormData) => {
     const formData = new FormData();
     formData.append('name', data.name);
@@ -75,6 +105,7 @@ export const useFormApi = () => {
 
   return {
     sendContactForm,
+    sendPresentationForm,
     sendVacancyForm,
   };
 };

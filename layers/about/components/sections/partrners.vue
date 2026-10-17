@@ -1,108 +1,79 @@
 <script setup lang="ts">
-import MicrosoftLogo from '@l-about/assets/images/microsoft.png';
-import GoogleLogo from '@l-about/assets/images/google.png';
-import DivLogo from '@l-about/assets/images/div.png';
+import MicrosoftLogo from '@l-about/assets/images/tech-partners/microsoft.svg?url';
+import GoogleLogo from '@l-about/assets/images/tech-partners/google.svg?url';
+import YandexLogo from '@l-about/assets/images/tech-partners/yandex.svg?url';
+import YandexEnLogo from '@l-about/assets/images/tech-partners/yandex-en.svg?url';
+import VkTechLogo from '@l-about/assets/images/tech-partners/vk-tech.svg?url';
+import MwsLogo from '@l-about/assets/images/tech-partners/mws.svg?url';
+import AmoCrmLogo from '@l-about/assets/images/tech-partners/amocrm.svg?url';
+import OneCLogo from '@l-about/assets/images/tech-partners/1c.svg?url';
+import Bitrix24Logo from '@l-about/assets/images/tech-partners/bitrix24.svg?url';
+import KonturLogo from '@l-about/assets/images/tech-partners/kontur.svg?url';
 
 const { isDesktop } = useDevice();
 const formHandler = useFormHandler();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
-const blocks: {
-  logo: string;
+// Логотип — картинка либо, пока нет официального файла (СберТех), название текстом
+type PartnerLogo = { alt: string; src?: string; text?: string; square?: boolean };
+
+type PartnerCard = {
   num: string;
+  // В восьмой карточке несколько логотипов, а на развороте — список остальных партнёров
+  logos: PartnerLogo[];
   paragraphs: string[];
-}[][] = [
-  [
-    {
-      num: '01',
-      logo: MicrosoftLogo,
-      paragraphs: [
-        t('aboutPage.partners.partner1'),
-      ],
-    },
-    {
-      num: '02',
-      logo: GoogleLogo,
-      paragraphs: [
-        t('aboutPage.partners.partner1'),
-      ],
-    },
-    {
-      num: '03',
-      logo: DivLogo,
-      paragraphs: [
-        t('aboutPage.partners.partner1'),
-      ],
-    },
-  ],
+};
 
-  [
-    {
-      num: '04',
-      logo: GoogleLogo,
-      paragraphs: [
-        t('aboutPage.partners.partner1'),
-      ],
-    },
-    {
-      num: '05',
-      logo: DivLogo,
-      paragraphs: [
-        t('aboutPage.partners.partner1'),
-      ],
-    },
-  ],
-];
-
-const blocksFlat: {
-  logo: string;
-  num: string;
-  paragraphs: string[];
-}[] = [
-  {
-    num: '01',
-    logo: MicrosoftLogo,
-    paragraphs: [
-      t('aboutPage.partners.partner1'),
-    ],
-  },
-  {
-    num: '02',
-    logo: GoogleLogo,
-    paragraphs: [
-      t('aboutPage.partners.partner1'),
-    ],
-  },
+const cards = computed<PartnerCard[]>(() => [
+  { num: '01', logos: [{ src: MicrosoftLogo, alt: 'Microsoft' }], paragraphs: [t('aboutPage.partners.list.microsoft')] },
+  { num: '02', logos: [{ src: GoogleLogo, alt: 'Google' }], paragraphs: [t('aboutPage.partners.list.google')] },
   {
     num: '03',
-    logo: DivLogo,
-    paragraphs: [
-      t('aboutPage.partners.partner1'),
-    ],
+    logos: [{ src: locale.value === 'ru' ? YandexLogo : YandexEnLogo, alt: 'Yandex' }],
+    paragraphs: [t('aboutPage.partners.list.yandex')],
   },
+  { num: '04', logos: [{ src: VkTechLogo, alt: 'VK Tech' }], paragraphs: [t('aboutPage.partners.list.vk')] },
+  { num: '05', logos: [{ text: t('aboutPage.partners.list.sbertechName'), alt: 'SberTech' }], paragraphs: [t('aboutPage.partners.list.sbertech')] },
+  // Знак MWS квадратный — его выводим крупнее, иначе буквы не читаются
+  { num: '06', logos: [{ src: MwsLogo, alt: 'MTS Web Services', square: true }], paragraphs: [t('aboutPage.partners.list.mws')] },
+  { num: '07', logos: [{ src: AmoCrmLogo, alt: 'amoCRM' }], paragraphs: [t('aboutPage.partners.list.amocrm')] },
   {
-    num: '04',
-    logo: GoogleLogo,
-    paragraphs: [
-      t('aboutPage.partners.partner1'),
+    num: '08',
+    logos: [
+      { src: OneCLogo, alt: '1C' },
+      { src: Bitrix24Logo, alt: 'Bitrix24' },
+      { src: KonturLogo, alt: 'Kontur' },
     ],
+    paragraphs: [t('aboutPage.partners.list.othersTitle'), t('aboutPage.partners.list.others')],
   },
-  {
-    num: '05',
-    logo: DivLogo,
-    paragraphs: [
-      t('aboutPage.partners.partner1'),
-    ],
-  },
-];
+]);
+
+// Раскладка по макету (Партнерство, 8 шт): ряды 3 + 2 + 3
+const ROW_SIZES = [3, 2, 3];
+
+const blocks = computed(() => {
+  let offset = 0;
+  return ROW_SIZES.map((size) => {
+    const row = cards.value.slice(offset, offset + size);
+    offset += size;
+    return row;
+  });
+});
 
 const openForm = () => {
   formHandler.handlerFormOpen(true);
   document.body.classList.add('lock');
 };
 
-const flatItemClassSuffix = (idx: number) => (idx < 3 ? `0-${idx}` : `1-${idx - 3}`);
+const flatItemClassSuffix = (idx: number) => {
+  let offset = 0;
+  for (let row = 0; row < ROW_SIZES.length; row++) {
+    if (idx < offset + ROW_SIZES[row]) return `${row}-${idx - offset}`;
+    offset += ROW_SIZES[row];
+  }
+  return '';
+};
 </script>
 
 <template>
@@ -135,13 +106,23 @@ const flatItemClassSuffix = (idx: number) => (idx < 3 ? `0-${idx}` : `1-${idx - 
               :class="`partners__content-row-item partners__content-row-item_${index}-${idx}`"
             >
               <p class="partners__content-row-item-num">({{ item.num }})</p>
-              <img
-                :src="item.logo"
-                alt="logo"
+              <div
                 class="partners__content-row-item-logo"
-              />
+                :class="{ 'partners__content-row-item-logo_multi': item.logos.length > 1 }"
+              >
+                <template v-for="logo in item.logos" :key="logo.alt">
+                  <img
+                    v-if="logo.src"
+                    :src="logo.src"
+                    :alt="logo.alt"
+                    class="partners__content-row-item-logo-img"
+                    :class="{ 'partners__content-row-item-logo-img_square': logo.square }"
+                  />
+                  <span v-else class="partners__content-row-item-logo-text">{{ logo.text }}</span>
+                </template>
+              </div>
               <div class="partners__content-row-item-texts">
-                <p
+                <div
                   v-for="(p, pIdx) in item.paragraphs"
                   :key="`row-${index}-item-${idx}-p-${pIdx}`"
                   class="partners__content-row-item-text"
@@ -153,18 +134,28 @@ const flatItemClassSuffix = (idx: number) => (idx < 3 ? `0-${idx}` : `1-${idx - 
         </template>
         <template v-else>
           <div
-            v-for="(item, idx) in blocksFlat"
+            v-for="(item, idx) in cards"
             :key="`item-${idx}`"
             :class="`partners__content-row-item partners__content-row-item_${flatItemClassSuffix(idx)}`"
           >
             <p class="partners__content-row-item-num">({{ item.num }})</p>
-            <img
-              :src="item.logo"
-              alt="logo"
+            <div
               class="partners__content-row-item-logo"
-            />
+              :class="{ 'partners__content-row-item-logo_multi': item.logos.length > 1 }"
+            >
+              <template v-for="logo in item.logos" :key="logo.alt">
+                <img
+                  v-if="logo.src"
+                  :src="logo.src"
+                  :alt="logo.alt"
+                  class="partners__content-row-item-logo-img"
+                  :class="{ 'partners__content-row-item-logo-img_square': logo.square }"
+                />
+                <span v-else class="partners__content-row-item-logo-text">{{ logo.text }}</span>
+              </template>
+            </div>
             <div class="partners__content-row-item-texts">
-              <p
+              <div
                 v-for="(p, pIdx) in item.paragraphs"
                 :key="`item-${idx}-p-${pIdx}`"
                 class="partners__content-row-item-text"
@@ -323,8 +314,10 @@ const flatItemClassSuffix = (idx: number) => (idx < 3 ? `0-${idx}` : `1-${idx - 
           }
         }
 
+        // Третий ряд по макету: (06) в первой колонке, (07) и (08) — в третьей и четвёртой
+
         &_0-2,
-        &_2-2 {
+        &_2-1 {
           margin-left: auto;
 
           @include a.tablet {
@@ -358,8 +351,10 @@ const flatItemClassSuffix = (idx: number) => (idx < 3 ? `0-${idx}` : `1-${idx - 
           position: absolute;
           bottom: 24px;
 
+          display: flex;
+          gap: 20px;
+          align-items: center;
           height: 32px;
-          object-fit: contain;
 
           transform-origin: left center;
 
@@ -371,6 +366,35 @@ const flatItemClassSuffix = (idx: number) => (idx < 3 ? `0-${idx}` : `1-${idx - 
             margin-top: auto;
             transform: none;
           }
+
+          // Несколько логотипов в одной карточке — чуть мельче, чтобы уместились в ширину
+          &_multi {
+            gap: 12px;
+            height: 20px;
+          }
+        }
+
+        &-logo-img {
+          width: auto;
+          height: 100%;
+          object-fit: contain;
+
+          &_square {
+            height: 56px;
+
+            @include a.tablet {
+              height: 48px;
+            }
+          }
+        }
+
+        &-logo-text {
+          color: var(--dark-blue);
+
+          @include t.h5;
+
+          font-weight: 600;
+          white-space: nowrap;
         }
 
         &-texts {
@@ -388,6 +412,17 @@ const flatItemClassSuffix = (idx: number) => (idx < 3 ? `0-${idx}` : `1-${idx - 
           transition: opacity 0.2s;
 
           @include t.body-s-medium;
+
+          // Список остальных партнёров в восьмой карточке
+          :deep(ul) {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 8px;
+            padding-left: 18px;
+
+            list-style: disc;
+          }
 
           @include a.tablet {
             position: static;

@@ -12,23 +12,22 @@ export const SUBSIDIARIES: Subsidiary[] = [
   },
   {
     id: 2,
-    name: 'Россия,<br/> Санкт-Петербург,<br/> Невский проспект, д. 56',
+    name: '191002, Щербаков пер., 17/3с1,<br/> БЦ &laquo;Премьер&raquo;',
     shortName: 'Россия, Санкт-Петербург',
     coordinates: {
-      long: 59.934227,
-      lat: 30.338137,
+      long: 59.927727,
+      lat: 30.345820,
     },
   },
-  // Временно скрыли
-  // {
-  //   id: 3,
-  //   name: 'ОАЭ, Дубай,<br/> Шейх-Зайед-роуд,<br/> башня 21',
-  //   shortName: 'ОАЭ, Дубай',
-  //   coordinates: {
-  //     long: 25.052762,
-  //     lat: 55.231631,
-  //   },
-  // },
+  {
+    id: 3,
+    name: 'Meydan Free Zone,<br/> Meydan Grandstand, 6th Floor',
+    shortName: 'ОАЭ, Дубай',
+    coordinates: {
+      long: 25.155022,
+      lat: 55.299637,
+    },
+  },
 ];
 
 export const SUBSIDIARIES_ENG: Subsidiary[] = [
@@ -43,21 +42,20 @@ export const SUBSIDIARIES_ENG: Subsidiary[] = [
   },
   {
     id: 2,
-    name: '',
+    name: '191002, Shcherbakov Lane, 17/3 bldg. 1,<br/>Premier Business Center',
     shortName: 'Russia, Saint Petersburg',
     coordinates: {
-      long: 59.934227,
-      lat: 30.338137,
+      long: 59.927727,
+      lat: 30.345820,
     },
   },
-  // Временно скрыли
-  // {
-  //   id: 3,
-  //   name: 'ОАЭ, Дубай,<br/> Шейх-Зайед-роуд,<br/> башня 21',
-  //   shortName: 'UAE, Dubai',
-  //   coordinates: {
-  //     long: 25.052762,
-  //     lat: 55.231631,
-  //   },
-  // },
+  {
+    id: 3,
+    name: 'Meydan Free Zone,<br/> Meydan Grandstand, 6th Floor',
+    shortName: 'UAE, Dubai',
+    coordinates: {
+      long: 25.155022,
+      lat: 55.299637,
+    },
+  },
 ];
