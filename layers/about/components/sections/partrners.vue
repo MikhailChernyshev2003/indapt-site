@@ -274,7 +274,10 @@ const flatItemClassSuffix = (idx: number) => {
 
         display: flex;
         flex-direction: column;
-        width: 312px;
+        // По макету 4 колонки по 318px с промежутком 16px ровно занимают контейнер 1320px:
+        // при 312px крайняя правая карточка прижималась к краю, а остальные стояли по сетке 312 —
+        // ряды съезжали относительно друг друга
+        width: 318px;
         height: 240px;
         padding: 24px;
 
@@ -294,7 +297,7 @@ const flatItemClassSuffix = (idx: number) => {
 
         @include a.desktop-only {
           @include s.hover {
-            width: 651px;
+            width: 652px; // две колонки и промежуток: 318 * 2 + 16
 
             background: var(--white);
 
