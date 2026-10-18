@@ -79,6 +79,7 @@ export default defineNuxtConfig({
     '@l-about': fileURLToPath(new URL('./layers/about', import.meta.url)),
     '@l-projects': fileURLToPath(new URL('./layers/projects', import.meta.url)),
     '@l-services': fileURLToPath(new URL('./layers/services', import.meta.url)),
+    '@l-ai-production': fileURLToPath(new URL('./layers/ai-production', import.meta.url)),
   },
 
   experimental: {
