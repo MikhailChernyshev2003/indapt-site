@@ -36,10 +36,8 @@ const NAVIGATION: ComputedRef<NavigationItem[]> = computed(() => [
     to: '/projects',
     name: t('header.projects'),
   },
-  {
-    to: '/ai-production',
-    name: t('header.aiProduction'),
-  },
+  // «ИИ-продакшн» (/ai-production, ключ header.aiProduction) временно скрыт:
+  // лэндинг доступен только по прямой ссылке до финальной версии
   {
     to: '/work',
     name: t('header.work'),
