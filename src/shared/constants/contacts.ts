@@ -21,7 +21,7 @@ export const SUBSIDIARIES: Subsidiary[] = [
   },
   {
     id: 3,
-    name: 'Meydan Free Zone,<br/> Meydan Grandstand, 6th Floor',
+    name: 'Meydan Rd, Nad Al Sheba 1,<br/> Dubai, UAE, P.O. Box 95195',
     shortName: 'ОАЭ, Дубай',
     coordinates: {
       long: 25.155022,
@@ -51,7 +51,7 @@ export const SUBSIDIARIES_ENG: Subsidiary[] = [
   },
   {
     id: 3,
-    name: 'Meydan Free Zone,<br/> Meydan Grandstand, 6th Floor',
+    name: 'Meydan Rd, Nad Al Sheba 1,<br/> Dubai, UAE, P.O. Box 95195',
     shortName: 'UAE, Dubai',
     coordinates: {
       long: 25.155022,

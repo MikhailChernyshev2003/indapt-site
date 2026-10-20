@@ -1832,25 +1832,42 @@ export const adaptiveAnim = (
       '/images/projects/kassir-shape.svg',
     ];
 
+    const addedUnitsBeforeProjects = addedUnits;
+    const durationBeforeProjects = tl.duration();
+    // Лента въезжает справа и ставит первую карточку на место
     tl.to(
       '.our-projects__row',
       {
-        x: '-278vw', // 68.75vw * кол-во элементов
-        duration: 40, // 10 * кол-во элементов
-        onUpdate: function () {
-          const progress = this.progress();
-          const currentIndex = Math.floor(progress * projectShapes.length);
-          const clampedIndex = Math.min(currentIndex, projectShapes.length - 1);
-
-          if (ourProjectsRef && ourProjectsRef.handlerActiveShapeForAnim) {
-            ourProjectsRef.handlerActiveShapeForAnim(projectShapes[clampedIndex]);
-          }
-        },
+        x: 0,
+        duration: 10,
       },
       '<+=5',
     );
-    // Пока карточки едут, поднимаем секцию, чтобы их низ был виден целиком
+    // Раньше лента ехала одним твином в 40 единиц — до его конца время считаем базовым
+    const projectsBaseEnd = Math.max(durationBeforeProjects, tl.recent().startTime() + 40);
+    // Тем временем поднимаем секцию, чтобы низ первой карточки был виден целиком
     scrollSectionThrough('.main__projects', sectionFit.projects, projectsEnteredAt);
+    // Боковой скролл — только после того, как первая карточка целиком на экране
+    // и её успели прочитать
+    tl.to(
+      '.our-projects__row',
+      {
+        x: '-278vw', // последняя карточка у левого поля
+        duration: 30, // 10 * кол-во переходов между карточками
+        delay: SCROLL_THROUGH_HOLD_UNITS * 3,
+        onUpdate: function () {
+          const progress = this.progress();
+          const currentIndex = Math.round(progress * (projectShapes.length - 1));
+
+          if (ourProjectsRef && ourProjectsRef.handlerActiveShapeForAnim) {
+            ourProjectsRef.handlerActiveShapeForAnim(projectShapes[currentIndex]);
+          }
+        },
+      },
+      '>',
+    );
+    // Всё, что дольше прежней ленты, — добавленное время: px на единицу не меняются
+    addedUnits = addedUnitsBeforeProjects + tl.duration() - projectsBaseEnd;
     tl.to('.our-projects__shape', {
       opacity: 0,
       duration: 2,

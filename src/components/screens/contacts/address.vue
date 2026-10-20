@@ -20,6 +20,11 @@ const list = computed(() => [
     // phone: '+971 4 567 89 10',
     phone: '',
   },
+  {
+    title: t('contactsPage.address.hongKong.title'),
+    address: t('contactsPage.address.hongKong.address'),
+    phone: '',
+  },
 ]);
 </script>
 

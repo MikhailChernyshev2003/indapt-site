@@ -51,8 +51,7 @@ const list = computed(() => [
       {
         title: t('aboutPage.bio.bitkin.company.title'),
         text: [
-          t('aboutPage.bio.bitkin.company.text1'),
-          t('aboutPage.bio.bitkin.company.text2'),
+          t('aboutPage.bio.bitkin.company.text'),
         ],
       },
     ],
@@ -79,8 +78,7 @@ const list = computed(() => [
       {
         title: t('aboutPage.bio.druzin.bio.title'),
         text: [
-          t('aboutPage.bio.druzin.bio.text1'),
-          t('aboutPage.bio.druzin.bio.text2'),
+          t('aboutPage.bio.druzin.bio.text'),
         ],
       },
       {
