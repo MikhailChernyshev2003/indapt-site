@@ -67,7 +67,9 @@ const label = computed(() => t(`services.services.${service.labelKey}`));
     }
 
     .service-tile__arrow {
-      border-color: currentcolor;
+      color: var(--dark-blue);
+
+      border-color: rgb(12 29 79 / 20%);
     }
   }
 }
