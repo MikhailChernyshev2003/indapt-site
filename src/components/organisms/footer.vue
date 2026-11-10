@@ -10,11 +10,6 @@ const formHandler = useFormHandler();
 
 const { t, locale } = useI18n();
 const route = useRoute();
-const legalDocument = ref<'terms' | 'privacy' | null>(null);
-
-watch(() => route.fullPath, () => {
-  legalDocument.value = null;
-});
 
 interface FooterSocialNavItem {
   id: number;
@@ -134,11 +129,7 @@ const displayedSocialLinks = computed((): FooterSocialNavItem[] => {
 
 <template>
   <footer class="footer light-cursor">
-    <svgo-logo-footer-fade
-      class="footer__fade-logo"
-      filled
-      aria-hidden="true"
-    />
+    <svgo-logo-footer-fade class="footer__fade-logo" filled />
     <div class="container footer__container">
       <div class="footer__top">
         <div class="footer__top-clients">
@@ -213,33 +204,18 @@ const displayedSocialLinks = computed((): FooterSocialNavItem[] => {
           <p class="footer__info-text" v-html="t('footer.address')" />
 
           <div class="footer__info-links">
-            <button
-              type="button"
-              class="footer__info-text footer__info-text-link"
-              aria-haspopup="dialog"
-              @click="legalDocument = 'terms'"
-            >
+            <nuxt-link to="/" class="footer__info-text footer__info-text-link">
               {{ t('footer.agreement') }}
-            </button>
+            </nuxt-link>
             <div class="footer__info-stick" />
-            <button
-              type="button"
-              class="footer__info-text footer__info-text-link"
-              aria-haspopup="dialog"
-              @click="legalDocument = 'privacy'"
-            >
+            <nuxt-link to="/" class="footer__info-text footer__info-text-link">
               {{ t('footer.policy') }}
-            </button>
+            </nuxt-link>
           </div>
         </div>
       </div>
     </div>
   </footer>
-  <LazyOrganismsLegalDocument
-    v-if="legalDocument"
-    :kind="legalDocument"
-    @close="legalDocument = null"
-  />
 </template>
 
 <style scoped lang="scss">
@@ -263,8 +239,6 @@ const displayedSocialLinks = computed((): FooterSocialNavItem[] => {
     width: 1320px;
     height: 341px;
     inset: auto 60px -58px;
-
-    pointer-events: none;
 
     @include a.tablet {
       width: 668px;

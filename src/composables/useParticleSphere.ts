@@ -191,18 +191,11 @@ export const useParticleSphere = () => {
     });
   };
 
-  // Rotate the existing particles together with their colors around the sphere center.
-  const sphereRotationAxis = new Vector3(-1, 0, 0);
-  const sphereRotationAngle = 50 * Math.PI / 180;
-
   const updateParticlesPos = (t, camera) => {
     if (!mesh) return;
     const helper = new Object3D();
     particles.forEach((particle, idx: number) => {
-      const realPos = particle.getRealPos()
-        .sub(sphereIntersectionHelper.position)
-        .applyAxisAngle(sphereRotationAxis, sphereRotationAngle)
-        .add(sphereIntersectionHelper.position);
+      const realPos = particle.getRealPos();
       helper.position.set(realPos.x, realPos.y, realPos.z);
       // helper.scale.set(scale.x, scale.y, scale.z)
       helper.scale.copy(particle.scale);
@@ -228,7 +221,10 @@ export const useParticleSphere = () => {
 
   const minMax = (val, min, max) => Math.min(max, Math.max(min, val));
 
-  // Original color mapping, before the geometric rotation.
+  // Наклон сферы вверх (вперёд): цвет частицы считается от её положения, повёрнутого вокруг
+  // горизонтальной оси камеры. При 50° тёмно-синие частицы собираются на макушке сферы,
+  // а к низу уходят в бирюзовый (при 17° они оставались в середине, при 70° внизу появлялась бирюза).
+  // Ось берётся от камеры, чтобы при облёте сферы сзади наклон смотрелся так же
   const COLOR_TILT = 50 * Math.PI / 180;
   const colorTiltAxis = new Vector3();
 
@@ -369,17 +365,13 @@ export const useParticleSphere = () => {
 
   const updateDisplacement = () => {
     const displacementRadius = 0.5;
-    const localIntersection = intersection?.clone()
-      .sub(sphereIntersectionHelper.position)
-      .applyAxisAngle(sphereRotationAxis, -sphereRotationAngle)
-      .add(sphereIntersectionHelper.position);
     particles.forEach((particle) => {
       const targetDisplacement = new Vector3(0, 0, 0);
-      if (localIntersection) {
+      if (intersection) {
         const pos = particle.getPosAndTransform();
-        const distance = pos.distanceTo(localIntersection);
+        const distance = pos.distanceTo(intersection);
         if (distance <= displacementRadius) {
-          const delta = pos.clone().sub(localIntersection);
+          const delta = pos.clone().sub(intersection);
           if (!isMouseInside) delta.negate();
           const force = isMouseInside ? (1 - distance / displacementRadius) / 2 : Math.min(1, (1 - (distance / displacementRadius)) * 2);
           const finalDisplacement = delta.multiplyScalar(force);

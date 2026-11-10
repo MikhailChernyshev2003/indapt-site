@@ -21,7 +21,7 @@ const mediaEn = import.meta.glob<string>('../../assets/images/media/en/*.{svg,pn
 // h — высота логотипа в px: подобрана по пропорциям файла так, чтобы у всех была примерно одинаковая
 // площадь, — иначе широкие надписи («Российская газета») перевешивают квадратные знаки (ТАСС).
 // Файлы обрезаны точно по рисунку, без полей: тогда равный gap в ленте даёт равные промежутки на глаз
-type Media = { file: string; name: string; h: number; monochrome?: boolean };
+type Media = { file: string; name: string; h: number };
 const MEDIA_RU: Media[] = [
   { file: 'forbes', name: 'Forbes', h: 34 },
   { file: 'rbc', name: 'РБК', h: 35 },
@@ -30,52 +30,50 @@ const MEDIA_RU: Media[] = [
   { file: 'tass', name: 'ТАСС', h: 44 },
   { file: 'interfax', name: 'Интерфакс', h: 37 },
   { file: 'izvestia', name: 'Известия', h: 37 },
-  { file: 'rg', name: 'Российская газета (RG.RU)', h: 32 },
+  { file: 'rg', name: 'Российская газета', h: 22 },
   { file: 'lenta', name: 'Lenta.ru', h: 28 },
+  { file: 'rambler', name: 'Рамблер', h: 31 },
   { file: 'secret-firmy', name: 'Секрет фирмы', h: 44 },
   { file: 'expert', name: 'Эксперт', h: 25 },
-  { file: 'inc', name: 'Инк.', h: 35 },
+  { file: 'inc', name: 'Inc.', h: 35 },
   { file: 'vc', name: 'vc.ru', h: 44 },
   { file: 'sostav', name: 'Sostav', h: 35 },
-  { file: 't-business', name: 'Т-Бизнес секреты', h: 20 },
   { file: 'skillbox-media', name: 'Skillbox Media', h: 23 },
-  { file: 'business-fm', name: 'Business FM', h: 34, monochrome: true },
+  { file: 'netology-media', name: 'Медиа Нетологии', h: 33 },
   { file: 'hi-tech-mail', name: 'Hi-Tech Mail', h: 33 },
 ];
 
 const MEDIA_EN: Media[] = [
   { file: 'forbes', name: 'Forbes', h: 34 },
-  { file: 'bloomberg-technology', name: 'Bloomberg Technology', h: 29 },
-  { file: 'mit-technology-review', name: 'MIT Technology Review', h: 25 },
-  { file: 'techcrunch', name: 'TechCrunch', h: 25 },
+  { file: 'bloomberg-technology', name: 'Bloomberg', h: 29 },
+  { file: 'mit-technology-review', name: 'MIT Technology Review', h: 44 },
+  { file: 'techcrunch', name: 'TechCrunch', h: 44 },
   { file: 'business-insider', name: 'Business Insider', h: 22 },
-  { file: 'wired', name: 'WIRED', h: 30 },
+  { file: 'wired', name: 'Wired', h: 30 },
   { file: 'venturebeat', name: 'VentureBeat', h: 24 },
   { file: 'rest-of-world', name: 'Rest of World', h: 30 },
   { file: 'entrepreneur', name: 'Entrepreneur', h: 30 },
   { file: 'inc', name: 'Inc.', h: 40 },
   { file: 'tech-in-asia', name: 'Tech in Asia', h: 28 },
   { file: 'the-national', name: 'The National', h: 44 },
-  { file: 'arabian-business', name: 'Arabian Business', h: 30 },
   { file: 'arab-news', name: 'Arab News', h: 26 },
+  { file: 'wamda', name: 'Wamda', h: 32 },
   { file: 'african-business', name: 'African Business', h: 44 },
   { file: 'techcabal', name: 'TechCabal', h: 32 },
   { file: 'itweb-africa', name: 'ITWeb Africa', h: 44 },
-  { file: 'fintech-news-network', name: 'FinTech News Network', h: 44 },
-  { file: 'fintech-magazine', name: 'FinTech Magazine', h: 44, monochrome: true },
-  { file: 'techradar-pro', name: 'TechRadar Pro', h: 30 },
+  { file: 'fintech-news-network', name: 'Fintech News Network', h: 44 },
 ];
 
 const findUrl = (files: Record<string, string>, name: string) =>
-  files[Object.keys(files).find(path => path.endsWith(`/${name}.svg`))
-    ?? Object.keys(files).find(path => path.endsWith(`/${name}.png`)) ?? ''];
+  Object.entries(files).find(([path]) => /\/([^/]+)\.(svg|png)$/.exec(path)?.[1] === name)?.[1];
 
 const media = computed(() => {
   const isRu = locale.value === 'ru';
   const files = isRu ? mediaRu : mediaEn;
 
   return (isRu ? MEDIA_RU : MEDIA_EN)
-    .map(item => ({ ...item, src: findUrl(files, item.file) }));
+    .map(item => ({ ...item, src: findUrl(files, item.file) }))
+    .filter(item => item.src);
 });
 </script>
 
@@ -100,27 +98,16 @@ const media = computed(() => {
       <!-- Лента изданий: список повторён дважды, чтобы бесшовно прокручиваться по кругу -->
       <div class="smi-about__media">
         <div class="smi-about__media-track">
-          <template
+          <img
             v-for="(item, i) in media.concat(media)"
             :key="`${item.file}-${i}`"
-          >
-            <img
-              v-if="item.src"
-              :src="item.src"
-              :alt="item.name"
-              :aria-hidden="i >= media.length"
-              class="smi-about__media-logo"
-              :class="{ 'smi-about__media-logo_monochrome': item.monochrome }"
-              :style="{ '--logo-h': `${item.h / 16}rem` }"
-              loading="lazy"
-            />
-            <!-- Сохраняем издание в списке, пока не получен подтверждённый оригинал логотипа. -->
-            <span
-              v-else
-              class="smi-about__media-name"
-              :aria-hidden="i >= media.length"
-            >{{ item.name }}</span>
-          </template>
+            :src="item.src"
+            :alt="item.name"
+            :aria-hidden="i >= media.length"
+            class="smi-about__media-logo"
+            :style="{ '--logo-h': `${item.h / 16}rem` }"
+            loading="lazy"
+          />
         </div>
       </div>
 
@@ -286,19 +273,6 @@ const media = computed(() => {
     @include a.mobile {
       height: calc(var(--logo-h, 34px) * 0.78);
     }
-
-    &_monochrome {
-      filter: brightness(0);
-    }
-  }
-
-  &__media-name {
-    flex-shrink: 0;
-
-    color: var(--dark-blue);
-    white-space: nowrap;
-
-    @include t.h4;
   }
 
   @keyframes smi-marquee {
